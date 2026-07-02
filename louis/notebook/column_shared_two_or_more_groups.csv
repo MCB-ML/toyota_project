@@ -1,0 +1,25 @@
+﻿column_norm,group_count,groups,table_count,tables,original_columns
+vin,3,"Agora, BP/KTWS, Karete",11,"agora_co_vehic, agora_om_contract, agora_svc_cr_vehic, agora_svc_propo, bpktws_co_vehic, bpktws_om_contract, bpktws_svc_propo, karete_co_vehic, karete_fct_svc_repair, karete_om_contract, karete_svc_propo","VIN, vin"
+odometer,3,"Agora, BP/KTWS, Karete",6,"agora_co_vehic, agora_svc_propo, bpktws_co_vehic, bpktws_svc_propo, karete_co_vehic, karete_svc_propo","ODOMETER, odometer"
+propo_seq,3,"Agora, BP/KTWS, Karete",5,"agora_svc_cr_vehic, agora_svc_propo, agora_svc_propo_part, bpktws_svc_propo, karete_svc_propo","PROPO_SEQ, propo_seq"
+sales_type,3,"Agora, BP/KTWS, Karete",5,"agora_co_vehic, agora_om_contract, bpktws_co_vehic, bpktws_om_contract, karete_co_vehic","SALES_TYPE, sales_type"
+base_odometer,3,"Agora, BP/KTWS, Karete",4,"agora_co_vehic, bpktws_co_vehic, karete_co_vehic, karete_svc_propo","BASE_ODOMETER, base_odometer"
+first_owner_yn,3,"Agora, BP/KTWS, Karete",3,"agora_co_vehic, bpktws_co_vehic, karete_co_vehic","FIRST_OWNER_YN, first_owner_yn"
+model_year,3,"Agora, BP/KTWS, Karete",3,"agora_co_vehic, bpktws_co_vehic, karete_om_contract","MODEL_YEAR, model_year"
+model_cd,2,"Agora, BP/KTWS",4,"agora_co_vehic, agora_om_contract, bpktws_co_vehic, bpktws_om_contract",model_cd
+propo_dt,2,"Agora, BP/KTWS",4,"agora_svc_cr_vehic, agora_svc_propo, agora_svc_propo_part, bpktws_svc_propo","PROPO_DT, propo_dt"
+svc_model_cd,2,"Agora, BP/KTWS",4,"agora_co_vehic, agora_svc_propo, bpktws_co_vehic, bpktws_svc_propo","SVC_MODEL_CD, svc_model_cd"
+shop_cd,2,"Agora, BP/KTWS",3,"agora_svc_propo, agora_svc_propo_part, bpktws_svc_propo","SHOP_CD, shop_cd"
+stat_cd,2,"Agora, BP/KTWS",3,"agora_l_svc_cr, agora_svc_propo, bpktws_svc_propo","STAT_CD, stat_cd"
+contract_no,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",contract_no
+contract_stat_cd,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",contract_stat_cd
+delivery_actual_dt,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",delivery_actual_dt
+delivery_dt,2,"Agora, BP/KTWS",2,"agora_co_vehic, bpktws_co_vehic",delivery_dt
+last_retail_sales_dt,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",last_retail_sales_dt
+my_cd,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",my_cd
+prev_odometer,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","PREV_ODOMETER, prev_odometer"
+svc_type_cd,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","SVC_TYPE_CD, svc_type_cd"
+svc_type_fms_cd,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","SVC_TYPE_FMS_CD, svc_type_fms_cd"
+variant_nm,2,"Agora, BP/KTWS",2,"agora_co_vehic, bpktws_co_vehic",variant_nm
+vehic_base_odometer,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","VEHIC_BASE_ODOMETER, vehic_base_odometer"
+work_close_yn,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","WORK_CLOSE_YN, work_close_yn"

@@ -1,0 +1,108 @@
+﻿column_norm,group_count,groups,table_count,tables,original_columns
+vin,3,"Agora, BP/KTWS, Karete",11,"agora_co_vehic, agora_om_contract, agora_svc_cr_vehic, agora_svc_propo, bpktws_co_vehic, bpktws_om_contract, bpktws_svc_propo, karete_co_vehic, karete_fct_svc_repair, karete_om_contract, karete_svc_propo","VIN, vin"
+odometer,3,"Agora, BP/KTWS, Karete",6,"agora_co_vehic, agora_svc_propo, bpktws_co_vehic, bpktws_svc_propo, karete_co_vehic, karete_svc_propo","ODOMETER, odometer"
+propo_seq,3,"Agora, BP/KTWS, Karete",5,"agora_svc_cr_vehic, agora_svc_propo, agora_svc_propo_part, bpktws_svc_propo, karete_svc_propo","PROPO_SEQ, propo_seq"
+sales_type,3,"Agora, BP/KTWS, Karete",5,"agora_co_vehic, agora_om_contract, bpktws_co_vehic, bpktws_om_contract, karete_co_vehic","SALES_TYPE, sales_type"
+base_odometer,3,"Agora, BP/KTWS, Karete",4,"agora_co_vehic, bpktws_co_vehic, karete_co_vehic, karete_svc_propo","BASE_ODOMETER, base_odometer"
+first_owner_yn,3,"Agora, BP/KTWS, Karete",3,"agora_co_vehic, bpktws_co_vehic, karete_co_vehic","FIRST_OWNER_YN, first_owner_yn"
+model_year,3,"Agora, BP/KTWS, Karete",3,"agora_co_vehic, bpktws_co_vehic, karete_om_contract","MODEL_YEAR, model_year"
+model_cd,2,"Agora, BP/KTWS",4,"agora_co_vehic, agora_om_contract, bpktws_co_vehic, bpktws_om_contract",model_cd
+propo_dt,2,"Agora, BP/KTWS",4,"agora_svc_cr_vehic, agora_svc_propo, agora_svc_propo_part, bpktws_svc_propo","PROPO_DT, propo_dt"
+svc_model_cd,2,"Agora, BP/KTWS",4,"agora_co_vehic, agora_svc_propo, bpktws_co_vehic, bpktws_svc_propo","SVC_MODEL_CD, svc_model_cd"
+shop_cd,2,"Agora, BP/KTWS",3,"agora_svc_propo, agora_svc_propo_part, bpktws_svc_propo","SHOP_CD, shop_cd"
+stat_cd,2,"Agora, BP/KTWS",3,"agora_l_svc_cr, agora_svc_propo, bpktws_svc_propo","STAT_CD, stat_cd"
+contract_no,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",contract_no
+contract_stat_cd,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",contract_stat_cd
+delivery_actual_dt,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",delivery_actual_dt
+delivery_dt,2,"Agora, BP/KTWS",2,"agora_co_vehic, bpktws_co_vehic",delivery_dt
+last_retail_sales_dt,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",last_retail_sales_dt
+my_cd,2,"Agora, BP/KTWS",2,"agora_om_contract, bpktws_om_contract",my_cd
+prev_odometer,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","PREV_ODOMETER, prev_odometer"
+svc_type_cd,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","SVC_TYPE_CD, svc_type_cd"
+svc_type_fms_cd,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","SVC_TYPE_FMS_CD, svc_type_fms_cd"
+variant_nm,2,"Agora, BP/KTWS",2,"agora_co_vehic, bpktws_co_vehic",variant_nm
+vehic_base_odometer,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","VEHIC_BASE_ODOMETER, vehic_base_odometer"
+work_close_yn,2,"Agora, BP/KTWS",2,"agora_svc_propo, bpktws_svc_propo","WORK_CLOSE_YN, work_close_yn"
+source_system,1,Karete,4,"karete_co_vehic, karete_fct_svc_repair, karete_om_contract, karete_svc_propo",SOURCE_SYSTEM
+cr_no,1,Agora,2,"agora_l_svc_cr, agora_svc_cr_vehic","CR_NO, cr_no"
+service_model_code,1,Karete,2,"karete_co_vehic, karete_svc_propo",SERVICE_MODEL_CODE
+shop_code,1,Karete,2,"karete_fct_svc_repair, karete_svc_propo",SHOP_CODE
+shop_name,1,Karete,2,"karete_fct_svc_repair, karete_svc_propo",SHOP_NAME
+vehicle_model_year,1,Karete,2,"karete_co_vehic, karete_fct_svc_repair",VEHICLE_MODEL_YEAR
+apply_end_date,1,Agora,1,agora_l_svc_cr,APPLY_END_DATE
+apply_st_date,1,Agora,1,agora_l_svc_cr,APPLY_ST_DATE
+cause,1,Agora,1,agora_l_svc_cr,CAUSE
+cause_frm_no,1,Agora,1,agora_l_svc_cr,CAUSE_FRM_NO
+cause_part_comp_nm,1,Agora,1,agora_l_svc_cr,CAUSE_PART_COMP_NM
+cause_part_no,1,Agora,1,agora_l_svc_cr,CAUSE_PART_NO
+condition,1,Agora,1,agora_l_svc_cr,CONDITION
+contract_number,1,Karete,1,karete_om_contract,CONTRACT_NUMBER
+contract_stat_name,1,Karete,1,karete_om_contract,CONTRACT_STAT_NAME
+cr_case_no,1,Agora,1,agora_svc_cr_vehic,cr_case_no
+cr_nm,1,Agora,1,agora_l_svc_cr,CR_NM
+cr_short_nm,1,Agora,1,agora_l_svc_cr,CR_SHORT_NM
+cr_type,1,Agora,1,agora_l_svc_cr,CR_TYPE
+delivery_actual_date,1,Karete,1,karete_om_contract,DELIVERY_ACTUAL_DATE
+delivery_date,1,Karete,1,karete_co_vehic,DELIVERY_DATE
+end_gb,1,Karete,1,karete_svc_propo,END_GB
+end_type_cd,1,Agora,1,agora_l_svc_cr,END_TYPE_CD
+etl_dt,1,Agora,1,agora_l_svc_cr,ETL_DT
+exec_date,1,Agora,1,agora_svc_cr_vehic,exec_date
+exec_yn,1,Agora,1,agora_svc_cr_vehic,exec_yn
+fms_amount,1,Karete,1,karete_fct_svc_repair,FMS_AMOUNT
+fms_item_cd,1,Agora,1,agora_svc_propo_part,fms_item_cd
+goal_cnt,1,Agora,1,agora_l_svc_cr,GOAL_CNT
+is_fms_include,1,Karete,1,karete_fct_svc_repair,IS_FMS_INCLUDE
+is_warranty_include,1,Karete,1,karete_fct_svc_repair,IS_WARRANTY_INCLUDE
+last_retail_sales_date,1,Karete,1,karete_om_contract,LAST_RETAIL_SALES_DATE
+model_code,1,Karete,1,karete_om_contract,MODEL_CODE
+model_name,1,Karete,1,karete_om_contract,MODEL_NAME
+notice_memo,1,Agora,1,agora_l_svc_cr,NOTICE_MEMO
+odo,1,Agora,1,agora_svc_cr_vehic,odo
+part_no,1,Agora,1,agora_svc_propo_part,part_no
+previous_odometer,1,Karete,1,karete_svc_propo,PREVIOUS_ODOMETER
+propo_date,1,Karete,1,karete_svc_propo,PROPO_DATE
+propo_shop_cd,1,Agora,1,agora_svc_cr_vehic,propo_shop_cd
+propo_stat_name,1,Karete,1,karete_svc_propo,PROPO_STAT_NAME
+prv_apply_end_date,1,Agora,1,agora_l_svc_cr,PRV_APPLY_END_DATE
+prv_apply_st_date,1,Agora,1,agora_l_svc_cr,PRV_APPLY_ST_DATE
+rcpt_cnt,1,Agora,1,agora_l_svc_cr,RCPT_CNT
+reg_dt,1,Agora,1,agora_l_svc_cr,REG_DT
+reg_user_id,1,Agora,1,agora_l_svc_cr,REG_USER_ID
+remark,1,Agora,1,agora_l_svc_cr,REMARK
+remedy,1,Agora,1,agora_l_svc_cr,REMEDY
+repair_dt,1,Agora,1,agora_svc_cr_vehic,repair_dt
+ro_close_date,1,Karete,1,karete_fct_svc_repair,RO_CLOSE_DATE
+ro_date,1,Karete,1,karete_fct_svc_repair,RO_DATE
+ro_odometer,1,Karete,1,karete_fct_svc_repair,RO_ODOMETER
+ro_sequence,1,Karete,1,karete_fct_svc_repair,RO_SEQUENCE
+ro_status,1,Karete,1,karete_fct_svc_repair,RO_STATUS
+ro_type_cd,1,Agora,1,agora_svc_propo_part,ro_type_cd
+sales_type_name,1,Karete,1,karete_om_contract,SALES_TYPE_NAME
+seq,1,Agora,1,agora_svc_propo_part,seq
+service_type,1,Karete,1,karete_svc_propo,SERVICE_TYPE
+service_type_fms,1,Karete,1,karete_svc_propo,SERVICE_TYPE_FMS
+settle_type_cd,1,Agora,1,agora_svc_propo_part,settle_type_cd
+sub_type,1,Agora,1,agora_l_svc_cr,SUB_TYPE
+sublet_expl,1,Agora,1,agora_l_svc_cr,SUBLET_EXPL
+t1_cd,1,Agora,1,agora_l_svc_cr,T1_CD
+t2_cd,1,Agora,1,agora_l_svc_cr,T2_CD
+t2_type_cd,1,Agora,1,agora_l_svc_cr,T2_TYPE_CD
+ti_issu_date,1,Agora,1,agora_l_svc_cr,TI_ISSU_DATE
+ti_notice,1,Agora,1,agora_l_svc_cr,TI_NOTICE
+ti_remedy,1,Agora,1,agora_l_svc_cr,TI_REMEDY
+ti_title,1,Agora,1,agora_l_svc_cr,TI_TITLE
+ti_trf_no,1,Agora,1,agora_l_svc_cr,TI_TRF_NO
+tmc_file_nm,1,Agora,1,agora_l_svc_cr,TMC_FILE_NM
+tmc_file_path,1,Agora,1,agora_l_svc_cr,TMC_FILE_PATH
+tmkr_exec_yn,1,Agora,1,agora_l_svc_cr,TMKR_EXEC_YN
+tmkr_file_nm,1,Agora,1,agora_l_svc_cr,TMKR_FILE_NM
+tmkr_file_path,1,Agora,1,agora_l_svc_cr,TMKR_FILE_PATH
+upd_dt,1,Agora,1,agora_l_svc_cr,UPD_DT
+upd_user_id,1,Agora,1,agora_l_svc_cr,UPD_USER_ID
+use_yn,1,Agora,1,agora_l_svc_cr,USE_YN
+vehicle_model,1,Karete,1,karete_fct_svc_repair,VEHICLE_MODEL
+vehicle_model_code,1,Karete,1,karete_co_vehic,VEHICLE_MODEL_CODE
+vehicle_service_model_code,1,Karete,1,karete_fct_svc_repair,VEHICLE_SERVICE_MODEL_CODE
+vehicle_variant_name,1,Karete,1,karete_co_vehic,VEHICLE_VARIANT_NAME
+warranty_amount,1,Karete,1,karete_fct_svc_repair,WARRANTY_AMOUNT

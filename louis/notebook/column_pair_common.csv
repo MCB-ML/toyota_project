@@ -1,0 +1,39 @@
+﻿group_1,group_2,column_norm,Agora_original,BP/KTWS_original,Karete_original
+Agora,BP/KTWS,base_odometer,base_odometer,base_odometer,
+Agora,BP/KTWS,contract_no,contract_no,contract_no,
+Agora,BP/KTWS,contract_stat_cd,contract_stat_cd,contract_stat_cd,
+Agora,BP/KTWS,delivery_actual_dt,delivery_actual_dt,delivery_actual_dt,
+Agora,BP/KTWS,delivery_dt,delivery_dt,delivery_dt,
+Agora,BP/KTWS,first_owner_yn,first_owner_yn,first_owner_yn,
+Agora,BP/KTWS,last_retail_sales_dt,last_retail_sales_dt,last_retail_sales_dt,
+Agora,BP/KTWS,model_cd,model_cd,model_cd,
+Agora,BP/KTWS,model_year,model_year,model_year,
+Agora,BP/KTWS,my_cd,my_cd,my_cd,
+Agora,BP/KTWS,odometer,odometer,"ODOMETER, odometer",
+Agora,BP/KTWS,prev_odometer,prev_odometer,PREV_ODOMETER,
+Agora,BP/KTWS,propo_dt,propo_dt,PROPO_DT,
+Agora,BP/KTWS,propo_seq,propo_seq,PROPO_SEQ,
+Agora,BP/KTWS,sales_type,sales_type,sales_type,
+Agora,BP/KTWS,shop_cd,shop_cd,SHOP_CD,
+Agora,BP/KTWS,stat_cd,"STAT_CD, stat_cd",STAT_CD,
+Agora,BP/KTWS,svc_model_cd,svc_model_cd,"SVC_MODEL_CD, svc_model_cd",
+Agora,BP/KTWS,svc_type_cd,svc_type_cd,SVC_TYPE_CD,
+Agora,BP/KTWS,svc_type_fms_cd,svc_type_fms_cd,SVC_TYPE_FMS_CD,
+Agora,BP/KTWS,variant_nm,variant_nm,variant_nm,
+Agora,BP/KTWS,vehic_base_odometer,vehic_base_odometer,VEHIC_BASE_ODOMETER,
+Agora,BP/KTWS,vin,vin,"VIN, vin",
+Agora,BP/KTWS,work_close_yn,work_close_yn,WORK_CLOSE_YN,
+Agora,Karete,base_odometer,base_odometer,,BASE_ODOMETER
+Agora,Karete,first_owner_yn,first_owner_yn,,FIRST_OWNER_YN
+Agora,Karete,model_year,model_year,,MODEL_YEAR
+Agora,Karete,odometer,odometer,,ODOMETER
+Agora,Karete,propo_seq,propo_seq,,PROPO_SEQ
+Agora,Karete,sales_type,sales_type,,SALES_TYPE
+Agora,Karete,vin,vin,,VIN
+BP/KTWS,Karete,base_odometer,,base_odometer,BASE_ODOMETER
+BP/KTWS,Karete,first_owner_yn,,first_owner_yn,FIRST_OWNER_YN
+BP/KTWS,Karete,model_year,,model_year,MODEL_YEAR
+BP/KTWS,Karete,odometer,,"ODOMETER, odometer",ODOMETER
+BP/KTWS,Karete,propo_seq,,PROPO_SEQ,PROPO_SEQ
+BP/KTWS,Karete,sales_type,,sales_type,SALES_TYPE
+BP/KTWS,Karete,vin,,"VIN, vin",VIN

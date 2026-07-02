@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background-color: #f0f2f5;
+}
+
+.recharts-default-tooltip {
+  border-radius: 8px !important;
+}
