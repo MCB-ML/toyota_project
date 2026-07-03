@@ -7,5 +7,7 @@
         "~/.copilot/skills": true,
         "~/.claude/skills": true,
         "~/.vscode/extensions/synapsevscode.synapse-1.25.0/copilot/skills": true
-    }
+    },
+    "appService.defaultWebAppToDeploy": "/subscriptions/f6e90c50-eef1-4b7b-b496-1e23e8931953/resourceGroups/TMKR_Test_RG/providers/Microsoft.Web/sites/toyota-test-web",
+    "appService.deploySubpath": "louis\\dashboard\\deploy"
 }

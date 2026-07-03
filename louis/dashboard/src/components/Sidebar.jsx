@@ -7,6 +7,7 @@ import {
   GitMerge, CalendarDays,
   ChevronRight,
 } from 'lucide-react'
+import AccountSwitcher from './AccountSwitcher'
 
 const MENU_GROUPS = [
   {
@@ -100,6 +101,9 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* Account (demo) */}
+      <AccountSwitcher />
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-white/10">

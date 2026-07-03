@@ -1,16 +1,56 @@
 // Dummy data by department — will be replaced by real data in production
 
+/* ─────────── 딜러 마스터 (계정 접근제어의 기준 키) ───────────
+   dealerId: 딜러사 계정과 1:1로 매핑되는 키. 딜러사 계정은 본인 dealerId 행만 조회 가능.
+   group: 계열사(딜러 운영사). 딜러사 계정은 본인 소속 계열사 외 데이터는 애초에 dealerId 필터로 걸러짐. */
+export const dealerMaster = [
+  { dealerId: 'GN01', dealer: '강남점', group: '센트럴모터스', brand: 'Lexus', region: '서울' },
+  { dealerId: 'SM01', dealer: '상무점', group: '센트럴모터스', brand: 'Lexus', region: '광주' },
+  { dealerId: 'BD01', dealer: '분당점', group: '경기모터스', brand: 'Toyota', region: '경기' },
+  { dealerId: 'IS01', dealer: '일산점', group: '경기모터스', brand: 'Toyota', region: '경기' },
+  { dealerId: 'SS01', dealer: '수성점', group: '영남모터스', brand: 'Toyota', region: '대구' },
+  { dealerId: 'US01', dealer: '울산점', group: '영남모터스', brand: 'Lexus', region: '울산' },
+  { dealerId: 'YS01', dealer: '연수점', group: '코스트모터스', brand: 'Toyota', region: '인천' },
+  { dealerId: 'HD01', dealer: '해운대점', group: '코스트모터스', brand: 'Lexus', region: '부산' },
+]
+
 /* ─────────── HND_Sales: 계약/출고 관리 ─────────── */
 export const contractMgmtDummy = {
   dealerTargetStatus: [
-    { dealer: '강남점', brand: 'Lexus', target: 120, contract: 98, delivery: 87, risk: 'warning' },
-    { dealer: '해운대점', brand: 'Lexus', target: 80, contract: 49, delivery: 41, risk: 'danger' },
-    { dealer: '수성점', brand: 'Toyota', target: 95, contract: 92, delivery: 88, risk: 'ok' },
-    { dealer: '연수점', brand: 'Toyota', target: 70, contract: 73, delivery: 65, risk: 'ok' },
-    { dealer: '상무점', brand: 'Lexus', target: 60, contract: 51, delivery: 47, risk: 'warning' },
-    { dealer: '분당점', brand: 'Toyota', target: 110, contract: 108, delivery: 102, risk: 'ok' },
-    { dealer: '일산점', brand: 'Toyota', target: 75, contract: 44, delivery: 38, risk: 'danger' },
-    { dealer: '울산점', brand: 'Lexus', target: 50, contract: 48, delivery: 43, risk: 'ok' },
+    { dealerId: 'GN01', dealer: '강남점', group: '센트럴모터스', brand: 'Lexus', target: 120, contract: 98, delivery: 87, risk: 'warning' },
+    { dealerId: 'HD01', dealer: '해운대점', group: '코스트모터스', brand: 'Lexus', target: 80, contract: 49, delivery: 41, risk: 'danger' },
+    { dealerId: 'SS01', dealer: '수성점', group: '영남모터스', brand: 'Toyota', target: 95, contract: 92, delivery: 88, risk: 'ok' },
+    { dealerId: 'YS01', dealer: '연수점', group: '코스트모터스', brand: 'Toyota', target: 70, contract: 73, delivery: 65, risk: 'ok' },
+    { dealerId: 'SM01', dealer: '상무점', group: '센트럴모터스', brand: 'Lexus', target: 60, contract: 51, delivery: 47, risk: 'warning' },
+    { dealerId: 'BD01', dealer: '분당점', group: '경기모터스', brand: 'Toyota', target: 110, contract: 108, delivery: 102, risk: 'ok' },
+    { dealerId: 'IS01', dealer: '일산점', group: '경기모터스', brand: 'Toyota', target: 75, contract: 44, delivery: 38, risk: 'danger' },
+    { dealerId: 'US01', dealer: '울산점', group: '영남모터스', brand: 'Lexus', target: 50, contract: 48, delivery: 43, risk: 'ok' },
+  ],
+  /* 딜러사별 × SFX별 계약/출고 상세. dealerTargetStatus의 딜러별 합계와 정합. */
+  dealerSfxDetail: [
+    { dealerId: 'GN01', dealer: '강남점', group: '센트럴모터스', brand: 'Lexus', sfx: 'ES300h Luxury', model: 'ES', target: 70, contract: 60, delivery: 54, risk: 'warning' },
+    { dealerId: 'GN01', dealer: '강남점', group: '센트럴모터스', brand: 'Lexus', sfx: 'NX350h AWD Luxury', model: 'NX', target: 50, contract: 38, delivery: 33, risk: 'warning' },
+
+    { dealerId: 'HD01', dealer: '해운대점', group: '코스트모터스', brand: 'Lexus', sfx: 'LBX H AWD E-Four', model: 'LBX', target: 45, contract: 24, delivery: 19, risk: 'danger' },
+    { dealerId: 'HD01', dealer: '해운대점', group: '코스트모터스', brand: 'Lexus', sfx: 'UX250h 2WD Base', model: 'UX', target: 35, contract: 25, delivery: 22, risk: 'warning' },
+
+    { dealerId: 'SS01', dealer: '수성점', group: '영남모터스', brand: 'Toyota', sfx: 'RAV4 HV AWD', model: 'RAV4', target: 55, contract: 54, delivery: 52, risk: 'ok' },
+    { dealerId: 'SS01', dealer: '수성점', group: '영남모터스', brand: 'Toyota', sfx: 'Camry HV 2.5', model: 'Camry', target: 40, contract: 38, delivery: 36, risk: 'ok' },
+
+    { dealerId: 'YS01', dealer: '연수점', group: '코스트모터스', brand: 'Toyota', sfx: 'RAV4 HV AWD', model: 'RAV4', target: 40, contract: 42, delivery: 38, risk: 'ok' },
+    { dealerId: 'YS01', dealer: '연수점', group: '코스트모터스', brand: 'Toyota', sfx: 'Camry HV 2.5', model: 'Camry', target: 30, contract: 31, delivery: 27, risk: 'ok' },
+
+    { dealerId: 'SM01', dealer: '상무점', group: '센트럴모터스', brand: 'Lexus', sfx: 'ES300h Luxury', model: 'ES', target: 35, contract: 31, delivery: 29, risk: 'warning' },
+    { dealerId: 'SM01', dealer: '상무점', group: '센트럴모터스', brand: 'Lexus', sfx: 'NX350h AWD Luxury', model: 'NX', target: 25, contract: 20, delivery: 18, risk: 'warning' },
+
+    { dealerId: 'BD01', dealer: '분당점', group: '경기모터스', brand: 'Toyota', sfx: 'RAV4 HV AWD', model: 'RAV4', target: 65, contract: 64, delivery: 61, risk: 'ok' },
+    { dealerId: 'BD01', dealer: '분당점', group: '경기모터스', brand: 'Toyota', sfx: 'Camry HV 2.5', model: 'Camry', target: 45, contract: 44, delivery: 41, risk: 'ok' },
+
+    { dealerId: 'IS01', dealer: '일산점', group: '경기모터스', brand: 'Toyota', sfx: 'RAV4 HV AWD', model: 'RAV4', target: 45, contract: 28, delivery: 24, risk: 'danger' },
+    { dealerId: 'IS01', dealer: '일산점', group: '경기모터스', brand: 'Toyota', sfx: 'Camry HV 2.5', model: 'Camry', target: 30, contract: 16, delivery: 14, risk: 'danger' },
+
+    { dealerId: 'US01', dealer: '울산점', group: '영남모터스', brand: 'Lexus', sfx: 'ES300h Luxury', model: 'ES', target: 30, contract: 29, delivery: 26, risk: 'ok' },
+    { dealerId: 'US01', dealer: '울산점', group: '영남모터스', brand: 'Lexus', sfx: 'NX350h AWD Luxury', model: 'NX', target: 20, contract: 19, delivery: 17, risk: 'ok' },
   ],
   monthlyContractTrend: [
     { month: '2024-01', contract: 3420, delivery: 3180 },
@@ -33,10 +73,10 @@ export const contractMgmtDummy = {
     { month: '2024-11', showroom: 3240, test_drive: 1440 },
   ],
   riskAlerts: [
-    { dealer: '해운대점', type: 'danger', msg: '목표 달성률 61% — 월말까지 31대 부족, 트래픽 16% 감소', daysLeft: 8 },
-    { dealer: '일산점', type: 'danger', msg: '목표 달성률 59% — 트래픽 최저, SFX 재고 부족 동반', daysLeft: 8 },
-    { dealer: '강남점', type: 'warning', msg: '목표 달성률 82% — 주말 캠페인 필요 (예측 달성: 91%)', daysLeft: 8 },
-    { dealer: '상무점', type: 'warning', msg: '목표 달성률 85% — 계약 후 출고 전환율 92% 정상', daysLeft: 8 },
+    { dealerId: 'HD01', dealer: '해운대점', type: 'danger', msg: '목표 달성률 61% — 월말까지 31대 부족, 트래픽 16% 감소', daysLeft: 8 },
+    { dealerId: 'IS01', dealer: '일산점', type: 'danger', msg: '목표 달성률 59% — 트래픽 최저, SFX 재고 부족 동반', daysLeft: 8 },
+    { dealerId: 'GN01', dealer: '강남점', type: 'warning', msg: '목표 달성률 82% — 주말 캠페인 필요 (예측 달성: 91%)', daysLeft: 8 },
+    { dealerId: 'SM01', dealer: '상무점', type: 'warning', msg: '목표 달성률 85% — 계약 후 출고 전환율 92% 정상', daysLeft: 8 },
   ],
 }
 
