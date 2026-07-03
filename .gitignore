@@ -8,6 +8,7 @@
 /simon/
 # docs 사내 테이블 정보 제외
 /docs/
+/louis/docs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
