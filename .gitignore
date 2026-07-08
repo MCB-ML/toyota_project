@@ -8,6 +8,9 @@
 /docs/
 /louis/docs/
 
+# 노트북 제외
+/louis/notebook/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
