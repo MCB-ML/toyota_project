@@ -22,6 +22,10 @@ import FvdFinance from './pages/fvd/Finance'
 import DsdStockMatch from './pages/dsd/StockMatch'
 import DsdDailyTarget from './pages/dsd/DailyTarget'
 
+// KTWS
+import KtwsBi from './pages/ktws/Bi'
+import KtwsCustom from './pages/ktws/Custom'
+
 export default function App() {
   return (
     <div className="flex h-screen overflow-hidden">
@@ -47,6 +51,10 @@ export default function App() {
           {/* DSD */}
           <Route path="/dsd/stock" element={<DsdStockMatch />} />
           <Route path="/dsd/target" element={<DsdDailyTarget />} />
+
+          {/* KTWS */}
+          <Route path="/ktws/bi" element={<KtwsBi />} />
+          <Route path="/ktws/custom" element={<KtwsCustom />} />
 
           {/* fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

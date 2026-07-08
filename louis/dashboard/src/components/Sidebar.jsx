@@ -5,6 +5,7 @@ import {
   Ticket,
   MessageSquare, Network, Landmark,
   GitMerge, CalendarDays,
+  PieChart, LayoutGrid,
   ChevronRight,
 } from 'lucide-react'
 import AccountSwitcher from './AccountSwitcher'
@@ -44,6 +45,13 @@ const MENU_GROUPS = [
     items: [
       { path: '/dsd/stock', label: '계약/재고 매칭', icon: GitMerge },
       { path: '/dsd/target', label: '일별 타겟 분배', icon: CalendarDays },
+    ],
+  },
+  {
+    label: 'KTWS',
+    items: [
+      { path: '/ktws/bi', label: 'BI', icon: PieChart },
+      { path: '/ktws/custom', label: '대시보드 커스텀', icon: LayoutGrid },
     ],
   },
 ]

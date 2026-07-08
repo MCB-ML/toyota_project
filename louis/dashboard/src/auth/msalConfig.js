@@ -26,3 +26,9 @@ export const msalConfig = {
 export const loginRequest = {
   scopes: ['User.Read'],
 }
+
+// Power BI / Fabric 리포트 임베드 — 웹 로그인과 같은 MSAL 세션에서 토큰만 추가로 발급받아
+// BI iframe의 별도 autoAuth 로그인 없이 SSO로 붙인다.
+export const powerbiRequest = {
+  scopes: ['https://analysis.windows.net/powerbi/api/Report.Read.All'],
+}
