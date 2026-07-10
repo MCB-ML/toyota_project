@@ -6,7 +6,7 @@ import {
   MessageSquare, Network, Landmark,
   GitMerge, CalendarDays,
   PieChart, LayoutGrid,
-  ChevronRight,
+  ChevronRight, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react'
 import AccountSwitcher from './AccountSwitcher'
 
@@ -56,35 +56,62 @@ const MENU_GROUPS = [
   },
 ]
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed, onToggle }) {
   return (
-    <aside className="w-56 flex-shrink-0 bg-[#111827] text-white flex flex-col h-screen">
+    <aside
+      className={`${collapsed ? 'w-16' : 'w-56'} flex-shrink-0 bg-[#111827] text-white flex flex-col h-screen transition-all duration-200 overflow-hidden`}
+    >
       {/* Logo */}
-      <div className="px-4 py-4 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#EB0A1E] flex items-center justify-center font-bold text-sm tracking-tight">
+      <div className="px-4 py-4 border-b border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 flex-shrink-0 rounded-lg bg-[#EB0A1E] flex items-center justify-center font-bold text-sm tracking-tight">
             T
           </div>
-          <div>
-            <p className="font-bold text-sm leading-tight">Toyota / Lexus</p>
-            <p className="text-xs text-white/40 leading-tight">Data Dashboard</p>
-          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="font-bold text-sm leading-tight truncate">Toyota / Lexus</p>
+              <p className="text-xs text-white/40 leading-tight truncate">Data Dashboard</p>
+            </div>
+          )}
         </div>
+        {!collapsed && (
+          <button
+            onClick={onToggle}
+            className="flex-shrink-0 w-7 h-7 rounded-lg bg-white text-[#111827] hover:bg-white/90 flex items-center justify-center shadow transition-colors"
+            title="메뉴 접기"
+          >
+            <PanelLeftClose size={14} />
+          </button>
+        )}
       </div>
 
+      {collapsed && (
+        <button
+          onClick={onToggle}
+          className="mx-auto mt-3 w-8 h-8 flex items-center justify-center rounded-lg bg-white text-[#111827] hover:bg-white/90 shadow transition-colors"
+          title="메뉴 펼치기"
+        >
+          <PanelLeftOpen size={16} />
+        </button>
+      )}
+
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-3 overflow-y-auto space-y-4">
+      <nav className="flex-1 px-2 py-3 overflow-y-auto overflow-x-hidden space-y-4">
         {MENU_GROUPS.map(({ label, items }) => (
           <div key={label}>
-            <p className="px-2 mb-1 text-[9px] font-bold uppercase tracking-widest text-white/30">{label}</p>
+            {!collapsed && (
+              <p className="px-2 mb-1 text-[9px] font-bold uppercase tracking-widest text-white/30 truncate">{label}</p>
+            )}
             <div className="space-y-0.5">
               {items.map(({ path, label: itemLabel, icon: Icon, badge }) => (
                 <NavLink
                   key={path}
                   to={path}
                   end={path === '/'}
+                  title={collapsed ? itemLabel : undefined}
                   className={({ isActive }) =>
                     `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all
+                    ${collapsed ? 'justify-center' : ''}
                     ${isActive
                       ? 'bg-white/10 text-white'
                       : 'text-white/50 hover:bg-white/5 hover:text-white/90'
@@ -93,14 +120,18 @@ export default function Sidebar() {
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon size={15} className={isActive ? 'text-[#60a5fa]' : 'text-white/35'} />
-                      <span className="flex-1 leading-tight">{itemLabel}</span>
-                      {badge && (
-                        <span className="text-[9px] font-bold bg-blue-500 text-white px-1.5 py-0.5 rounded-full leading-none">
-                          {badge}
-                        </span>
+                      <Icon size={15} className={`flex-shrink-0 ${isActive ? 'text-[#60a5fa]' : 'text-white/35'}`} />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 leading-tight truncate">{itemLabel}</span>
+                          {badge && (
+                            <span className="text-[9px] font-bold bg-blue-500 text-white px-1.5 py-0.5 rounded-full leading-none">
+                              {badge}
+                            </span>
+                          )}
+                          {isActive && !badge && <ChevronRight size={12} className="text-[#60a5fa]" />}
+                        </>
                       )}
-                      {isActive && !badge && <ChevronRight size={12} className="text-[#60a5fa]" />}
                     </>
                   )}
                 </NavLink>
@@ -110,13 +141,17 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Account (demo) */}
-      <AccountSwitcher />
+      {!collapsed && (
+        <>
+          {/* Account (demo) */}
+          <AccountSwitcher />
 
-      {/* Footer */}
-      <div className="px-4 py-3 border-t border-white/10">
-        <p className="text-[11px] text-white/25">Toyota Korea DT Team</p>
-      </div>
+          {/* Footer */}
+          <div className="px-4 py-3 border-t border-white/10">
+            <p className="text-[11px] text-white/25 truncate">Toyota Korea DT Team</p>
+          </div>
+        </>
+      )}
     </aside>
   )
 }

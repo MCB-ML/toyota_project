@@ -1,13 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts'
 import { Send, Bot, User, Loader2, Sparkles, RefreshCw } from 'lucide-react'
-
-const COLORS = ['#1e3a5f', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#e0f2fe']
-const TREND_COLORS = { up: 'text-green-600', down: 'text-red-500', neutral: 'text-gray-500' }
-const TREND_ARROWS = { up: '▲', down: '▼', neutral: '—' }
+import GeneratedWidget from '../components/widgets/GeneratedWidget'
 
 const SAMPLE_QUESTIONS = [
   '전체 차량 현황과 브랜드별 비율을 분석해줘',
@@ -16,124 +9,6 @@ const SAMPLE_QUESTIONS = [
   '연차별 FMS 사용률이 낮은 구간은 어디야?',
   '렉서스와 토요타 차종별 등록 현황 비교해줘',
 ]
-
-function BarChartComponent({ title, data, x_key, y_key, color = '#3B82F6' }) {
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h4 className="text-sm font-semibold text-gray-700 mb-3">{title}</h4>
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey={x_key} tick={{ fontSize: 11 }} angle={-30} textAnchor="end" />
-          <YAxis tick={{ fontSize: 11 }} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
-          <Tooltip formatter={(v) => v.toLocaleString()} />
-          <Bar dataKey={y_key} fill={color} radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-function LineChartComponent({ title, data, x_key, y_keys, y_labels }) {
-  const labels = y_labels || y_keys
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h4 className="text-sm font-semibold text-gray-700 mb-3">{title}</h4>
-      <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey={x_key} tick={{ fontSize: 11 }} />
-          <YAxis tick={{ fontSize: 11 }} tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
-          <Tooltip formatter={(v) => v?.toLocaleString()} />
-          <Legend formatter={(v, e, i) => labels[i] || v} />
-          {y_keys.map((key, i) => (
-            <Line key={key} type="monotone" dataKey={key} stroke={COLORS[i % COLORS.length]}
-              strokeWidth={2} dot={{ r: 3 }} name={labels[i] || key} />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-function KpiCardsComponent({ cards }) {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      {cards.map((card, i) => (
-        <div key={i} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <p className="text-xs text-gray-500 mb-1">{card.title}</p>
-          <p className="text-xl font-bold text-gray-800">{card.value}</p>
-          {card.sub && <p className="text-xs text-gray-400 mt-1">{card.sub}</p>}
-          {card.trend && (
-            <span className={`text-xs font-medium ${TREND_COLORS[card.trend]}`}>
-              {TREND_ARROWS[card.trend]}
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function TableComponent({ title, columns, rows }) {
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h4 className="text-sm font-semibold text-gray-700 mb-3">{title}</h4>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="bg-gray-50">
-              {columns.map((col, i) => (
-                <th key={i} className="px-3 py-2 text-left font-medium text-gray-600">{col}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, ri) => (
-              <tr key={ri} className="border-t border-gray-50 hover:bg-gray-50">
-                {row.map((cell, ci) => (
-                  <td key={ci} className="px-3 py-2 text-gray-700">
-                    {typeof cell === 'number' ? cell.toLocaleString() : cell}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-function PieChartComponent({ title, data }) {
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h4 className="text-sm font-semibold text-gray-700 mb-3">{title}</h4>
-      <ResponsiveContainer width="100%" height={220}>
-        <PieChart>
-          <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80}
-            dataKey="value" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-            labelLine={false}>
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-          </Pie>
-          <Tooltip formatter={(v) => v.toLocaleString()} />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-function GeneratedComponent({ name, props }) {
-  switch (name) {
-    case 'render_bar_chart': return <BarChartComponent {...props} />
-    case 'render_line_chart': return <LineChartComponent {...props} />
-    case 'render_kpi_cards': return <KpiCardsComponent {...props} />
-    case 'render_table': return <TableComponent {...props} />
-    case 'render_pie_chart': return <PieChartComponent {...props} />
-    default: return null
-  }
-}
 
 function MessageBubble({ msg }) {
   const isUser = msg.role === 'user'
@@ -152,7 +27,7 @@ function MessageBubble({ msg }) {
         )}
         {msg.components?.map((comp, i) => (
           <div key={i} className="w-full min-w-[320px]">
-            <GeneratedComponent name={comp.name} props={comp.props} />
+            <GeneratedWidget name={comp.name} props={comp.props} />
           </div>
         ))}
         {msg.error && (

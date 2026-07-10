@@ -1,5 +1,58 @@
 # Toyota / Lexus Data Dashboard
 
+## AI 대시보드 커스터마이징 파이프라인 (KTWS 대시보드 커스텀 페이지)
+
+`KTWS > 대시보드 커스텀`([src/pages/ktws/Custom.jsx](src/pages/ktws/Custom.jsx))은 사용자가
+오른쪽 상단 챗봇 버튼으로 자연어를 입력하면 AI가 위젯(차트/KPI카드/표)을 대시보드에
+추가·삭제·수정해주는 파일럿 페이지다. 다른 12개 페이지는 여전히 정적 하드코딩 JSX이며,
+이 기능은 이 페이지 하나에만 적용되어 있다.
+
+### 파이프라인 단계
+
+```
+사용자 요청 → 의도 분류 → 현재 대시보드 JSON 상태 읽기 → metric/semantic layer 매핑
+→ SQL 생성 → 차트 스펙 생성 → 레이아웃 patch 생성 → 검토 에이전트 → React 대시보드 반영
+```
+
+실제 구현은 위 9단계를 **Azure OpenAI 호출 2번 + 결정론적 JS 함수 5개**로 압축했다 — LLM이
+차트에 들어갈 숫자를 지어낼 수 있는 경로를 원천 차단하기 위함이다.
+
+| 단계 | 구현 | 위치 |
+|---|---|---|
+| 의도 분류 + 상태 읽기 + metric 매핑 | LLM 호출 #1 (tool-calling) | [server/dashboardPipeline.js](server/dashboardPipeline.js), [server/dashboardTools.js](server/dashboardTools.js) |
+| SQL 생성 | 결정론적 (표시용, **미실행**) | [server/semanticCatalog.js](server/semanticCatalog.js) `buildSqlForMetric()` |
+| 차트 스펙 생성 | 결정론적 — 실제 데이터는 `public/data/*.json`에서만 채움 | [server/widgetSchema.js](server/widgetSchema.js) `buildWidgetProps()` |
+| 레이아웃 patch 생성 | 결정론적 | [server/dashboardPipeline.js](server/dashboardPipeline.js) |
+| 검토 에이전트 | LLM 호출 #2 (별도 tool-calling) — 형식적 검증은 이미 끝난 상태에서 "요청 의도에 부합하는가"만 판단 | [server/dashboardTools.js](server/dashboardTools.js) `buildReviewTools()` |
+| React 대시보드 반영 | 서버는 미리보기만 반환. **사용자가 "적용" 버튼을 눌러야** 실제 반영됨 | [src/components/PatchPreviewCard.jsx](src/components/PatchPreviewCard.jsx), [src/context/DashboardStateContext.jsx](src/context/DashboardStateContext.jsx) |
+
+SQL 생성 단계는 `louis/docs/DB정의서_*.md`와 `generate_data.py`에 나온 실제 웨어하우스
+테이블/컬럼명(`karete_co_vehic`, `karete_om_contract`, `agora_svc_propo` 등)을 근거로
+진짜처럼 보이는 SQL 문자열을 만들어 채팅에 보여주지만, **절대 실행되지 않는다** — 이 앱은
+실시간 DB 연결이 없고, 실제 차트 데이터는 항상 `public/data/inventory.json` /
+`contract.json` / `coupon.json`(오프라인에서 미리 집계된 실데이터)에서 가져온다.
+
+### 지표(semantic layer) 확장하기
+
+새 지표를 추가하려면 [server/semanticCatalog.js](server/semanticCatalog.js)의
+`METRIC_CATALOG`에 항목을 하나 추가하면 된다 (`dataset`/`jsonPath`로 실제 데이터 위치를,
+`sqlHint`로 표시용 SQL 근거를 지정). 별도의 코드 변경 없이 Planner 프롬프트와 검증 로직에
+자동으로 반영된다.
+
+### 롤백(Undo/Redo)
+
+적용된 변경은 브라우저에 풀 스냅샷 스택으로 저장된다(diff 역연산 아님 — 위젯 개수가
+적어서 스냅샷 비용이 무시할 만하고, 구현이 훨씬 단순·안전하다). `localStorage` 키
+`toyota_dashboard_layout_ktws_custom`에 저장되어 새로고침 후에도 유지된다. 페이지 상단
+"실행 취소"/"다시 실행" 버튼, 또는 채팅의 "적용됨 · 실행취소" 링크로 되돌릴 수 있다.
+
+### 다른 페이지로 확장하려면
+
+1. 대상 페이지를 [src/context/DashboardStateContext.jsx](src/context/DashboardStateContext.jsx)처럼
+   `localStorage` 키를 페이지별로 분리하도록 일반화(현재는 KTWS 커스텀 페이지 하나로 고정됨)
+2. [src/App.jsx](src/App.jsx)의 `pageKey` 계산에 해당 라우트 추가
+3. 필요한 지표가 `METRIC_CATALOG`에 없다면 추가
+
 ## KTWS BI 임베드 — 프로덕션 전환 시 처리할 것
 
 현재 `KTWS > BI` 메뉴([src/pages/ktws/Bi.jsx](src/pages/ktws/Bi.jsx))는 Power BI/Fabric의
