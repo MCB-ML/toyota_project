@@ -3,17 +3,19 @@ import { createAzureClient, getAzureConfig } from './azureClient.js'
 import { streamAssistantTurn } from './azureStream.js'
 import {
   buildDashboardTools, buildDashboardSystemPrompt,
+  buildWidgetQueryTools, buildWidgetQuerySystemPrompt,
   buildReviewTools, buildReviewPrompt,
 } from './dashboardTools.js'
-import { getMetric, resolveMetricRaw, buildSqlForMetric } from './semanticCatalog.js'
-import { buildWidgetProps } from './widgetSchema.js'
+import { loadTablesForTopic, renderTablesForPrompt } from './schemaLoader.js'
+import { queryFabric } from './fabricClient.js'
+import { buildWidgetPropsFromRows } from './widgetSchema.js'
 import { validateProposal, validateWidgetProps, isDuplicateWidget } from './dashboardValidation.js'
 
 const STAGE_LABELS = {
   intent: '의도 분석 중...',
-  mapping: '지표 매핑 중...',
-  sql: 'SQL 생성 중...',
-  chart_spec: '차트 스펙 생성 중...',
+  load_schema: '관련 테이블 스키마 로드 중...',
+  generate_sql: 'SQL 생성 중...',
+  execute: 'Fabric 웨어하우스에 쿼리 실행 중...',
   patch: '레이아웃 patch 생성 중...',
   review: '검토 에이전트 확인 중...',
 }
@@ -23,20 +25,27 @@ const ACTION_BY_TOOL = {
   propose_remove_widget: 'remove',
   propose_modify_widget: 'modify',
   propose_reorder_widgets: 'reorder',
+  propose_resize_widget: 'resize',
 }
 
-function summarizeProposal(action, metric, proposal) {
-  if (action === 'add') return `"${metric.label}" 지표를 ${proposal.chartCode} 형태로 추가 (제목: "${proposal.title}")`
-  if (action === 'modify') return `기존 위젯을 "${metric.label}" 지표(${proposal.chartCode})로 변경 (제목: "${proposal.title}")`
+const SIZE_LABEL = { sm: '작게', md: '보통', lg: '크게' }
+// AI가 고르는 3단계 프리셋 → 실제 저장되는 연속값 weight. 드래그로는 이 사이 임의의
+// 값으로도 조절 가능하다 (src/pages/ktws/Custom.jsx의 MIN/MAX_WEIGHT 범위 안에서).
+const SIZE_TO_WEIGHT = { sm: 0.6, md: 1, lg: 2 }
+
+function summarizeProposal(action, proposal, queryInfo) {
+  if (action === 'add') return `"${queryInfo?.title}" 위젯을 ${queryInfo?.chart_type} 형태로 추가 (${queryInfo?.table_id})`
+  if (action === 'modify') return `기존 위젯을 "${queryInfo?.title}"(${queryInfo?.chart_type}, ${queryInfo?.table_id})로 변경`
   if (action === 'remove') return `위젯 삭제 (id=${proposal.widgetId})`
   if (action === 'reorder') return `위젯 순서 변경 (id=${proposal.widgetId} → 위치 ${proposal.toIndex})`
+  if (action === 'resize') return `위젯 크기 변경 (id=${proposal.widgetId} → ${SIZE_LABEL[proposal.size] || proposal.size})`
   return ''
 }
 
-// Orchestrates: 의도분류+상태읽기+metric매핑(1 LLM call, tool-calling)
-// → SQL생성/차트스펙생성/패치생성(결정론적) → 검토 에이전트(1 LLM call).
+// Orchestrates: 의도분류+상태읽기+topic매핑(LLM #1) → 관련 테이블 로드(결정론적)
+// → SQL생성+차트스펙(LLM #2, 실제 Fabric에 실행됨) → 패치생성(결정론적) → 검토(LLM #3).
 // See louis/dashboard/README.md for the full stage-by-stage writeup.
-export async function runDashboardPipeline({ message, history, dashboardState }, { dataDir, sendEvent }) {
+export async function runDashboardPipeline({ message, history, dashboardState }, { sendEvent }) {
   const stage = (name) => sendEvent({ type: 'stage', stage: name, label: STAGE_LABELS[name] })
 
   const client = createAzureClient()
@@ -46,9 +55,8 @@ export async function runDashboardPipeline({ message, history, dashboardState },
   }
   const { deployment } = getAzureConfig()
 
-  // 1. 의도 분류 + 2. 현재 대시보드 상태 읽기(프롬프트 컨텍스트) + 3. metric 매핑
+  // 1. 의도 분류 + 2. 현재 대시보드 상태 읽기(프롬프트 컨텍스트) + 3. 주제(topic) 매핑
   stage('intent')
-  stage('mapping')
   const toolCalls = await streamAssistantTurn(client, {
     model: deployment,
     messages: [
@@ -79,11 +87,10 @@ export async function runDashboardPipeline({ message, history, dashboardState },
 
   const proposal = {
     action,
-    metricId: call.args.metric_id,
-    chartCode: call.args.chart_type,
-    title: call.args.title,
+    topic: call.args.topic,
     widgetId: call.args.widget_id,
     toIndex: call.args.to_index,
+    size: call.args.size,
   }
 
   const structural = validateProposal(proposal, dashboardState)
@@ -95,22 +102,68 @@ export async function runDashboardPipeline({ message, history, dashboardState },
   let sql = null
   let widget = null
   let patch = null
-  let metric = null
+  let queryInfo = null
 
   if (action === 'add' || action === 'modify') {
-    // 4. SQL 생성 (표시용, 미실행)
-    stage('sql')
-    metric = getMetric(proposal.metricId)
-    sql = buildSqlForMetric(proposal.metricId)
+    // 4. 관련 테이블 스키마 로드 — 전체 187개 중 이 topic에 연결된 1~3개만
+    stage('load_schema')
+    const tables = loadTablesForTopic(proposal.topic)
+    if (!tables.length) {
+      sendEvent({ type: 'error', message: `"${proposal.topic}" 주제에 연결된 테이블이 없습니다.` })
+      return
+    }
 
-    // 5. 차트 스펙 생성 — 실제 데이터는 항상 semanticCatalog에서 가져온다 (LLM이 생성한 값 아님)
-    stage('chart_spec')
-    const rawData = resolveMetricRaw(proposal.metricId, dataDir)
-    const built = buildWidgetProps(metric, proposal.chartCode, rawData, proposal.title)
+    // 5. SQL 생성 + 차트 스펙 — 실제 실행될 SELECT를 LLM이 작성
+    stage('generate_sql')
+    const sqlCalls = await streamAssistantTurn(client, {
+      model: deployment,
+      messages: [
+        { role: 'system', content: buildWidgetQuerySystemPrompt(renderTablesForPrompt(tables)) },
+        { role: 'user', content: message },
+      ],
+      tools: buildWidgetQueryTools(tables),
+    })
+
+    const sqlCall = sqlCalls[0]
+    if (!sqlCall || !sqlCall.args) {
+      sendEvent({ type: 'error', message: 'SQL을 생성하지 못했습니다.' })
+      return
+    }
+    if (sqlCall.name === 'reject_widget_query') {
+      sendEvent({ type: 'rejected', reason: sqlCall.args.reason, topic: proposal.topic })
+      return
+    }
+
+    queryInfo = sqlCall.args
+    if (!tables.some(t => t.db === queryInfo.db && t.id === queryInfo.table_id)) {
+      sendEvent({ type: 'error', message: `허용되지 않은 테이블입니다: ${queryInfo.db}.${queryInfo.table_id}` })
+      return
+    }
+    sql = queryInfo.sql
+
+    // 6. 실제 실행 — fabricClient.js가 SELECT/WITH 외에는 거부
+    stage('execute')
+    let rows
+    try {
+      rows = await queryFabric(queryInfo.db, sql)
+    } catch (err) {
+      sendEvent({ type: 'error', message: `쿼리 실행 실패: ${err.message}` })
+      return
+    }
+
+    const built = buildWidgetPropsFromRows(queryInfo.chart_type, rows, {
+      labelKey: queryInfo.label_key,
+      valueKey: queryInfo.value_key,
+      xKey: queryInfo.x_key,
+      yKeys: queryInfo.y_keys,
+    }, queryInfo.title)
+
     widget = {
       id: action === 'modify' ? proposal.widgetId : randomUUID(),
       type: built.type,
-      metricId: proposal.metricId,
+      table: `${queryInfo.db}.${queryInfo.table_id}`,
+      topic: proposal.topic,
+      weight: SIZE_TO_WEIGHT[queryInfo.size] || SIZE_TO_WEIGHT.md,
       createdAt: new Date().toISOString(),
       props: built.props,
     }
@@ -121,7 +174,7 @@ export async function runDashboardPipeline({ message, history, dashboardState },
       return
     }
 
-    // 6. 레이아웃 patch 생성
+    // 7. 레이아웃 patch 생성
     stage('patch')
     patch = action === 'add'
       ? { baseVersion: dashboardState.version, ops: [{ op: 'add', widget }] }
@@ -132,15 +185,21 @@ export async function runDashboardPipeline({ message, history, dashboardState },
   } else if (action === 'reorder') {
     stage('patch')
     patch = { baseVersion: dashboardState.version, ops: [{ op: 'move', widgetId: proposal.widgetId, toIndex: proposal.toIndex }] }
+  } else if (action === 'resize') {
+    // 데이터/차트는 그대로 — 위젯 크기(그리드 폭)만 바꾸므로 스키마 로드/SQL/실행 전부 생략
+    stage('patch')
+    const existing = dashboardState.widgets.find(w => w.id === proposal.widgetId)
+    widget = { ...existing, weight: SIZE_TO_WEIGHT[proposal.size] || SIZE_TO_WEIGHT.md }
+    patch = { baseVersion: dashboardState.version, ops: [{ op: 'update', widgetId: proposal.widgetId, widget }] }
   }
 
   const warning = widget && isDuplicateWidget(widget, dashboardState)
     ? '비슷한 위젯이 이미 대시보드에 있습니다.'
     : null
 
-  // 7. 검토 에이전트
+  // 8. 검토 에이전트
   stage('review')
-  const summaryText = summarizeProposal(action, metric, proposal)
+  const summaryText = summarizeProposal(action, proposal, queryInfo)
   const reviewCalls = await streamAssistantTurn(client, {
     model: deployment,
     messages: [{
@@ -149,8 +208,8 @@ export async function runDashboardPipeline({ message, history, dashboardState },
         userMessage: message,
         summaryText,
         sql,
-        metricLabel: metric?.label,
-        chartCode: proposal.chartCode,
+        tableLabel: queryInfo?.table_id,
+        chartCode: queryInfo?.chart_type,
       }),
     }],
     tools: buildReviewTools(),
@@ -160,12 +219,12 @@ export async function runDashboardPipeline({ message, history, dashboardState },
   const verdict = reviewCalls[0]?.args || { approved: true, reason: '검토 응답을 받지 못해 기본 승인 처리되었습니다.' }
   sendEvent({ type: 'review_result', verdict: verdict.approved ? 'approved' : 'rejected', reason: verdict.reason })
 
-  // 8. React 대시보드 반영은 클라이언트에서 "적용" 클릭 시 수행 — 여기서는 미리보기만 전달
+  // 9. React 대시보드 반영은 클라이언트에서 "적용" 클릭 시 수행 — 여기서는 미리보기만 전달
   sendEvent({
     type: 'patch_ready',
     patch,
     sql,
-    metricId: proposal.metricId ?? null,
+    topic: proposal.topic ?? null,
     review: verdict,
     summaryText,
     previewWidget: widget,

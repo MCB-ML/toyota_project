@@ -12,12 +12,6 @@ export const CHART_CODE_TO_WIDGET_TYPE = {
   kpi: 'render_kpi_cards',
 }
 
-export const ALLOWED_CHART_CODES_BY_SHAPE = {
-  kpi: ['kpi'],
-  breakdown: ['bar', 'pie', 'table'],
-  trend: ['line', 'bar', 'table'],
-}
-
 export const WIDGET_REQUIRED_PROPS = {
   render_bar_chart: ['title', 'data', 'x_key', 'y_key'],
   render_line_chart: ['title', 'data', 'x_key', 'y_keys'],
@@ -28,47 +22,45 @@ export const WIDGET_REQUIRED_PROPS = {
 
 const CHART_COLORS = ['#3B82F6', '#1e3a5f', '#10B981', '#F59E0B', '#8B5CF6']
 
-function formatKpiValue(raw) {
-  if (typeof raw === 'number') return raw.toLocaleString()
-  return String(raw ?? '')
-}
-
-// Builds the final render_*-shaped widget props. `rawData` always comes from
-// semanticCatalog.resolveMetricRaw() (real, pre-aggregated JSON) — the LLM
-// only ever chose the metric id, chart code, and title; it never supplies
-// numbers directly, so hallucinated data is structurally impossible here.
-export function buildWidgetProps(metric, chartCode, rawData, title) {
+// Builds render_*-shaped widget props directly from live Fabric query result rows
+// (server/fabricClient.js). There's no fixed metric catalog anymore, so the LLM that
+// wrote the SQL also tells us which of its own SELECT column aliases to plot
+// (labelKey/valueKey for bar/pie, xKey/yKeys for line) — it never supplies the
+// numbers themselves, only points at columns in real query results.
+export function buildWidgetPropsFromRows(chartCode, rows, spec, title) {
   const type = CHART_CODE_TO_WIDGET_TYPE[chartCode]
   if (!type) throw new Error(`Unknown chart code: ${chartCode}`)
-
-  if (metric.shape === 'kpi') {
-    const cards = metric.cardsFrom.map(({ key, title: cardTitle, sub }) => ({
-      title: cardTitle,
-      value: formatKpiValue(rawData?.[key]),
-      sub,
-    }))
-    return { type: 'render_kpi_cards', props: { cards } }
-  }
-
-  const { labelKey, valueKey } = metric.fields
-  const data = Array.isArray(rawData) ? rawData : []
+  const data = Array.isArray(rows) ? rows : []
 
   switch (chartCode) {
-    case 'bar':
+    case 'bar': {
+      const { labelKey, valueKey } = spec
       return { type, props: { title, data, x_key: labelKey, y_key: valueKey, color: CHART_COLORS[0] } }
-    case 'line':
-      return { type, props: { title, data, x_key: labelKey, y_keys: [valueKey], y_labels: [metric.label] } }
-    case 'pie':
+    }
+    case 'line': {
+      const { xKey, yKeys, yLabels } = spec
+      return { type, props: { title, data, x_key: xKey, y_keys: yKeys, y_labels: yLabels?.length ? yLabels : yKeys } }
+    }
+    case 'pie': {
+      const { labelKey, valueKey } = spec
       return {
         type,
         props: { title, data: data.map(d => ({ name: String(d[labelKey]), value: Number(d[valueKey]) || 0 })) },
       }
-    case 'table':
-      return {
-        type,
-        props: { title, columns: [labelKey, valueKey], rows: data.map(d => [d[labelKey], d[valueKey]]) },
-      }
+    }
+    case 'table': {
+      const columns = data.length ? Object.keys(data[0]) : []
+      return { type, props: { title, columns, rows: data.map(d => columns.map(c => d[c])) } }
+    }
+    case 'kpi': {
+      const row = data[0] || {}
+      const cards = Object.entries(row).map(([key, value]) => ({
+        title: key,
+        value: typeof value === 'number' ? value.toLocaleString() : String(value ?? '-'),
+      }))
+      return { type: 'render_kpi_cards', props: { cards } }
+    }
     default:
-      throw new Error(`Unsupported chart code for shape "${metric.shape}": ${chartCode}`)
+      throw new Error(`Unsupported chart code: ${chartCode}`)
   }
 }

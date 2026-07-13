@@ -78,6 +78,10 @@ export function getTopic(topicId) {
   return topics.find(t => t.topic === topicId) || null
 }
 
+export function listTopics() {
+  return loadSchemaIndex().topics
+}
+
 export function listTableIndex() {
   return loadSchemaIndex().tables
 }
