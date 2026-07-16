@@ -44,7 +44,8 @@ export function buildDashboardTools() {
       type: 'function',
       function: {
         name: 'propose_modify_widget',
-        description: '기존 위젯이 다루는 데이터/주제를 변경합니다 (전체 교체).',
+        description: '사용자가 명시적으로 지목한 기존 위젯 하나의 데이터/주제를 다른 것으로 교체합니다(전체 교체). '
+          + '"~추가해줘/보여줘/도 보고싶어"처럼 새 위젯을 요청하는 말에는 절대 쓰지 마세요 — 그런 요청은 항상 propose_add_widget입니다.',
         parameters: {
           type: 'object',
           properties: {
@@ -121,10 +122,17 @@ ${widgetList}
 
 # 지침
 1. 사용자의 요청이 위 주제 중 하나로 표현 가능한 추가/삭제/수정/재정렬이면 반드시 propose_* 도구 중 하나를 호출하세요.
-2. 크기만 바꿔달라는 요청("크게 해줘", "너무 빼곡해", "작게 줄여줘")이면 propose_resize_widget을 호출하세요 — 데이터는 다시 조회하지 않습니다.
-3. 위 주제 어디에도 해당하지 않거나, 대시보드 커스터마이징과 무관한 질문(일반 대화, 날씨 등)이면 reject_request를 호출하세요.
-4. 제거/수정/재정렬/크기변경 시 widget_id는 반드시 위 "현재 대시보드 상태" 목록에 있는 값만 사용하세요.
-5. 도구 호출과 함께, 사용자에게 보여줄 짧은 한국어 설명을 함께 답변하세요.`
+2. **기본은 항상 propose_add_widget입니다.** 비슷하거나 같은 주제의 위젯이 이미 대시보드에 있어도, 사용자가
+   "이거", "그 그래프", "방금 그거", "N번째 위젯"처럼 기존 위젯을 명시적으로 가리키며 "바꿔줘/교체해줘/수정해줘"라고
+   말하지 않는 한 propose_modify_widget을 쓰지 마세요. 그냥 "~그래프/차트/표 추가해줘", "~보여줘", "~도 보고싶어"
+   같은 요청은 기존 위젯 유무와 무관하게 전부 propose_add_widget입니다 — 같은 주제의 위젯이 여러 개 쌓이는 것은
+   정상이며 사용자가 원치 않으면 나중에 직접 삭제/교체를 요청할 것입니다.
+3. propose_modify_widget은 사용자가 이미 화면에 있는 특정 위젯 하나를 지목해 "그 내용을 다른 데이터/주제로
+   바꿔달라"고 명시적으로 요청했을 때만 사용하세요.
+4. 크기만 바꿔달라는 요청("크게 해줘", "너무 빼곡해", "작게 줄여줘")이면 propose_resize_widget을 호출하세요 — 데이터는 다시 조회하지 않습니다.
+5. 위 주제 어디에도 해당하지 않거나, 대시보드 커스터마이징과 무관한 질문(일반 대화, 날씨 등)이면 reject_request를 호출하세요.
+6. 제거/수정/재정렬/크기변경 시 widget_id는 반드시 위 "현재 대시보드 상태" 목록에 있는 값만 사용하세요.
+7. 도구 호출과 함께, 사용자에게 보여줄 짧은 한국어 설명을 함께 답변하세요.`
 }
 
 // Stage-2 tool — only called after loadTablesForTopic() has loaded the real
@@ -175,13 +183,13 @@ export function buildWidgetQueryTools(tables) {
   ]
 }
 
-export function buildWidgetQuerySystemPrompt(renderedTables) {
+export function buildWidgetQuerySystemPrompt(renderedTables, routingNotes) {
   return `당신은 대시보드 위젯에 쓸 데이터를 Toyota/Lexus Korea Fabric 웨어하우스에서 T-SQL로 조회하는 에이전트입니다.
 아래 테이블/컬럼 정보만 사용하세요 — 목록에 없는 테이블/컬럼을 지어내지 마세요.
 
 # 사용 가능한 테이블
 ${renderedTables}
-
+${routingNotes ? `\n# 이 주제의 라우팅 규칙 + 예시\n${routingNotes}\n` : ''}
 # 지침
 1. run_widget_query 도구로 실제 실행될 SELECT와 차트 타입을 함께 지정하세요.
 2. bar/pie는 label_key/value_key를, line은 x_key/y_keys를 SQL에서 실제로 사용한 컬럼 별칭과 정확히 동일하게 지정하세요.
@@ -189,7 +197,9 @@ ${renderedTables}
 4. kpi는 결과가 정확히 1행이 되도록 집계하고, 각 컬럼 별칭을 카드 제목으로 쓸 한국어로 지으세요 (예: SELECT COUNT(*) AS 총계약건수).
 5. 반드시 TOP N으로 결과 행을 제한하세요 (기본 50, kpi는 TOP 1).
 6. size는 생략하면 md(1/2폭)로 처리됩니다. 시계열 line 차트나 컬럼이 많은 table은 lg(전체폭)를 지정하세요.
-7. 로드된 테이블만으로 답할 수 없으면 reject_widget_query를 호출하세요.`
+7. **위에 로드된 테이블들이 서로 다른 db에 걸쳐 있으면 하나의 쿼리에서 절대 조인하지 마세요** — 반드시 하나의 db 안에서만 SELECT하세요. 여러 db의 정보가 동시에 필요한 요청이면 하나만 우선 답하거나 reject_widget_query를 호출하세요.
+8. **날짜로 그룹핑/포맷하기 전에 그 컬럼의 타입을 위 테이블 목록에서 반드시 확인하세요** — 컬럼명 옆 괄호가 date/datetime2가 아니라 varchar면 FORMAT()/CONVERT() 같은 날짜 함수를 쓰면 SQL 에러가 납니다("Argument data type varchar is invalid"). varchar 날짜 컬럼은 LEFT(컬럼, 6)처럼 문자열로 다루거나, 같은 주제에 date 타입 컬럼을 가진 다른 테이블이 있으면 그걸 대신 쓰세요.
+9. 로드된 테이블/라우팅 규칙만으로 답할 수 없으면 reject_widget_query를 호출하세요.`
 }
 
 // 검토 에이전트(critic) tool — deliberately narrow. Structural checks (topic

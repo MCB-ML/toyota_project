@@ -19,6 +19,7 @@ import { load as parseYaml } from 'js-yaml'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SCHEMA_DIR = join(__dirname, 'schema')
 const TABLES_DIR = join(SCHEMA_DIR, 'tables')
+const ROUTING_DIR = join(SCHEMA_DIR, 'routing')
 
 let _index = null
 
@@ -89,7 +90,8 @@ export function listTableIndex() {
 // Reads and parses one table's full column definition from schema/tables/<file>.
 // `ref` is either a filename (as stored in index.yaml) or {db, id}.
 export function loadTableSchema(ref) {
-  const filename = typeof ref === 'string' ? ref : findTableFile(ref.db, ref.id)
+  if (!ref) return null
+  const filename = typeof ref === 'string' ? ref : ref.file || findTableFile(ref.db, ref.id)
   if (!filename) return null
   const raw = readFileSync(join(TABLES_DIR, filename), 'utf-8')
   return { ...parseYaml(raw), _raw: raw }
@@ -101,15 +103,35 @@ function findTableFile(db, id) {
 }
 
 // Core retrieval step: given a classified topic, load full detail for exactly the
-// tables that topic references — never the whole 187-table catalog.
+// tables that topic references — never the whole 187-table catalog. A single bad
+// reference (index.yaml entry missing/wrong `file`) is skipped rather than crashing
+// the whole request — same "drop the broken one, keep the rest" approach as
+// dashboardPagesHandler.js's rehydration.
 export function loadTablesForTopic(topicId) {
   const topic = getTopic(topicId)
   if (!topic) return []
-  return topic.tables.map(ref => ({
-    ...loadTableSchema(ref.file),
-    key_cols: ref.key_cols || null,
-    note: ref.note || null,
-  }))
+  return topic.tables
+    .map(ref => {
+      const schema = loadTableSchema(ref)
+      if (!schema) {
+        console.error(`[schemaLoader] 테이블 로드 실패 (topic=${topicId}):`, JSON.stringify(ref))
+        return null
+      }
+      return { ...schema, key_cols: ref.key_cols || null, note: ref.note || null }
+    })
+    .filter(Boolean)
+}
+
+// 주제별 라우팅 규칙 + few-shot SQL 예시 (server/schema/routing/<topic>.md). 컬럼 정의만으로는
+// LLM이 "같은 개념을 담은 여러 테이블 중 뭘 골라야 하는지"/"cross-db 조인 불가" 같은 걸
+// 모르기 때문에 SQL 생성 프롬프트에 추가로 얹는다. 아직 작성 안 된 주제는 빈 문자열 —
+// 나머지 파이프라인은 그대로 동작(신규 주제 추가 시 파일이 없어도 안 죽음).
+export function loadRoutingNotes(topicId) {
+  try {
+    return readFileSync(join(ROUTING_DIR, `${topicId}.md`), 'utf-8')
+  } catch {
+    return ''
+  }
 }
 
 // Compact text block for the second LLM call (chart-spec / SQL-generation stage) —

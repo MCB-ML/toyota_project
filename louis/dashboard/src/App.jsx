@@ -3,7 +3,9 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Bot } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import ChatPanel from './components/ChatPanel'
+import DeployableTab from './components/DeployableTab'
 import { DashboardStateProvider } from './context/DashboardStateContext'
+import { useUser } from './auth/UserContext'
 
 // AI
 import ChatBot from './pages/ChatBot'
@@ -35,10 +37,14 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false)
   const location = useLocation()
   const isAiPage = location.pathname === '/'
-  const pageKey = location.pathname === '/ktws/custom' ? 'ktws-custom' : undefined
+  // 챗봇을 "대시보드 커스텀 빌더" 모드로 돌릴지 여부 — DB의 배포 대상 pageKey와는 별개 개념.
+  const chatPageKey = location.pathname === '/ktws/custom' ? 'ktws-custom' : undefined
+  const { user } = useUser()
+  // 개인 계정이 아니라 본사/딜러사 단위로 대시보드를 공유하는 키(SelectAccount에서 고른 role/dealerId 기준).
+  const scopeKey = user.role === 'hq' ? 'hq' : user.role === 'dealer' ? `dealer:${user.dealerId}` : null
 
   return (
-    <DashboardStateProvider>
+    <DashboardStateProvider scopeKey={scopeKey}>
       <div className="flex h-screen overflow-hidden">
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(v => !v)} />
         <div className="flex-1 overflow-y-auto bg-[#f0f2f5] relative">
@@ -46,25 +52,25 @@ export default function App() {
             <Route path="/" element={<ChatBot />} />
 
             {/* Sales */}
-            <Route path="/sales/contract" element={<ContractMgmt />} />
-            <Route path="/sales/payment" element={<PaymentMgmt />} />
-            <Route path="/sales/inventory" element={<Inventory />} />
-            <Route path="/sales/kpi" element={<KpiDealer />} />
+            <Route path="/sales/contract" element={<DeployableTab pageKey="sales-contract"><ContractMgmt /></DeployableTab>} />
+            <Route path="/sales/payment" element={<DeployableTab pageKey="sales-payment"><PaymentMgmt /></DeployableTab>} />
+            <Route path="/sales/inventory" element={<DeployableTab pageKey="sales-inventory"><Inventory /></DeployableTab>} />
+            <Route path="/sales/kpi" element={<DeployableTab pageKey="sales-kpi"><KpiDealer /></DeployableTab>} />
 
             {/* Service */}
-            <Route path="/service/coupon" element={<Coupon />} />
+            <Route path="/service/coupon" element={<DeployableTab pageKey="service-coupon"><Coupon /></DeployableTab>} />
 
             {/* FVD */}
-            <Route path="/fvd/voc" element={<FvdVoc />} />
-            <Route path="/fvd/network" element={<FvdNetwork />} />
-            <Route path="/fvd/finance" element={<FvdFinance />} />
+            <Route path="/fvd/voc" element={<DeployableTab pageKey="fvd-voc"><FvdVoc /></DeployableTab>} />
+            <Route path="/fvd/network" element={<DeployableTab pageKey="fvd-network"><FvdNetwork /></DeployableTab>} />
+            <Route path="/fvd/finance" element={<DeployableTab pageKey="fvd-finance"><FvdFinance /></DeployableTab>} />
 
             {/* DSD */}
-            <Route path="/dsd/stock" element={<DsdStockMatch />} />
-            <Route path="/dsd/target" element={<DsdDailyTarget />} />
+            <Route path="/dsd/stock" element={<DeployableTab pageKey="dsd-stock"><DsdStockMatch /></DeployableTab>} />
+            <Route path="/dsd/target" element={<DeployableTab pageKey="dsd-target"><DsdDailyTarget /></DeployableTab>} />
 
             {/* KTWS */}
-            <Route path="/ktws/bi" element={<KtwsBi />} />
+            <Route path="/ktws/bi" element={<DeployableTab pageKey="ktws-bi"><KtwsBi /></DeployableTab>} />
             <Route path="/ktws/custom" element={<KtwsCustom />} />
 
             {/* fallback */}
@@ -90,8 +96,8 @@ export default function App() {
           open={chatOpen && !isAiPage}
           onClose={() => setChatOpen(false)}
           title="AI 어시스턴트"
-          subtitle={pageKey ? '대시보드 커스텀' : undefined}
-          pageKey={pageKey}
+          subtitle={chatPageKey ? '대시보드 커스텀' : undefined}
+          pageKey={chatPageKey}
         />
       </div>
     </DashboardStateProvider>

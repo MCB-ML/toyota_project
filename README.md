@@ -17,6 +17,10 @@ MCB_토요타 고객사 프로젝트: 데이터 분석/예측 웹사이트
 - **KTWS 대시보드 커스텀 페이지**: 챗봇에게 자연어로 요청하면 **Fabric 웨어하우스에 실제로
   라이브 SQL을 실행**해 위젯(차트/KPI카드/표)을 추가·삭제·수정 — 미리보기 후 적용, 실행취소/
   다시실행 지원 (파일럿, 이 페이지에만 적용됨)
+- **위젯 자유 리사이즈 + 유저별 저장**: 위젯을 가로/세로 자유 드래그로 크기 조절(간섭되는
+  옆 위젯은 자동으로 크기가 맞춰짐), 로그인 계정별로 로컬 Postgres에 레이아웃 저장 —
+  다른 계정으로 로그인하면 각자 자신의 레이아웃만 보임 (아래 [유저별 대시보드 레이아웃
+  저장](#유저별-대시보드-레이아웃-저장-로컬-postgres) 참고)
 - **Fabric 데이터 웨어하우스 실시간 연결**: Agora/Karete/BP_KTWS 3개 엔드포인트에 Azure AD 인증으로
   접속, LLM이 자연어 질문을 실제 SQL로 변환해 라이브 조회하는 백엔드 파이프라인 완성 —
   KTWS 대시보드 커스텀 페이지와 별도의 `/api/warehouse-query`(백엔드만, UI 미연결) 둘 다에서 사용
@@ -28,6 +32,8 @@ MCB_토요타 고객사 프로젝트: 데이터 분석/예측 웹사이트
 - `/api/warehouse-query`(자유 질문형 라이브 쿼리)는 백엔드까지만 완성 — 채팅 UI에는 아직 연결 안 됨
   (KTWS 대시보드 커스텀 페이지의 위젯 생성 파이프라인과는 별개 엔드포인트)
 - Power BI SSO는 IT팀의 Azure AD 앱 등록·admin consent 대기 중
+- 위젯 실행취소/다시실행 이력은 브라우저 메모리에만 있음 — 레이아웃 자체는 Postgres에
+  저장되지만, 새로고침하면 되돌리기 이력만 초기화됨(레이아웃 내용은 그대로 유지)
 
 ## 대시보드 생성 챗봇 아키텍처
 
@@ -72,3 +78,63 @@ Fabric SQL 엔드포인트(Agora/Karete/BP_KTWS) ──(server/fabricClient.js, 
   단계가 있고, "적용" 버튼을 눌러야 실제 화면에 반영된다(자세한 단계별 구현 위치는
   [`louis/dashboard/README.md`](louis/dashboard/README.md#ai-대시보드-커스터마이징-파이프라인-ktws-대시보드-커스텀-페이지)
   참고). `warehouse-query`는 결과를 그대로 반환할 뿐 반영 개념이 없다.
+
+## 유저별 대시보드 레이아웃 저장 (로컬 Postgres)
+
+KTWS 대시보드 커스텀 페이지의 위젯 구성(무엇을 추가했는지, 크기를 어떻게 조절했는지)은
+로그인 계정별로 로컬 Postgres에 저장된다. 이전에는 브라우저 `localStorage`에만 저장돼서
+같은 기기/브라우저가 아니면 안 보이고 유저 구분도 안 됐는데, 그걸 대체한 것이다.
+
+### 설계 결정 3가지
+
+1. **유저 키 = MSAL 로그인 계정(`homeAccountId`)** — 본사/딜러사 role 구분이 아니라 개인
+   로그인 계정 단위로 구분한다.
+2. **DB에는 위젯 "스펙"만 저장, 조회 결과(데이터)는 저장하지 않는다** — 실행할 SQL 문자열 +
+   차트 설정 + 레이아웃(가로/세로 크기)만 저장하고, 대시보드를 열 때마다 그 SQL로 Fabric에
+   실시간 재조회해서 데이터를 채운다. 저장 용량이 작고 데이터가 항상 최신이라는 장점 대신,
+   위젯이 많으면 로드 시 쿼리 지연(수백ms~수초)이 생긴다.
+3. **로컬 Postgres는 Docker Compose로 띄운다** — `louis/dashboard/docker-compose.yml` (`docker
+   compose up -d`로 실행, 기본 포트 5433 — 로컬에 이미 네이티브 Postgres가 5432를 쓰고 있을
+   수 있어 충돌을 피하려고 5432가 아닌 5433을 씀).
+
+### 테이블 구조
+
+`louis/dashboard/server/db-init/init.sql` (컨테이너 최초 기동 시 자동 적용):
+
+```sql
+CREATE TABLE dashboard_layouts (
+  user_id    TEXT NOT NULL,       -- MSAL homeAccountId
+  page_key   TEXT NOT NULL,       -- 예: 'ktws-custom' (App.jsx의 pageKey)
+  version    INTEGER NOT NULL DEFAULT 0,
+  widgets    JSONB NOT NULL DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, page_key)
+);
+```
+
+- `(user_id, page_key)` 복합 기본키 하나로 "이 유저의 이 페이지 레이아웃" 한 행만 유지한다
+  (여러 버전을 쌓지 않고 항상 최신 상태로 덮어씀).
+- `page_key`를 키에 포함시켜서, 나중에 다른 페이지에도 이 기능을 넣을 때 테이블 구조를
+  바꾸지 않고 `page_key` 값만 늘리면 되게 했다.
+- `widgets`는 위젯 배열의 JSONB — 각 원소에 조회 결과(`props`)는 빠지고 재조회에 필요한
+  필드만 들어간다: `id`, `db`(Fabric DB명), `sql`(실행할 SELECT), `chartCode`, `querySpec`
+  (라벨/값 컬럼 매핑), `title`, `weight`/`height`(레이아웃), `topic`, `createdAt`.
+
+### 저장/로드 흐름
+
+```
+[페이지 로드] GET /api/dashboard-layout?userId=&pageKey=
+  → Postgres에서 위젯 스펙 목록 조회
+  → 각 위젯의 sql을 fabricClient.js로 다시 실행 (병렬)
+  → 실패한 위젯은 조용히 스킵(테이블 삭제·Fabric 연결 불가 등) — 나머지는 정상 표시
+  → widgetSchema.js로 조회 결과를 props로 재구성해 반환
+
+[위젯 추가/삭제/수정/리사이즈] PUT /api/dashboard-layout
+  → 위젯 목록에서 props만 제거하고 나머지 스펙을 INSERT ... ON CONFLICT DO UPDATE로 저장
+```
+
+구현 파일: `louis/dashboard/server/db.js`(Pool), `server/dashboardLayoutHandler.js`
+(GET/PUT 핸들러), `src/auth/useCurrentUserId.js`(MSAL 계정 → userId 추출),
+`src/context/DashboardStateContext.jsx`(로드/저장 훅 — 기존엔 `localStorage` 읽기/쓰기였던
+부분을 이 API 호출로 교체).

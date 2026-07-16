@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: toyota-dashboard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER:-dashboard}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-dashboard}
+      POSTGRES_DB: ${PG_DATABASE:-toyota_dashboard}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    volumes:
+      - dashboard_pg_data:/var/lib/postgresql/data
+      - ./server/db-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-dashboard} -d ${PG_DATABASE:-toyota_dashboard}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  dashboard_pg_data:

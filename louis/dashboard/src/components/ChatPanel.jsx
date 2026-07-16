@@ -3,6 +3,25 @@ import { Send, Bot, User, Loader2, X, RefreshCw } from 'lucide-react'
 import { useDashboardState } from '../context/DashboardStateContext'
 import StageTrace from './StageTrace'
 import PatchPreviewCard from './PatchPreviewCard'
+import GeneratedWidget from './widgets/GeneratedWidget'
+
+// TURN-scope lifecycle guard (see server/lifecycle.js for the full rationale): tags
+// each past assistant turn with how it actually resolved, so the server can tell a
+// cleanly `applied`/text-only turn apart from one whose proposal never took effect
+// (rejected by the review agent, blocked, or discarded by the user) before treating
+// it as accepted precedent for a brand-new request.
+function outcomeOf(m) {
+  if (m.role !== 'assistant') return undefined
+  if (m.error) return 'error'
+  if (m.rejected) return 'rejected'
+  if (m.patch) {
+    if (m.patchStatus === 'applied') return 'applied'
+    if (m.patchStatus === 'discarded') return 'discarded'
+    if (m.patch.blocked) return 'rejected' // review agent didn't approve it — can never be applied even while still shown as "pending"
+    return 'pending'
+  }
+  return undefined
+}
 
 async function* iterateSSEEvents(response) {
   const reader = response.body.getReader()
@@ -43,16 +62,21 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
     setIsLoading(true)
     setMessages(prev => [...prev, { role: 'user', text: userText }])
 
-    const history = messages.map(m => ({
-      role: m.role,
-      content: m.text || (m.rejected ? m.rejected : m.patch ? '(대시보드 변경 제안)' : ''),
-    }))
+    const history = messages.map(m => {
+      const outcome = outcomeOf(m)
+      const entry = {
+        role: m.role,
+        content: m.text || m.rejected || m.patch?.summaryText || '',
+      }
+      if (outcome) entry.outcome = outcome
+      return entry
+    })
     history.push({ role: 'user', content: userText })
 
     const assistantId = Date.now()
     setMessages(prev => [...prev, {
       id: assistantId, role: 'assistant', text: '', streaming: true,
-      stages: [], patch: null, patchStatus: 'pending', rejected: null,
+      stages: [], components: [], patch: null, patchStatus: 'pending', rejected: null,
     }])
     const patchMessage = (updates) => setMessages(prev => prev.map(m => (
       m.id === assistantId ? { ...m, ...updates } : m
@@ -79,6 +103,12 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
         } else if (event.type === 'stage') {
           setMessages(prev => prev.map(m => (
             m.id === assistantId ? { ...m, stages: [...(m.stages || []), { stage: event.stage, label: event.label }] } : m
+          )))
+        } else if (event.type === 'component') {
+          setMessages(prev => prev.map(m => (
+            m.id === assistantId
+              ? { ...m, components: [...(m.components || []), { name: event.name, props: event.props }] }
+              : m
           )))
         } else if (event.type === 'patch_ready') {
           patchMessage({ patch: event, patchStatus: 'pending', streaming: false })
@@ -183,6 +213,11 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
                   {msg.stages?.length > 0 && (
                     <StageTrace stages={msg.stages} finished={!msg.streaming} />
                   )}
+                  {msg.components?.map((comp, i) => (
+                    <div key={i} className="w-full min-w-[260px]">
+                      <GeneratedWidget name={comp.name} props={comp.props} />
+                    </div>
+                  ))}
                   {msg.rejected && (
                     <div className="bg-gray-50 border border-gray-200 text-gray-600 text-xs rounded-xl px-3.5 py-2.5">
                       {msg.rejected}

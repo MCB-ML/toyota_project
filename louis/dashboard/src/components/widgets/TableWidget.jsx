@@ -1,8 +1,8 @@
-export default function TableWidget({ title, columns, rows }) {
+export default function TableWidget({ title, columns, rows, height }) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
       <h4 className="text-sm font-semibold text-gray-700 mb-3">{title}</h4>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" style={height ? { maxHeight: height, overflowY: 'auto' } : undefined}>
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-gray-50">

@@ -6,7 +6,8 @@ import {
   buildWidgetQueryTools, buildWidgetQuerySystemPrompt,
   buildReviewTools, buildReviewPrompt,
 } from './dashboardTools.js'
-import { loadTablesForTopic, renderTablesForPrompt } from './schemaLoader.js'
+import { loadTablesForTopic, renderTablesForPrompt, loadRoutingNotes } from './schemaLoader.js'
+import { sanitizeHistoryForClassification } from './lifecycle.js'
 import { queryFabric } from './fabricClient.js'
 import { buildWidgetPropsFromRows } from './widgetSchema.js'
 import { validateProposal, validateWidgetProps, isDuplicateWidget } from './dashboardValidation.js'
@@ -61,7 +62,7 @@ export async function runDashboardPipeline({ message, history, dashboardState },
     model: deployment,
     messages: [
       { role: 'system', content: buildDashboardSystemPrompt(dashboardState) },
-      ...history,
+      ...sanitizeHistoryForClassification(history),
       { role: 'user', content: message },
     ],
     tools: buildDashboardTools(),
@@ -115,10 +116,11 @@ export async function runDashboardPipeline({ message, history, dashboardState },
 
     // 5. SQL 생성 + 차트 스펙 — 실제 실행될 SELECT를 LLM이 작성
     stage('generate_sql')
+    const routingNotes = loadRoutingNotes(proposal.topic)
     const sqlCalls = await streamAssistantTurn(client, {
       model: deployment,
       messages: [
-        { role: 'system', content: buildWidgetQuerySystemPrompt(renderTablesForPrompt(tables)) },
+        { role: 'system', content: buildWidgetQuerySystemPrompt(renderTablesForPrompt(tables), routingNotes) },
         { role: 'user', content: message },
       ],
       tools: buildWidgetQueryTools(tables),
@@ -147,7 +149,8 @@ export async function runDashboardPipeline({ message, history, dashboardState },
     try {
       rows = await queryFabric(queryInfo.db, sql)
     } catch (err) {
-      sendEvent({ type: 'error', message: `쿼리 실행 실패: ${err.message}` })
+      console.error(`[dashboard-customize] 쿼리 실행 실패 (db=${queryInfo.db}):`, sql, '\n', err.message)
+      sendEvent({ type: 'error', message: `쿼리 실행 실패: ${err.message}`, sql })
       return
     }
 
@@ -161,7 +164,17 @@ export async function runDashboardPipeline({ message, history, dashboardState },
     widget = {
       id: action === 'modify' ? proposal.widgetId : randomUUID(),
       type: built.type,
+      db: queryInfo.db,
       table: `${queryInfo.db}.${queryInfo.table_id}`,
+      sql,
+      chartCode: queryInfo.chart_type,
+      querySpec: {
+        labelKey: queryInfo.label_key,
+        valueKey: queryInfo.value_key,
+        xKey: queryInfo.x_key,
+        yKeys: queryInfo.y_keys,
+      },
+      title: queryInfo.title,
       topic: proposal.topic,
       weight: SIZE_TO_WEIGHT[queryInfo.size] || SIZE_TO_WEIGHT.md,
       createdAt: new Date().toISOString(),

@@ -1,6 +1,6 @@
 // Shared streaming + tool-call-accumulation loop, used by both the free-form
 // /api/chat handler and the dashboard-customize pipeline's planner/critic calls.
-export async function streamAssistantTurn(client, { model, messages, tools, toolChoice = 'auto', onText }) {
+export async function streamAssistantTurn(client, { model, messages, tools, toolChoice = 'auto', temperature, onText }) {
   const stream = await client.chat.completions.create({
     model,
     max_tokens: 4096,
@@ -8,6 +8,7 @@ export async function streamAssistantTurn(client, { model, messages, tools, tool
     messages,
     tools,
     tool_choice: toolChoice,
+    ...(temperature !== undefined ? { temperature } : {}),
   })
 
   const toolCallBuffers = {}

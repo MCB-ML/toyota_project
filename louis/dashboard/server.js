@@ -5,6 +5,16 @@ import { config as loadDotenv } from 'dotenv'
 import { handleChatRequest } from './server/chatHandler.js'
 import { handleDashboardCustomizeRequest } from './server/dashboardCustomizeHandler.js'
 import { handleWarehouseQueryRequest } from './server/warehouseQueryHandler.js'
+import { handleListScopes } from './server/scopesHandler.js'
+import {
+  handleGetSavedPage,
+  handleListSavedPages,
+  handleSaveSavedPage,
+  handleDeleteSavedPage,
+  handleGetDeployedPage,
+  handleDeployPage,
+  handleRollbackPage,
+} from './server/dashboardPagesHandler.js'
 
 loadDotenv()
 
@@ -19,6 +29,14 @@ const DATA_DIR = join(__dirname, 'dist', 'data')
 app.post('/api/chat', (req, res) => handleChatRequest(req, res, { dataDir: DATA_DIR }))
 app.post('/api/dashboard-customize', (req, res) => handleDashboardCustomizeRequest(req, res, { dataDir: DATA_DIR }))
 app.post('/api/warehouse-query', handleWarehouseQueryRequest)
+app.get('/api/scopes', handleListScopes)
+app.get('/api/dashboard-pages', handleGetSavedPage)
+app.put('/api/dashboard-pages', handleSaveSavedPage)
+app.delete('/api/dashboard-pages', handleDeleteSavedPage)
+app.get('/api/dashboard-pages/list', handleListSavedPages)
+app.get('/api/dashboard-pages/deployed', handleGetDeployedPage)
+app.post('/api/dashboard-pages/deploy', handleDeployPage)
+app.post('/api/dashboard-pages/rollback', handleRollbackPage)
 
 // ─── Serve React build (dist/) ────────────────────────────────────────────────
 const distPath = join(__dirname, 'dist')

@@ -1,3 +1,5 @@
+import { listTopicsForPrompt } from './schemaLoader.js'
+
 // OpenAI function-calling schema shared by /api/chat (free-form Q&A) and, for the
 // final widget shape only, the dashboard-customize pipeline (see widgetSchema.js).
 export const TOOLS = [
@@ -135,10 +137,23 @@ export function buildSystemPrompt(summary) {
 - 연차별 잔여비율: ${JSON.stringify(summary.fms_coupon.remaining_by_age)}
 - ${summary.fms_coupon.note}
 
+# 위 요약에 없는 데이터가 필요할 때 (매우 중요 — 반드시 지킬 것)
+위 "현재 데이터" 섹션은 차량 재고/계약/FMS·PMS·SMS 쿠폰, 딱 이 세 가지 주제만 다루는
+미리 생성된 스냅샷입니다. 사용자의 질문이 이 세 가지 중 하나가 **명확히** 아니라면
+(예: 딜러사/사업소별 수치, 재무제표, 매출/카드결제, 그 외 위 섹션 제목에 없는 어떤 것이든),
+위 요약에 있는 비슷해 보이는 다른 숫자를 절대 억지로 끌어다 답하지 마세요.
+반드시 render_* 대신 classify_topic 도구를 호출해서 아래 주제 중 실제로 가장 관련있는 것을
+선택하세요 — 그러면 실제 Fabric 웨어하우스에 실시간 SQL을 실행해서 정확한 데이터를 가져옵니다.
+확신이 서지 않을 때는 render_*보다 classify_topic을 우선하세요.
+
+## 실시간 조회 가능한 주제
+${listTopicsForPrompt()}
+
 # 응답 지침
 1. 항상 한국어로 답변하세요
 2. 구체적인 수치와 함께 인사이트를 제공하세요
-3. **시각화가 필요하면 반드시 render_* 도구를 사용하여 차트/표를 생성하세요**
-4. 하나의 답변에 여러 개의 차트/표를 생성할 수 있습니다
-5. 비율/퍼센트는 소수점 1자리까지 표시하세요`
+3. **위 "현재 데이터" 섹션(재고/계약/쿠폰)에 직접 해당하는 질문만 render_* 도구를 사용하세요**
+4. **그 외 모든 데이터 질문은 render_*를 쓰지 말고 반드시 classify_topic을 호출하세요 — 관련 없는 요약 수치를 답으로 재활용하지 마세요**
+5. 하나의 답변에 여러 개의 차트/표를 생성할 수 있습니다
+6. 비율/퍼센트는 소수점 1자리까지 표시하세요`
 }

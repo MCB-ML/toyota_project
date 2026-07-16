@@ -1,0 +1,4536 @@
+{
+  "summary": {
+    "n": 25,
+    "topicClassification": {
+      "topicAccuracy": 0.96,
+      "avgRecall": 0.72,
+      "avgPrecision": 0.5019047619047619,
+      "fullHitRate": 0.68,
+      "avgLatencyMs": 1290.88
+    },
+    "ragK3": {
+      "avgRecall": 0.6,
+      "avgPrecision": 0.23999999999999996,
+      "fullHitRate": 0.4,
+      "avgLatencyMs": 879.28
+    },
+    "ragK5": {
+      "avgRecall": 0.68,
+      "avgPrecision": 0.17600000000000002,
+      "fullHitRate": 0.48,
+      "avgLatencyMs": 898.2
+    },
+    "pipeline4": {
+      "avgRecall": 0.8233333333333333,
+      "avgPrecision": 0.1539206349206349,
+      "fullHitRate": 0.6,
+      "avgLatencyMs": 1190.12
+    },
+    "byCategory": {
+      "direct": {
+        "n": 14,
+        "topicRecall": 0.8214285714285714,
+        "topicPrecision": 0.5510204081632654,
+        "ragK3Recall": 0.5357142857142857,
+        "ragK3Precision": 0.2857142857142857,
+        "pipeline4Recall": 0.8095238095238094,
+        "pipeline4Precision": 0.1996031746031746
+      },
+      "synonym_gap": {
+        "n": 4,
+        "topicRecall": 0,
+        "topicPrecision": 0,
+        "ragK3Recall": 0.75,
+        "ragK3Precision": 0.3333333333333333,
+        "pipeline4Recall": 0.75,
+        "pipeline4Precision": 0.12142857142857143
+      },
+      "trap": {
+        "n": 2,
+        "topicRecall": 0.75,
+        "topicPrecision": 0.6666666666666666,
+        "ragK3Recall": 0.25,
+        "ragK3Precision": 0.16666666666666666,
+        "pipeline4Recall": 0.625,
+        "pipeline4Precision": 0.15000000000000002
+      },
+      "fine_grained": {
+        "n": 2,
+        "topicRecall": 1,
+        "topicPrecision": 0.25,
+        "ragK3Recall": 0.5,
+        "ragK3Precision": 0.16666666666666666,
+        "pipeline4Recall": 1,
+        "pipeline4Precision": 0.13392857142857142
+      },
+      "out_of_scope": {
+        "n": 3,
+        "topicRecall": 1,
+        "topicPrecision": 1,
+        "ragK3Recall": 1,
+        "ragK3Precision": 0,
+        "pipeline4Recall": 1,
+        "pipeline4Precision": 0
+      }
+    }
+  },
+  "perQuery": [
+    {
+      "id": "q01",
+      "category": "direct",
+      "query": "이번달 브랜드별 계약 건수 알려줘",
+      "groundTruth": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "primary": {
+          "db": "TMKR_W",
+          "id": "dbo.OM_CONTRACT"
+        }
+      },
+      "topicClassification": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "latencyMs": 1402,
+        "reason": "사용자가 '이번달', '브랜드별', '계약 건수'를 질문하여 계약/판매 현황에 해당하기 때문입니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_ELEMENT_DEALER_UNPV",
+            "score": 0.44713715371571855
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.41933494528313
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.4149743281505649
+          }
+        ],
+        "latencyMs": 914,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_ELEMENT_DEALER_UNPV",
+            "score": 0.44722324971103244
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.41935602718103865
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.4149933551997912
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "score": 0.41483579955748134
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_PARTS",
+            "score": 0.40523427791169847
+          }
+        ],
+        "latencyMs": 190,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_ELEMENT_DEALER_UNPV",
+            "ko": null,
+            "score": 0.4470579806301325
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "ko": null,
+            "score": 0.4192571763839866
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.4148973485070824
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "ko": null,
+            "score": 0.4147270124768291
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_PARTS",
+            "ko": null,
+            "score": 0.40507937862795623
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC",
+            "ko": "캠페인/리콜_차량"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "ko": "캠페인/리콜"
+          }
+        ],
+        "latencyMs": 442,
+        "missingTables": [
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          }
+        ],
+        "fewShotHits": 6,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.16666666666666666,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q02",
+      "category": "direct",
+      "query": "브랜드별 등록 차량 현황이 어떻게 돼?",
+      "groundTruth": {
+        "topic": "차량_재고",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_VEHIC_SUPPLY"
+          }
+        ],
+        "primary": {
+          "db": "TMKR_W",
+          "id": "dbo.CO_VEHIC"
+        }
+      },
+      "topicClassification": {
+        "topic": "차량_재고",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_VEHIC_SUPPLY"
+          }
+        ],
+        "latencyMs": 1524,
+        "reason": "'브랜드별 등록 차량 현황'은 브랜드별 차량 재고 및 등록된 차량의 현황 정보를 묻는 질문이기 때문에 '차량_재고' 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_MODEL",
+            "score": 0.5130294774962033
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_VEHIC",
+            "score": 0.5091565261006418
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_co_vehic",
+            "score": 0.5054501695070326
+          }
+        ],
+        "latencyMs": 650,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_MODEL",
+            "score": 0.5130294774962033
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_VEHIC",
+            "score": 0.5091565261006418
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_co_vehic",
+            "score": 0.5054501695070326
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_co_vehic",
+            "score": 0.503734312864463
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_co_vehic",
+            "score": 0.5032631512365862
+          }
+        ],
+        "latencyMs": 956,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_MODEL",
+            "ko": null,
+            "score": 0.5130294774962033
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_VEHIC",
+            "ko": null,
+            "score": 0.5091565261006418
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_co_vehic",
+            "ko": null,
+            "score": 0.5054501695070326
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_co_vehic",
+            "ko": null,
+            "score": 0.503734312864463
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_co_vehic",
+            "ko": null,
+            "score": 0.5032631512365862
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT",
+            "ko": null
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "ko": "사업소마스터"
+          }
+        ],
+        "latencyMs": 562,
+        "missingTables": [
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group"
+          }
+        ],
+        "fewShotHits": 4,
+        "score": {
+          "recall": 0.3333333333333333,
+          "precision": 0.125,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q03",
+      "category": "direct",
+      "query": "이번달 RO(작업지시서) 처리 건수를 보여줘",
+      "groundTruth": {
+        "topic": "정비_서비스_실적",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_PROPO"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "primary": {
+          "db": "LH_INTELLIGENCE_BI",
+          "id": "dbo.FCT_SERVICE_REPAIR"
+        }
+      },
+      "topicClassification": {
+        "topic": "정비_서비스_실적",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_PROPO"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "latencyMs": 1338,
+        "reason": "'RO(작업지시서)'와 '처리 건수'는 서비스센터의 정비 실적에 해당하는 주제입니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part",
+            "score": 0.3828806855546335
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part_order",
+            "score": 0.3819095355137956
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_svc_propo_part",
+            "score": 0.38107584492007646
+          }
+        ],
+        "latencyMs": 478,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part",
+            "score": 0.38278354794111596
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part_order",
+            "score": 0.3818119441537189
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_svc_propo_part",
+            "score": 0.3809731078001276
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_svc_propo_part",
+            "score": 0.3790197348874853
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_svc_propo_part",
+            "score": 0.3777926289596059
+          }
+        ],
+        "latencyMs": 659,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part",
+            "ko": null,
+            "score": 0.38278354794111596
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part_order",
+            "ko": null,
+            "score": 0.3818119441537189
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_svc_propo_part",
+            "ko": null,
+            "score": 0.3809731078001276
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_svc_propo_part",
+            "ko": null,
+            "score": 0.3790197348874853
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_svc_propo_part",
+            "ko": null,
+            "score": 0.3777926289596059
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC",
+            "ko": "캠페인/리콜_차량"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "ko": "캠페인/리콜"
+          }
+        ],
+        "latencyMs": 478,
+        "missingTables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          }
+        ],
+        "fewShotHits": 6,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.08333333333333333,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q04",
+      "category": "direct",
+      "query": "무상점검 쿠폰 잔여 대수가 얼마나 남았어?",
+      "groundTruth": {
+        "topic": "FMS_PMS_SMS_쿠폰",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          }
+        ],
+        "primary": {
+          "db": "TMKR_W",
+          "id": "dbo.SVC_CR_VEHIC"
+        }
+      },
+      "topicClassification": {
+        "topic": "FMS_PMS_SMS_쿠폰",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          }
+        ],
+        "latencyMs": 1393,
+        "reason": "'무상점검'과 '쿠폰 잔여'라는 키워드가 있어 무상점검(FMS) 쿠폰 잔여 현황을 묻는 질문이기 때문입니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_cr_vehic",
+            "score": 0.27223661543858024
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "score": 0.26696965241133264
+          },
+          {
+            "db": "LH_INTELLIGENCE_ML",
+            "id": "dbo.SVC_REPAIR_DETAIL",
+            "score": 0.2660815553111071
+          }
+        ],
+        "latencyMs": 657,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_cr_vehic",
+            "score": 0.2722794916418596
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "score": 0.26708352627924153
+          },
+          {
+            "db": "LH_INTELLIGENCE_ML",
+            "id": "dbo.SVC_REPAIR_DETAIL",
+            "score": 0.2661132062560772
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_svc_cr_vehic",
+            "score": 0.26111472830058385
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part",
+            "score": 0.2530141419711999
+          }
+        ],
+        "latencyMs": 3821,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_cr_vehic",
+            "ko": null,
+            "score": 0.27133293861372637
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "ko": "캠페인/리콜",
+            "score": 0.265686808604165
+          },
+          {
+            "db": "LH_INTELLIGENCE_ML",
+            "id": "dbo.SVC_REPAIR_DETAIL",
+            "ko": null,
+            "score": 0.26562616228277414
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_svc_cr_vehic",
+            "ko": null,
+            "score": 0.26015348409350314
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_svc_propo_part",
+            "ko": null,
+            "score": 0.25234632060001705
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC",
+            "ko": "캠페인/리콜_차량"
+          }
+        ],
+        "latencyMs": 729,
+        "missingTables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          }
+        ],
+        "fewShotHits": 2,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q05",
+      "category": "direct",
+      "query": "딜러 그룹 마스터 정보(주소, 사업자번호)를 조회하고 싶어",
+      "groundTruth": {
+        "topic": "딜러_업체_마스터",
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_GROUP"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.CO_GROUP"
+        }
+      },
+      "topicClassification": {
+        "topic": "딜러_업체_마스터",
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_GROUP"
+          }
+        ],
+        "latencyMs": 1204,
+        "reason": "딜러 그룹의 주소와 사업자번호 같은 마스터 정보는 '딜러_업체_마스터' 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.6666666666666666,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_GROUP",
+            "score": 0.5015852254020939
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "score": 0.49839708412144507
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_GROUP",
+            "score": 0.490758901359462
+          }
+        ],
+        "latencyMs": 906,
+        "score": {
+          "recall": 1,
+          "precision": 0.6666666666666666,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_GROUP",
+            "score": 0.5016535717834663
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "score": 0.49844051636409276
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_GROUP",
+            "score": 0.4908170343329439
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.CO_DEALER",
+            "score": 0.41538545976645763
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "score": 0.4133652609294461
+          }
+        ],
+        "latencyMs": 1366,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_GROUP",
+            "ko": "사업소마스터",
+            "score": 0.5015852254020939
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "ko": "사업소마스터",
+            "score": 0.49839708412144507
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_GROUP",
+            "ko": "사업소마스터",
+            "score": 0.490758901359462
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.CO_DEALER",
+            "ko": null,
+            "score": 0.4152549729736896
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "ko": null,
+            "score": 0.41321972907862403
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 634,
+        "missingTables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.2222222222222222,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q06",
+      "category": "synonym_gap",
+      "query": "차량 탁송(출고이동) 진행 상황을 알고 싶어",
+      "groundTruth": {
+        "topic": "차량_재고",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_VEHIC_SUPPLY"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_VEHIC_MOVE"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_VEHIC_SUPPLY"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.VT_VEHIC_SUPPLY"
+        }
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1191,
+        "reason": "사용자 질문의 '차량 탁송(출고이동) 진행 상황'은 제공된 주제 목록에 해당되지 않음.",
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": false
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.5184319346628755
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.5133176343197796
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_vt_vehic_supply",
+            "score": 0.512774163405507
+          }
+        ],
+        "latencyMs": 778,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.5184319346628755
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.5133176343197796
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_vt_vehic_supply",
+            "score": 0.512774163405507
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_move",
+            "score": 0.5120997084352205
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_vt_vehic_move",
+            "score": 0.5065055616630051
+          }
+        ],
+        "latencyMs": 448,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "ko": null,
+            "score": 0.5171244800382379
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "ko": null,
+            "score": 0.5125103353489593
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_move",
+            "ko": null,
+            "score": 0.511587745615128
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_vt_vehic_supply",
+            "ko": null,
+            "score": 0.5115651651294231
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_vt_vehic_move",
+            "ko": null,
+            "score": 0.5060338226531429
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "ko": null
+          }
+        ],
+        "latencyMs": 863,
+        "missingTables": [
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER"
+          }
+        ],
+        "fewShotHits": 4,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q07",
+      "category": "direct",
+      "query": "CRM 리드(잠재고객) 현황을 보고 싶어",
+      "groundTruth": {
+        "topic": "CRM_영업활동_리드",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.CRM_LEAD"
+        }
+      },
+      "topicClassification": {
+        "topic": "CRM_영업활동_리드",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_ACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD_OWNER"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT"
+          }
+        ],
+        "latencyMs": 1273,
+        "reason": "질문에 포함된 'CRM', '리드', '잠재고객' 키워드로 볼 때 고객 영업활동 및 리드 현황에 대한 데이터 요청이므로 CRM_영업활동_리드 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.14285714285714285,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "ML_Source",
+            "id": "tdms.crm_lead",
+            "score": 0.5323138946183641
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD",
+            "score": 0.5262549265247659
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD_OWNER",
+            "score": 0.49462917519383165
+          }
+        ],
+        "latencyMs": 1600,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "ML_Source",
+            "id": "tdms.crm_lead",
+            "score": 0.5323875490832657
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD",
+            "score": 0.5263560041179425
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD_OWNER",
+            "score": 0.4947277600308169
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET",
+            "score": 0.4576488476475595
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CU_BASE",
+            "score": 0.44976968554737595
+          }
+        ],
+        "latencyMs": 395,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "ML_Source",
+            "id": "tdms.crm_lead",
+            "ko": "ML 프로젝트 원천 테이블 (영업)",
+            "score": 0.53230248042562
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD",
+            "ko": "영업기회(CRM 리드)",
+            "score": 0.5262639590725448
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD_OWNER",
+            "ko": "리드 소유자/고객정보",
+            "score": 0.49463117363252684
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET",
+            "ko": "CRM 대상고객",
+            "score": 0.45756224217735575
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CU_BASE",
+            "ko": "고객",
+            "score": 0.4497102074274863
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC",
+            "ko": "캠페인/리콜_차량"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "ko": "캠페인/리콜"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "ko": "사업소마스터"
+          }
+        ],
+        "latencyMs": 842,
+        "missingTables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.1,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q08",
+      "category": "direct",
+      "query": "NPS 고객만족도 설문 결과를 보여줘",
+      "groundTruth": {
+        "topic": "CRM_영업활동_리드",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.CO_NPS_RESULT"
+        }
+      },
+      "topicClassification": {
+        "topic": "CRM_영업활동_리드",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_ACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD_OWNER"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT"
+          }
+        ],
+        "latencyMs": 1163,
+        "reason": "NPS 고객만족도 설문 결과는 CRM과 영업활동 및 고객 리드 관련 주제에 해당됩니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.14285714285714285,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT",
+            "score": 0.5551173190179135
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_ELEMENT_DEALER_UNPV",
+            "score": 0.327364824376244
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC",
+            "score": 0.32174234138161384
+          }
+        ],
+        "latencyMs": 549,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT",
+            "score": 0.5556079297906857
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_ELEMENT_DEALER_UNPV",
+            "score": 0.32695187060953895
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC",
+            "score": 0.3211445158168259
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_svc_propo_part",
+            "score": 0.305979567708824
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_PARTS",
+            "score": 0.30135372985662945
+          }
+        ],
+        "latencyMs": 1517,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT",
+            "ko": "NPS 설문결과",
+            "score": 0.5553863936022637
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_ELEMENT_DEALER_UNPV",
+            "ko": null,
+            "score": 0.3273099455270278
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC",
+            "ko": "전시장 상담상세",
+            "score": 0.32200998075797255
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_svc_propo_part",
+            "ko": null,
+            "score": 0.30672117611526917
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_PARTS",
+            "ko": null,
+            "score": 0.3016535419059776
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "ko": null
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC",
+            "ko": "캠페인/리콜_차량"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "ko": "캠페인/리콜"
+          }
+        ],
+        "latencyMs": 3545,
+        "missingTables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.1,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q09",
+      "category": "direct",
+      "query": "해피보드 미팅 상세 내역이 궁금해",
+      "groundTruth": {
+        "topic": "CRM_영업활동_리드",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.SPM_HBOARD_MEETING"
+        }
+      },
+      "topicClassification": {
+        "topic": "CRM_영업활동_리드",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_ACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_LEAD_OWNER"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CO_NPS_RESULT"
+          }
+        ],
+        "latencyMs": 1234,
+        "reason": "'해피보드 미팅'은 고객 영업활동 및 상담과 관련된 내용으로 CRM_영업활동_리드 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.2857142857142857,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING",
+            "score": 0.5882555584650041
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP",
+            "score": 0.5709133409174891
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC",
+            "score": 0.2729500062129479
+          }
+        ],
+        "latencyMs": 397,
+        "score": {
+          "recall": 1,
+          "precision": 0.6666666666666666,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING",
+            "score": 0.5882555584650041
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP",
+            "score": 0.5709133409174891
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC",
+            "score": 0.2729500062129479
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_TMKR_TWC_PART",
+            "score": 0.2691963253068685
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "gooit_chghst",
+            "score": 0.256812948750943
+          }
+        ],
+        "latencyMs": 544,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING",
+            "ko": "해피보드미팅",
+            "score": 0.5882555584650041
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SPM_HBOARD_MEETING_CHIP",
+            "ko": "해피보드미팅 상세",
+            "score": 0.5709133409174891
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SFA_SHOWROOM_DESC",
+            "ko": "전시장 상담상세",
+            "score": 0.2729500062129479
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_TMKR_TWC_PART",
+            "ko": null,
+            "score": 0.2691963253068685
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "gooit_chghst",
+            "ko": "개인발령내역",
+            "score": 0.256812948750943
+          }
+        ],
+        "latencyMs": 207,
+        "missingTables": [],
+        "fewShotHits": 0,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q10",
+      "category": "trap",
+      "query": "딜러별 계약 실적이 어떻게 돼?",
+      "groundTruth": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "primary": {
+          "db": "TMKR_W",
+          "id": "dbo.OM_CONTRACT"
+        }
+      },
+      "topicClassification": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "latencyMs": 1286,
+        "reason": "사용자가 딜러별 계약 실적(계약 건수/현황 등)을 문의하였고, 이는 계약_현황 주제에 해당함.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "score": 0.4660074461150319
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.4528578559609518
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.4462070623997343
+          }
+        ],
+        "latencyMs": 868,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "score": 0.46623785656552397
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.4530198702150291
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.44637915578099985
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.4364194154702619
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "score": 0.43006886235668124
+          }
+        ],
+        "latencyMs": 373,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "ko": null,
+            "score": 0.46623785656552397
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "ko": null,
+            "score": 0.4530198702150291
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.44637915578099985
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.4364194154702619
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "ko": null,
+            "score": 0.43006886235668124
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 550,
+        "missingTables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 0.25,
+          "precision": 0.1,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q11",
+      "category": "trap",
+      "query": "딜러사별 부품 재고 수량을 알려줘",
+      "groundTruth": {
+        "topic": "부품_재고_발주",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_STOCK"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.PT_STOCK"
+        }
+      },
+      "topicClassification": {
+        "topic": "부품_재고_발주",
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_part"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER"
+          }
+        ],
+        "latencyMs": 1405,
+        "reason": "질문에 '딜러사별'과 '부품 재고'라는 키워드가 포함되어 있어, 딜러사별로 부품 재고 현황을 묻는 것으로 판단하여 '부품_재고_발주' 주제로 분류했습니다.",
+        "score": {
+          "recall": 0.5,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_INFO",
+            "score": 0.48589483879366235
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_STOCK",
+            "score": 0.48391315758979436
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "score": 0.47614751584491766
+          }
+        ],
+        "latencyMs": 522,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_INFO",
+            "score": 0.48562608556563136
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_STOCK",
+            "score": 0.4836381667600273
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "score": 0.4758436265676156
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CPD_PT_STOCK",
+            "score": 0.4709392740978856
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PARTS_SUPPLY_OUT",
+            "score": 0.46897593532657444
+          }
+        ],
+        "latencyMs": 1357,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_INFO",
+            "ko": null,
+            "score": 0.4851649013308177
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_STOCK",
+            "ko": null,
+            "score": 0.4829638252370371
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "ko": null,
+            "score": 0.4751336977276809
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CPD_PT_STOCK",
+            "ko": null,
+            "score": 0.46998231872612145
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PARTS_SUPPLY_OUT",
+            "ko": null,
+            "score": 0.46655603173909665
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "ko": null
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK",
+            "ko": "재고 마스터"
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "ko": "사업소마스터"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 698,
+        "missingTables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK"
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q12",
+      "category": "fine_grained",
+      "query": "Karete 쪽 계약 상태명을 한글 텍스트로 보고 싶어 (코드 말고)",
+      "groundTruth": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "primary": {
+          "db": "LH_REFINED",
+          "id": "dbo.OM_CONTRACT"
+        }
+      },
+      "topicClassification": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "latencyMs": 1382,
+        "reason": "사용자는 Karete 계약의 상태를 한글 텍스트로 요청하며, 계약 건에 관련된 상태 정보이므로 계약_현황 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.25,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.4754947862173146
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.4749355694716412
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "score": 0.4719781732761625
+          }
+        ],
+        "latencyMs": 126,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.4754213007355423
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.47486028419913534
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "score": 0.4719121322841881
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.4701153271934603
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.46847133996486695
+          }
+        ],
+        "latencyMs": 680,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_om_contract",
+            "ko": null,
+            "score": 0.4754947862173146
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.4749355694716412
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "ko": null,
+            "score": 0.4719781732761625
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_om_contract",
+            "ko": null,
+            "score": 0.47017594645827676
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.46853757407114816
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT",
+            "ko": null
+          }
+        ],
+        "latencyMs": 578,
+        "missingTables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "fewShotHits": 2,
+        "score": {
+          "recall": 1,
+          "precision": 0.14285714285714285,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q13",
+      "category": "fine_grained",
+      "query": "KTWS BI 대시보드용 계약 팩트 테이블이 필요해",
+      "groundTruth": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "ktws.FCT_CONTRACT_KTWS"
+        }
+      },
+      "topicClassification": {
+        "topic": "계약_현황",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT"
+          }
+        ],
+        "latencyMs": 1178,
+        "reason": "'계약 팩트 테이블'은 계약/판매와 관련된 데이터로, 계약 건수 및 상태 등 계약 현황 정보를 담는 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.25,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "score": 0.5427328504957107
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "score": 0.5332529727882099
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.5078641752281284
+          }
+        ],
+        "latencyMs": 646,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "score": 0.5427328504957107
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "score": 0.5332529727882099
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.5078641752281284
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "score": 0.5052373153367364
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_om_contract",
+            "score": 0.49647589436061984
+          }
+        ],
+        "latencyMs": 1090,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.OM_CONTRACT_KTWS",
+            "ko": null,
+            "score": 0.5427066471355756
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "ko": null,
+            "score": 0.5332610356090142
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.507829257308959
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_om_contract",
+            "ko": null,
+            "score": 0.5052063125601306
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_om_contract",
+            "ko": null,
+            "score": 0.4964392060378681
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "ko": null
+          }
+        ],
+        "latencyMs": 2490,
+        "missingTables": [
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.OM_CONTRACT"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER"
+          }
+        ],
+        "fewShotHits": 4,
+        "score": {
+          "recall": 1,
+          "precision": 0.125,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q14",
+      "category": "direct",
+      "query": "모델별 세부 트림(SFX) 종류를 알려줘",
+      "groundTruth": {
+        "topic": "모델_차종_마스터",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_SFX"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_SFX"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.VS_SFX"
+        }
+      },
+      "topicClassification": {
+        "topic": "모델_차종_마스터",
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_MODEL"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_SFX"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_COLOR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_MODEL"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_SFX"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_VARIANT"
+          }
+        ],
+        "latencyMs": 1189,
+        "reason": "모델별 트림(SFX) 종류는 차량 모델과 트림 정보를 제공하는 모델_차종_마스터 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_SFX",
+            "score": 0.5317507984469274
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_SFX",
+            "score": 0.5311058051006978
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_VEHIC_BASIC",
+            "score": 0.3949623317213473
+          }
+        ],
+        "latencyMs": 843,
+        "score": {
+          "recall": 1,
+          "precision": 0.6666666666666666,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_SFX",
+            "score": 0.5318636472053083
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_SFX",
+            "score": 0.5312200095889821
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_VEHIC_BASIC",
+            "score": 0.3950838111332036
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_VEHIC_SPEC",
+            "score": 0.3729809432802361
+          },
+          {
+            "db": "LH_INTELLIGENCE_ML",
+            "id": "dbo.VEHICLE_BASE_INFO",
+            "score": 0.35360007075842614
+          }
+        ],
+        "latencyMs": 4081,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_SFX",
+            "ko": null,
+            "score": 0.5318636472053083
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_SFX",
+            "ko": "SFX 차량사양",
+            "score": 0.5312200095889821
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_VEHIC_BASIC",
+            "ko": null,
+            "score": 0.3950838111332036
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_VEHIC_SPEC",
+            "ko": null,
+            "score": 0.3729809432802361
+          },
+          {
+            "db": "LH_INTELLIGENCE_ML",
+            "id": "dbo.VEHICLE_BASE_INFO",
+            "ko": null,
+            "score": 0.35360007075842614
+          }
+        ],
+        "latencyMs": 5626,
+        "missingTables": [],
+        "fewShotHits": 1,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q15",
+      "category": "direct",
+      "query": "이번달 판매 목표 대비 달성률을 보여줘",
+      "groundTruth": {
+        "topic": "판매_목표_달성률",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_TARGET"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "ktws.FCT_SALES_TARGET_DAILY"
+        }
+      },
+      "topicClassification": {
+        "topic": "판매_목표_달성률",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_BP_SALES_TARGET"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_DAILY_SALES_TREND"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_D"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_M"
+          }
+        ],
+        "latencyMs": 1525,
+        "reason": "사용자 질문에 '판매 목표 대비 달성률'이라는 키워드가 명확히 나타나 있어 판매_목표_달성률 주제에 해당합니다.",
+        "score": {
+          "recall": 0.5,
+          "precision": 0.14285714285714285,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_DAILY_SALES_TREND",
+            "score": 0.47459325477118
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_BP_SALES_TARGET",
+            "score": 0.458699555302034
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "score": 0.4497952611702193
+          }
+        ],
+        "latencyMs": 1512,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_DAILY_SALES_TREND",
+            "score": 0.4728430451023527
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_BP_SALES_TARGET",
+            "score": 0.45740322153442003
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "score": 0.4482609050501638
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_M",
+            "score": 0.435862107317677
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "score": 0.42382242633254025
+          }
+        ],
+        "latencyMs": 863,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_DAILY_SALES_TREND",
+            "ko": "일별 판매목표/실적",
+            "score": 0.4728430451023527
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_BP_SALES_TARGET",
+            "ko": null,
+            "score": 0.45740322153442003
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "ko": null,
+            "score": 0.4482609050501638
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_M",
+            "ko": "CRM 월별 목표집계",
+            "score": 0.435862107317677
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null,
+            "score": 0.42382242633254025
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC",
+            "ko": "캠페인/리콜_차량"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR",
+            "ko": "캠페인/리콜"
+          }
+        ],
+        "latencyMs": 801,
+        "missingTables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR_VEHIC"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SVC_CR"
+          }
+        ],
+        "fewShotHits": 6,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.1,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q16",
+      "category": "direct",
+      "query": "딜러사 재무제표(매출/손익) 정보를 조회하고 싶어",
+      "groundTruth": {
+        "topic": "딜러_재무",
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          }
+        ],
+        "primary": {
+          "db": "LH_INTELLIGENCE_BI",
+          "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+        }
+      },
+      "topicClassification": {
+        "topic": "딜러_재무",
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          }
+        ],
+        "latencyMs": 1408,
+        "reason": "질문에 '딜러사', '재무제표', '매출', '손익'이라는 키워드가 명확하게 포함되어 있어 딜러_재무 주제가 적합합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "score": 0.5006965620129987
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "score": 0.46913495630480473
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_MNG_DEALER",
+            "score": 0.45745662577007556
+          }
+        ],
+        "latencyMs": 5823,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "score": 0.5006965620129987
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "score": 0.46913495630480473
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_MNG_DEALER",
+            "score": 0.45745662577007556
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BI_FI_DEALER",
+            "score": 0.45310465445159065
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.TACC_DEALER_ORDER",
+            "score": 0.42751714015111203
+          }
+        ],
+        "latencyMs": 250,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "ko": null,
+            "score": 0.5006965620129987
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_DEALER",
+            "ko": null,
+            "score": 0.46913495630480473
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_MNG_DEALER",
+            "ko": null,
+            "score": 0.45745662577007556
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BI_FI_DEALER",
+            "ko": null,
+            "score": 0.45310465445159065
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.TACC_DEALER_ORDER",
+            "ko": null,
+            "score": 0.42751714015111203
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group",
+            "ko": "사업소마스터"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 121,
+        "missingTables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.co_group"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.125,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q17",
+      "category": "direct",
+      "query": "이번 분기 영업일수가 며칠인지 캘린더로 확인하고 싶어",
+      "groundTruth": {
+        "topic": "날짜_캘린더",
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_CALENDAR"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "ktws.DIM_CALENDAR"
+        }
+      },
+      "topicClassification": {
+        "topic": "날짜_캘린더",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_CALENDAR"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          }
+        ],
+        "latencyMs": 1235,
+        "reason": "질문에서 이번 분기 영업일수와 캘린더 확인을 요청하였으며, 이는 시간 단위 그룹핑 및 날짜 차원 데이터를 다루는 날짜_캘린더 주제에 해당합니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": null,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "HR_Warehouse",
+            "id": "DIM_CALENDAR",
+            "score": 0.35906121354602316
+          },
+          {
+            "db": "HR_Warehouse",
+            "id": "WORK_CLDR",
+            "score": 0.3316707977112664
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "score": 0.33135144615825507
+          }
+        ],
+        "latencyMs": 630,
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "HR_Warehouse",
+            "id": "DIM_CALENDAR",
+            "score": 0.35906121354602316
+          },
+          {
+            "db": "HR_Warehouse",
+            "id": "WORK_CLDR",
+            "score": 0.3316707977112664
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "score": 0.33135144615825507
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_CALENDAR",
+            "score": 0.3289307359195946
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "score": 0.3208844977691229
+          }
+        ],
+        "latencyMs": 179,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "HR_Warehouse",
+            "id": "DIM_CALENDAR",
+            "ko": "연, 월 정보",
+            "score": 0.3591631292002809
+          },
+          {
+            "db": "HR_Warehouse",
+            "id": "WORK_CLDR",
+            "ko": "근태달력",
+            "score": 0.3317444704272841
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "ko": null,
+            "score": 0.3312574025432491
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.DIM_CALENDAR",
+            "ko": null,
+            "score": 0.3289206561479516
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null,
+            "score": 0.32077413162136936
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT",
+            "ko": null
+          }
+        ],
+        "latencyMs": 392,
+        "missingTables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_FINANCE_DEALER_ACCOUNT"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.25,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q18",
+      "category": "direct",
+      "query": "부품 발주 대비 백오더(입고 지연) 현황을 보고 싶어",
+      "groundTruth": {
+        "topic": "부품_재고_발주",
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_BO"
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_BACKORDER"
+          }
+        ],
+        "primary": {
+          "db": "KPI_W",
+          "id": "dbo.PT_ORDER_BO"
+        }
+      },
+      "topicClassification": {
+        "topic": "부품_재고_발주",
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_part"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK"
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER"
+          }
+        ],
+        "latencyMs": 1331,
+        "reason": "'부품 발주'와 '입고 지연', '백오더' 등 부품 관련 발주와 재고 현황을 묻는 질문이라 부품_재고_발주 주제로 분류했습니다.",
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "score": 0.5155483429951082
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_DETL",
+            "score": 0.5152462589302396
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_BO",
+            "score": 0.49625042715915924
+          }
+        ],
+        "latencyMs": 474,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "score": 0.5154980831605089
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_DETL",
+            "score": 0.5153089822049959
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_BO_DETL",
+            "score": 0.4962985376956711
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_BO",
+            "score": 0.4961179276624536
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_BACKORDER",
+            "score": 0.4934675996096468
+          }
+        ],
+        "latencyMs": 483,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "ko": null,
+            "score": 0.5155624573465669
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_DETL",
+            "ko": null,
+            "score": 0.5152580552286065
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_BO",
+            "ko": null,
+            "score": 0.4962273031549474
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER_BO_DETL",
+            "ko": null,
+            "score": 0.49617225585291636
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_BACKORDER",
+            "ko": null,
+            "score": 0.4940107839923587
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK",
+            "ko": "재고 마스터"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 239,
+        "missingTables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_STOCK"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.2222222222222222,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q19",
+      "category": "direct",
+      "query": "직원 근태(휴가/연차) 현황을 확인하고 싶어",
+      "groundTruth": {
+        "topic": "HR_인사",
+        "tables": [
+          {
+            "db": "HR_Warehouse",
+            "id": "WORK_CLDR"
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_cldr"
+          }
+        ],
+        "primary": {
+          "db": "HR_Warehouse",
+          "id": "WORK_CLDR"
+        }
+      },
+      "topicClassification": {
+        "topic": "HR_인사",
+        "tables": [
+          {
+            "db": "HR_Lakehouse",
+            "id": "achv_feedback"
+          },
+          {
+            "db": "HR_Warehouse",
+            "id": "PERIT_EMP"
+          }
+        ],
+        "latencyMs": 1344,
+        "reason": "직원의 근태(휴가/연차) 현황은 인사(HR) 관련 정보에 해당하므로 HR_인사 주제로 분류했습니다.",
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "HR_Lakehouse",
+            "id": "gooit_org_chghst",
+            "score": 0.4688346816332356
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_wrplan",
+            "score": 0.45909808889552545
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_cldr",
+            "score": 0.4430407026392439
+          }
+        ],
+        "latencyMs": 499,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "HR_Lakehouse",
+            "id": "gooit_org_chghst",
+            "score": 0.46903413441310504
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_wrplan",
+            "score": 0.45921753154238504
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_cldr",
+            "score": 0.4430229174247377
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "perit_emp",
+            "score": 0.42866127002367727
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "perit_etc",
+            "score": 0.42786731016667245
+          }
+        ],
+        "latencyMs": 891,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "HR_Lakehouse",
+            "id": "gooit_org_chghst",
+            "ko": "발령이력 정보",
+            "score": 0.46903413441310504
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_wrplan",
+            "ko": "근무계획(탄력/선택, 최종,결재완료)",
+            "score": 0.45921753154238504
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "dalit_cldr",
+            "ko": "근태달력",
+            "score": 0.4430229174247377
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "perit_emp",
+            "ko": "인적 사항",
+            "score": 0.42866127002367727
+          },
+          {
+            "db": "HR_Lakehouse",
+            "id": "perit_etc",
+            "ko": "PA/CA 등급 정보",
+            "score": 0.42786731016667245
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS",
+            "ko": null
+          }
+        ],
+        "latencyMs": 7223,
+        "missingTables": [
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_CONTRACT_KTWS"
+          }
+        ],
+        "fewShotHits": 1,
+        "score": {
+          "recall": 0.5,
+          "precision": 0.16666666666666666,
+          "correctlyRejected": null,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q20",
+      "category": "synonym_gap",
+      "query": "시승 예약 신청 내역을 보고 싶어",
+      "groundTruth": {
+        "topic": null,
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SFA_TESTCAR_TRIAL"
+          }
+        ],
+        "primary": {
+          "db": "TMKR_W",
+          "id": "dbo.SFA_TESTCAR_TRIAL"
+        }
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1297,
+        "reason": "시승 예약 신청 내역은 주제 목록에 해당하지 않으며, 데이터 조회 주제가 아닙니다.",
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SFA_TESTCAR_TRIAL",
+            "score": 0.44197948790048885
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.TA_ORDER_DT",
+            "score": 0.3465449237615559
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_ta_order_dt",
+            "score": 0.34205975401139704
+          }
+        ],
+        "latencyMs": 120,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SFA_TESTCAR_TRIAL",
+            "score": 0.4419650012908534
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.TA_ORDER_DT",
+            "score": 0.346559887924809
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_ta_order_dt",
+            "score": 0.34206494660941494
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_ta_order_dt",
+            "score": 0.34204258626498824
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VEHIC_ALLOCATION",
+            "score": 0.32915547537790757
+          }
+        ],
+        "latencyMs": 450,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.SFA_TESTCAR_TRIAL",
+            "ko": "시승예약관리",
+            "score": 0.44197948790048885
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.TA_ORDER_DT",
+            "ko": "배정순번일시(*쿼리)",
+            "score": 0.3465449237615559
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_ta_order_dt",
+            "ko": null,
+            "score": 0.34205975401139704
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.l_ta_order_dt",
+            "ko": null,
+            "score": 0.342035209058437
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_TMKR_TWC_PART",
+            "ko": null,
+            "score": 0.3291737758937412
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC",
+            "ko": null
+          }
+        ],
+        "latencyMs": 155,
+        "missingTables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          }
+        ],
+        "fewShotHits": 3,
+        "score": {
+          "recall": 1,
+          "precision": 0.14285714285714285,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q21",
+      "category": "synonym_gap",
+      "query": "관용차(공용차량) 운영 현황을 알려줘",
+      "groundTruth": {
+        "topic": null,
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE"
+          }
+        ],
+        "primary": {
+          "db": "LH_INTELLIGENCE_BI",
+          "id": "dbo.FCT_PUBLIC_VEHICLE"
+        }
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1212,
+        "reason": "사용자의 질문은 관용차(공용차)의 운영 현황에 대한 데이터 조회로, 주어진 분류 목록에는 해당 주제가 포함되어 있지 않습니다.",
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE",
+            "score": 0.47684382214421006
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE_SUB",
+            "score": 0.4647310294461368
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_VEHIC",
+            "score": 0.41616886946865445
+          }
+        ],
+        "latencyMs": 158,
+        "score": {
+          "recall": 1,
+          "precision": 0.3333333333333333,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE",
+            "score": 0.47682219107424717
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE_SUB",
+            "score": 0.46471195992700115
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_VEHIC",
+            "score": 0.4161615864169257
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_VEHIC_SUPPLY",
+            "score": 0.3920322026790532
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.3868341679536691
+          }
+        ],
+        "latencyMs": 875,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE",
+            "ko": null,
+            "score": 0.47684382214421006
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_PUBLIC_VEHICLE_SUB",
+            "ko": null,
+            "score": 0.4647310294461368
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.CO_VEHIC",
+            "ko": "공통_차량",
+            "score": 0.41616886946865445
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_VEHIC_SUPPLY",
+            "ko": "차량공급",
+            "score": 0.39200352455287046
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "ko": null,
+            "score": 0.38682054399751276
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 499,
+        "missingTables": [
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.CO_VEHIC"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          }
+        ],
+        "fewShotHits": 4,
+        "score": {
+          "recall": 1,
+          "precision": 0.14285714285714285,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q22",
+      "category": "synonym_gap",
+      "query": "PDI(출고전점검) 공정 단계별 진행 상황을 보고 싶어",
+      "groundTruth": {
+        "topic": null,
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_MASTER"
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_STEP"
+          }
+        ],
+        "primary": {
+          "db": "TMKR_W",
+          "id": "dbo.VT_PDI_MASTER"
+        }
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1154,
+        "reason": "사용자의 질문은 PDI(출고전점검) 공정 단계별 진행 상황으로, 주어진 주제 목록 중 어느 데이터와도 직접적으로 관련되지 않습니다.",
+        "score": {
+          "recall": 0,
+          "precision": 0,
+          "correctlyRejected": null,
+          "fullHit": false
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_STEP",
+            "score": 0.5936683810218735
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_MASTER",
+            "score": 0.5179505534411619
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.46685554900228554
+          }
+        ],
+        "latencyMs": 829,
+        "score": {
+          "recall": 1,
+          "precision": 0.6666666666666666,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_STEP",
+            "score": 0.5932300823920126
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_MASTER",
+            "score": 0.5178469922462986
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "score": 0.4669480026413127
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_vt_vehic_supply",
+            "score": 0.46209615645326274
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_BACKORDER",
+            "score": 0.43611406559637045
+          }
+        ],
+        "latencyMs": 122,
+        "score": {
+          "recall": 1,
+          "precision": 0.4,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_STEP",
+            "ko": "공정정보",
+            "score": 0.5936683810218735
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VT_PDI_MASTER",
+            "ko": "PORT-IN(BUSAN-IN)된 차량정보",
+            "score": 0.5179505534411619
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.t_vt_vehic_supply",
+            "ko": null,
+            "score": 0.46685554900228554
+          },
+          {
+            "db": "KPI_L",
+            "id": "dbo.l_vt_vehic_supply",
+            "ko": null,
+            "score": 0.462000537417013
+          },
+          {
+            "db": "KPI_W",
+            "id": "bpk.BP_SVC_BACKORDER",
+            "ko": null,
+            "score": 0.4360185588811913
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER",
+            "ko": null
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR",
+            "ko": null
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET",
+            "ko": null
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR",
+            "ko": null
+          }
+        ],
+        "latencyMs": 653,
+        "missingTables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.PT_ORDER"
+          },
+          {
+            "db": "KPI_W",
+            "id": "ktws.FCT_SALES_TARGET_DAILY"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.FCT_SERVICE_REPAIR"
+          },
+          {
+            "db": "LH_REFINED",
+            "id": "dbo.SVC_MONTHLY_SALES_TARGET"
+          },
+          {
+            "db": "LH_INTELLIGENCE_BI",
+            "id": "dbo.DIM_CALENDAR"
+          }
+        ],
+        "fewShotHits": 5,
+        "score": {
+          "recall": 1,
+          "precision": 0.2,
+          "correctlyRejected": null,
+          "fullHit": true
+        }
+      }
+    },
+    {
+      "id": "q23",
+      "category": "out_of_scope",
+      "query": "오늘 서울 날씨 어때?",
+      "groundTruth": {
+        "topic": null,
+        "tables": [],
+        "primary": null
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1211,
+        "reason": "사용자 질문이 제공된 주제 목록(계약, 재고, 정비, 판매 목표 등)과 관련 없으며, 날씨 데이터 요청으로 분류될 수 없음.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": true,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_DAILY_SALES_REPORT",
+            "score": 0.23429123032991814
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "score": 0.21889068981192092
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_D",
+            "score": 0.20563818847532778
+          }
+        ],
+        "latencyMs": 491,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_DAILY_SALES_REPORT",
+            "score": 0.23444049168020079
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "score": 0.21885145671337886
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_D",
+            "score": 0.20541588425432117
+          },
+          {
+            "db": "HR_Warehouse",
+            "id": "DIM_CALENDAR",
+            "score": 0.19967013879425652
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_DAILY_SALES_TREND",
+            "score": 0.1993947795591477
+          }
+        ],
+        "latencyMs": 127,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "KPI_W",
+            "id": "dbo.SVC_DAILY_SALES_REPORT",
+            "ko": null,
+            "score": 0.23444049168020079
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_fn_stock_day",
+            "ko": null,
+            "score": 0.21885145671337886
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.CRM_TARGET_D",
+            "ko": "CRM 일별 목표집계",
+            "score": 0.20541588425432117
+          },
+          {
+            "db": "HR_Warehouse",
+            "id": "DIM_CALENDAR",
+            "ko": "연, 월 정보",
+            "score": 0.19967013879425652
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VT_DAILY_SALES_TREND",
+            "ko": "일별 판매목표/실적",
+            "score": 0.1993947795591477
+          }
+        ],
+        "latencyMs": 113,
+        "missingTables": [],
+        "fewShotHits": 0,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q24",
+      "category": "out_of_scope",
+      "query": "토요타 자동차 미국 주가가 얼마야?",
+      "groundTruth": {
+        "topic": null,
+        "tables": [],
+        "primary": null
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1196,
+        "reason": "사용자 질문은 주제 목록의 어느 항목과도 관련이 없는 미국 주식 가격 조회임.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": true,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_VEHIC_BASIC",
+            "score": 0.28894927271172877
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_INFO",
+            "score": 0.27440859106799065
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PART_PROPO",
+            "score": 0.26828431733924796
+          }
+        ],
+        "latencyMs": 880,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_VEHIC_BASIC",
+            "score": 0.2889857211126212
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_INFO",
+            "score": 0.27437915745251557
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PART_PROPO",
+            "score": 0.2682405843693182
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_MODEL",
+            "score": 0.26120242796918564
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_price",
+            "score": 0.25716204795209163
+          }
+        ],
+        "latencyMs": 626,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_W",
+            "id": "dbo.VS_VEHIC_BASIC",
+            "ko": null,
+            "score": 0.28894927271172877
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_INFO",
+            "ko": null,
+            "score": 0.27440859106799065
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PART_PROPO",
+            "ko": null,
+            "score": 0.26828431733924796
+          },
+          {
+            "db": "KPI_W",
+            "id": "dbo.VS_MODEL",
+            "ko": null,
+            "score": 0.26114192100551326
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_price",
+            "ko": "부품 가격 마스터",
+            "score": 0.2572087958281025
+          }
+        ],
+        "latencyMs": 436,
+        "missingTables": [],
+        "fewShotHits": 0,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      }
+    },
+    {
+      "id": "q25",
+      "category": "out_of_scope",
+      "query": "타이어 펑크났을 때 보증 규정이 어떻게 되는지 설명해줘",
+      "groundTruth": {
+        "topic": null,
+        "tables": [],
+        "primary": null
+      },
+      "topicClassification": {
+        "topic": null,
+        "tables": [],
+        "latencyMs": 1197,
+        "reason": "사용자의 질문은 보증 규정 설명으로, 주제 목록의 데이터 조회/현황/실적과는 관련이 없습니다.",
+        "score": {
+          "recall": 1,
+          "precision": 1,
+          "correctlyRejected": true,
+          "fullHit": true
+        },
+        "topicCorrect": true
+      },
+      "ragK3": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_part_tire_company",
+            "score": 0.3418376284549501
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_TIRE_COMPANY",
+            "score": 0.3398365558673694
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.STG_PT_PART_TIRE_COMPANY",
+            "score": 0.33235147284291494
+          }
+        ],
+        "latencyMs": 632,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      },
+      "ragK5": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_part_tire_company",
+            "score": 0.3418376284549501
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_TIRE_COMPANY",
+            "score": 0.3398365558673694
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.STG_PT_PART_TIRE_COMPANY",
+            "score": 0.33235147284291494
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_SOUT_DETL",
+            "score": 0.2948202466927968
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_scertify_detl",
+            "score": 0.290358825133745
+          }
+        ],
+        "latencyMs": 112,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      },
+      "pipeline4": {
+        "tables": [
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_part_tire_company",
+            "ko": "타이어 회사 정보",
+            "score": 0.34188350869559975
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_PART_TIRE_COMPANY",
+            "ko": "타이어 회사 정보",
+            "score": 0.33985620500391195
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.STG_PT_PART_TIRE_COMPANY",
+            "ko": null,
+            "score": 0.3323941328312007
+          },
+          {
+            "db": "TMKR_W",
+            "id": "dbo.PT_SOUT_DETL",
+            "ko": "부품 출고 상세",
+            "score": 0.29484194918239226
+          },
+          {
+            "db": "TMKR_L",
+            "id": "dbo.pt_scertify_detl",
+            "ko": "제원관리 마스터",
+            "score": 0.2904054519592613
+          }
+        ],
+        "latencyMs": 877,
+        "missingTables": [],
+        "fewShotHits": 0,
+        "score": {
+          "recall": 1,
+          "precision": 0,
+          "correctlyRejected": false,
+          "fullHit": false
+        }
+      }
+    }
+  ]
+}
