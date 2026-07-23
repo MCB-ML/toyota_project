@@ -1,17 +1,14 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import 'dotenv/config'
 import { createAzureClient, getAzureConfig } from '../azureClient.js'
 import { streamAssistantTurn } from '../azureStream.js'
 import { listTopicsForPrompt, buildTopicClassifierTools, loadTablesForTopic } from '../schemaLoader.js'
-import { embedTexts } from './embedClient.js'
-import { topKBySimilarity } from './cosine.js'
 import { evalQueries } from './evalSet.js'
-import { runPipeline } from './pipeline.js'
+import { runRetrieval, searchTables } from './pipeline.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const EMBEDDINGS_PATH = join(__dirname, 'embeddings.json')
 const RESULTS_PATH = join(__dirname, 'results.json')
 
 const tableKey = t => `${t.db}::${t.id}`
@@ -53,28 +50,27 @@ async function runTopicClassification(client, deployment, query) {
     return { topic: null, tables: [], latencyMs, reason: call?.args?.reason ?? null }
   }
   const topic = call.args.topic
-  const tables = loadTablesForTopic(topic).map(t => ({ db: t.db, id: t.id }))
+  const tables = loadTablesForTopic(topic).map(t => ({ db: t.database, id: t.table }))
   return { topic, tables, latencyMs, reason: call.args.reasoning ?? null }
 }
 
-async function runRagRetrieval(query, corpus, k) {
+async function runRagRetrieval(query, k) {
   const t0 = Date.now()
-  const [queryVector] = await embedTexts([query])
-  const top = topKBySimilarity(queryVector, corpus, k)
+  const top = await searchTables(query, k)
   const latencyMs = Date.now() - t0
   return { tables: top.map(t => ({ db: t.db, id: t.id, score: t.score })), latencyMs }
 }
 
-// The "tables" a 4-stage pipeline run actually hands to SQL generation are Stage 1's
-// hit_tables plus whatever Stage 3 backfilled — those two lists are what's comparable
-// to topic classification's / plain top-K RAG's retrieved-table sets. Stage 2's
-// few-shot/cross-few-shot and Stage 4's glossary aren't tables, so they're excluded
-// from this scoring (they're evaluated qualitatively, not against the table ground truth).
-async function runPipelineRetrieval(query) {
+// The "tables" a pipeline run actually hands to SQL generation are Stage 1's hit_tables plus
+// whatever Stage 5 backfilled — those two lists are what's comparable to topic
+// classification's / plain top-K RAG's retrieved-table sets. Uses the lightweight
+// runRetrieval() path (Stage 0-6 only, no Stage 7 generation / Stage 9 Fabric round-trip) so
+// this ~30-query batch eval doesn't pay per-step LLM + live-execution cost on every query.
+async function runPipelineRetrieval(client, deployment, query) {
   const t0 = Date.now()
-  const result = await runPipeline(query)
+  const result = await runRetrieval({ query, client, deployment })
   const latencyMs = Date.now() - t0
-  const merged = [...result.stage1.hitTables, ...result.stage3.backfillSchema]
+  const merged = [...result.stage1_tables, ...result.stage5_backfill.missingTables]
   const seen = new Set()
   const tables = merged.filter(t => {
     const k = tableKey(t)
@@ -82,7 +78,7 @@ async function runPipelineRetrieval(query) {
     seen.add(k)
     return true
   })
-  return { tables, latencyMs, missingTables: result.stage3.missingTables, fewShotHits: result.stage2.general.length + result.stage2.cross.length }
+  return { tables, latencyMs, missingTables: result.stage5_backfill.missingTables, patternHits: result.stage2_patterns.length }
 }
 
 function avg(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null }
@@ -92,18 +88,14 @@ async function main() {
   if (!client) throw new Error('Azure OpenAI env vars missing (see .env.example)')
   const { deployment } = getAzureConfig()
 
-  const cache = JSON.parse(readFileSync(EMBEDDINGS_PATH, 'utf-8'))
-  const corpus = cache.items // [{db, id, file, ko, vector}]
-  console.log(`Loaded ${corpus.length} table embeddings (model=${cache.model})`)
-
   const perQuery = []
   for (const q of evalQueries) {
     process.stdout.write(`[${q.id}] ${q.query} ... `)
 
     const topicResult = await runTopicClassification(client, deployment, q.query)
-    const ragK3 = await runRagRetrieval(q.query, corpus, 3)
-    const ragK5 = await runRagRetrieval(q.query, corpus, 5)
-    const pipeline4 = await runPipelineRetrieval(q.query)
+    const ragK3 = await runRagRetrieval(q.query, 3)
+    const ragK5 = await runRagRetrieval(q.query, 5)
+    const pipeline4 = await runPipelineRetrieval(client, deployment, q.query)
 
     const topicScore = scoreRetrieval(topicResult.tables, q.tables)
     const ragK3Score = scoreRetrieval(ragK3.tables, q.tables)

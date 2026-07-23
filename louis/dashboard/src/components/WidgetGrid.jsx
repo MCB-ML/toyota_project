@@ -1,166 +1,108 @@
-import { useRef, useState } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
+import GridLayoutBase, { WidthProvider } from 'react-grid-layout/legacy'
+import 'react-grid-layout/css/styles.css'
+import './WidgetGrid.css'
 import GeneratedWidget from './widgets/GeneratedWidget'
+import { GRID_COLS, ROW_HEIGHT, MARGIN, MIN_W, MIN_H, MAX_H, pxHeightForRows, computeLayout } from '../utils/gridLayout'
 
-// Row-based flex "weight" layout (Compose's Modifier.weight(), continuous instead
-// of the earlier 3-step sm/md/lg). A row holds widgets until their weights would
-// exceed ROW_CAPACITY, then wraps — same visual default as before (two weight=1
-// widgets side by side). Dragging a handle between two widgets grows one and
-// shrinks its immediate neighbor by the same amount, so the row's total width
-// never changes and nothing overlaps; MIN/MAX_WEIGHT bound how far either can go.
-const ROW_CAPACITY = 2
-const MIN_WEIGHT = 0.4
-const MAX_WEIGHT = 3
+const GridLayout = WidthProvider(GridLayoutBase)
 
-// Vertical resize is simpler — growing a widget's height never has to steal
-// space from a sibling (the page just gets taller / scrolls further), so each
-// widget's height is independent. Only clamped by MIN/MAX_HEIGHT.
-const DEFAULT_HEIGHT = 220
-const MIN_HEIGHT = 140
-const MAX_HEIGHT = 640
+// A widget's rendered box (set by react-grid-layout from its row/col span) minus
+// the chart card's own chrome (p-4 padding + title row) it needs to leave for the
+// chart itself — every widgets/*.jsx card shares that same p-4 + <h4 mb-3> shape.
+const CARD_CHROME_PX = 64
+const MIN_CHART_PX = 80
 
-function packRows(widgets) {
-  const rows = []
-  let current = []
-  let sum = 0
-  for (const w of widgets) {
-    const weight = w.weight ?? 1
-    if (current.length > 0 && sum + weight > ROW_CAPACITY + 1e-6) {
-      rows.push(current)
-      current = []
-      sum = 0
+// readOnly=true일 때는 드래그/리사이즈를 끈다(다른 탭에 배포된 페이지를 보여줄 때처럼,
+// 편집 권한이 없는 뷰어용). onCommitLayout은 사용자가 리사이즈를 "놓았을 때"와, 자리 없는
+// (레거시 또는 방금 추가된) 위젯이 첫 압축(compaction)으로 자리를 찾았을 때만 호출된다 —
+// 드래그 도중 매 프레임 호출되지 않으므로 그때마다 서버에 저장이 튀지 않는다.
+export default function WidgetGrid({ widgets, readOnly = false, onCommitLayout }) {
+  const isInteractingRef = useRef(false)
+
+  const layout = useMemo(() => {
+    const byId = new Map(widgets.map(w => [w.id, w]))
+    return computeLayout(widgets).map(item => {
+      const w = byId.get(item.i)
+      // 옛 KPI 위젯(카드 여러 개가 하나의 위젯 안에 묶인 레거시 저장본)만 리사이즈를
+      // 막는다 — 이 변경 이후 새로 만든 KPI 카드는 위젯당 카드 하나라 다른 위젯처럼
+      // 자유롭게 리사이즈된다.
+      const isLegacyKpiBundle = w?.type === 'render_kpi_cards' && Array.isArray(w?.props?.cards)
+      return {
+        ...item,
+        minW: MIN_W,
+        maxW: GRID_COLS,
+        minH: MIN_H,
+        maxH: MAX_H,
+        isResizable: !readOnly && !isLegacyKpiBundle,
+      }
+    })
+  }, [widgets, readOnly])
+
+  const commitIfChanged = useCallback((newLayout) => {
+    if (readOnly || !onCommitLayout) return
+    const changes = []
+    for (const item of newLayout) {
+      const widget = widgets.find(w => w.id === item.i)
+      if (!widget) continue
+      const right = item.x + item.w
+      const bottom = item.y + item.h
+      if (widget.left === item.x && widget.top === item.y && widget.right === right && widget.bottom === bottom) continue
+      changes.push({ widgetId: item.i, left: item.x, top: item.y, right, bottom })
     }
-    current.push(w)
-    sum += weight
-  }
-  if (current.length) rows.push(current)
-  return rows
-}
+    if (changes.length) onCommitLayout(changes)
+  }, [widgets, readOnly, onCommitLayout])
 
-// readOnly=true일 때는 드래그 크기 조절 핸들을 숨긴다(다른 탭에 배포된 페이지를
-// 보여줄 때처럼, 편집 권한이 없는 뷰어용).
-export default function WidgetGrid({ widgets, readOnly = false, onCommitWeights, onCommitHeight }) {
-  const rows = packRows(widgets)
-  return (
-    <div className="space-y-4">
-      {rows.map((rowWidgets, i) => (
-        <WidgetRow
-          key={rowWidgets.map(w => w.id).join('-') || i}
-          widgets={rowWidgets}
-          readOnly={readOnly}
-          onCommitWeights={onCommitWeights}
-          onCommitHeight={onCommitHeight}
-        />
-      ))}
-    </div>
-  )
-}
+  const handleLayoutChange = useCallback((newLayout) => {
+    // 사용자가 드래그 중일 때는 매 프레임 호출되므로 무시 — 최종 값은 onResizeStop에서 커밋.
+    // (마운트 시 자리 없는 위젯을 압축해 배치하는 경우에는 상호작용이 없어 여기서 바로 커밋된다.)
+    if (isInteractingRef.current) return
+    commitIfChanged(newLayout)
+  }, [commitIfChanged])
 
-function WidgetRow({ widgets, readOnly, onCommitWeights, onCommitHeight }) {
-  const containerRef = useRef(null)
-  const [dragWeights, setDragWeights] = useState(null)
-  const [dragHeights, setDragHeights] = useState({})
-  // 최신 드래그 값을 ref로도 들고 있는다 — onUp에서 onCommit*을 setState updater
-  // 안에서 호출하면 "다른 컴포넌트(DashboardStateProvider) 렌더 중 업데이트" 경고가
-  // 나므로, 커밋은 항상 이벤트 핸들러 최상위에서 ref 값을 읽어 별도로 호출한다.
-  const dragWeightsRef = useRef(null)
-  const dragHeightsRef = useRef({})
-  const rowWeightSum = widgets.reduce((s, w) => s + (w.weight ?? 1), 0)
-
-  const startWidthDrag = (leftId, rightId, e) => {
-    e.preventDefault()
-    const container = containerRef.current
-    if (!container) return
-    const rowWidthPx = container.getBoundingClientRect().width
-    const left = widgets.find(w => w.id === leftId)
-    const right = widgets.find(w => w.id === rightId)
-    const startX = e.clientX
-    const startLeftW = left.weight ?? 1
-    const startRightW = right.weight ?? 1
-    const pairSum = startLeftW + startRightW
-
-    const onMove = (moveEvent) => {
-      const deltaPx = moveEvent.clientX - startX
-      const deltaWeight = (deltaPx / rowWidthPx) * rowWeightSum
-      let newLeft = startLeftW + deltaWeight
-      let newRight = startRightW - deltaWeight
-      // 예외 처리: 최소/최대 폭을 벗어나면 그 지점에서 멈추고, 상대 쪽이 나머지를 흡수
-      // (둘의 합은 항상 pairSum으로 고정 — 같은 줄의 다른 위젯 폭은 건드리지 않음)
-      if (newLeft < MIN_WEIGHT) { newLeft = MIN_WEIGHT; newRight = pairSum - MIN_WEIGHT }
-      if (newRight < MIN_WEIGHT) { newRight = MIN_WEIGHT; newLeft = pairSum - MIN_WEIGHT }
-      newLeft = Math.min(newLeft, MAX_WEIGHT)
-      newRight = Math.min(newRight, MAX_WEIGHT)
-      const next = { [leftId]: newLeft, [rightId]: newRight }
-      dragWeightsRef.current = next
-      setDragWeights(next)
-    }
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-      const finalWeights = dragWeightsRef.current
-      dragWeightsRef.current = null
-      setDragWeights(null)
-      if (finalWeights) onCommitWeights(finalWeights)
-    }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-  }
-
-  const startHeightDrag = (widgetId, e) => {
-    e.preventDefault()
-    const widget = widgets.find(w => w.id === widgetId)
-    const startY = e.clientY
-    const startHeight = widget.height ?? DEFAULT_HEIGHT
-
-    const onMove = (moveEvent) => {
-      const deltaY = moveEvent.clientY - startY
-      const next = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startHeight + deltaY))
-      dragHeightsRef.current = { ...dragHeightsRef.current, [widgetId]: next }
-      setDragHeights(dragHeightsRef.current)
-    }
-    const onUp = () => {
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-      const finalHeight = dragHeightsRef.current[widgetId]
-      const { [widgetId]: _discard, ...rest } = dragHeightsRef.current
-      dragHeightsRef.current = rest
-      setDragHeights(rest)
-      if (finalHeight !== undefined) onCommitHeight(widgetId, finalHeight)
-    }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-  }
+  // 드래그와 리사이즈 둘 다 "시작~끝" 동안은 매 프레임 onLayoutChange가 튀는 걸 막고,
+  // 끝났을 때 한 번만 커밋한다 — 리사이즈에서 쓰던 것과 동일한 패턴을 드래그에도 적용.
+  const handleInteractionStart = useCallback(() => { isInteractingRef.current = true }, [])
+  const handleInteractionStop = useCallback((newLayout) => {
+    isInteractingRef.current = false
+    commitIfChanged(newLayout)
+  }, [commitIfChanged])
 
   return (
-    <div ref={containerRef} className="flex gap-4 items-start">
-      {widgets.map((widget, idx) => {
-        const weight = dragWeights?.[widget.id] ?? widget.weight ?? 1
-        const height = dragHeights[widget.id] ?? widget.height ?? DEFAULT_HEIGHT
-        const hasNext = idx < widgets.length - 1
-        const canResizeHeight = !readOnly && widget.type !== 'render_kpi_cards'
+    <GridLayout
+      className="layout"
+      layout={layout}
+      cols={GRID_COLS}
+      rowHeight={ROW_HEIGHT}
+      margin={[MARGIN, MARGIN]}
+      containerPadding={[0, 0]}
+      compactType="vertical"
+      preventCollision={false}
+      isDraggable={!readOnly}
+      draggableHandle=".widget-drag-handle"
+      isResizable={!readOnly}
+      resizeHandles={['se']}
+      onLayoutChange={handleLayoutChange}
+      onDragStart={handleInteractionStart}
+      onDragStop={handleInteractionStop}
+      onResizeStart={handleInteractionStart}
+      onResizeStop={handleInteractionStop}
+    >
+      {widgets.map(w => {
+        const item = layout.find(l => l.i === w.id)
+        const chartHeight = Math.max(MIN_CHART_PX, pxHeightForRows(item?.h ?? MIN_H) - CARD_CHROME_PX)
         return (
-          <div key={widget.id} style={{ flex: `${weight} 1 0%`, minWidth: 0 }} className="relative">
-            <GeneratedWidget name={widget.type} props={widget.props} height={height} />
-            {!readOnly && hasNext && (
+          <div key={w.id} className="relative h-full">
+            {!readOnly && (
               <div
-                onPointerDown={(e) => startWidthDrag(widget.id, widgets[idx + 1].id, e)}
-                title="드래그해서 가로 크기 조절"
-                className="group/handle absolute top-0 -right-4 w-4 h-full cursor-col-resize flex items-center justify-center z-10 select-none"
-              >
-                <div className="w-1 h-10 rounded-full bg-gray-200 group-hover/handle:bg-blue-400 transition-colors" />
-              </div>
+                className="widget-drag-handle absolute top-0 left-0 right-0 h-8 rounded-t-xl z-10"
+                title="드래그하여 이동"
+              />
             )}
-            {canResizeHeight && (
-              <div
-                onPointerDown={(e) => startHeightDrag(widget.id, e)}
-                title="드래그해서 세로 크기 조절"
-                className="group/vhandle absolute left-0 right-0 -bottom-4 h-4 cursor-row-resize flex items-center justify-center z-10 select-none"
-              >
-                <div className="h-1 w-10 rounded-full bg-gray-200 group-hover/vhandle:bg-blue-400 transition-colors" />
-              </div>
-            )}
+            <GeneratedWidget name={w.type} props={w.props} height={chartHeight} />
           </div>
         )
       })}
-    </div>
+    </GridLayout>
   )
 }

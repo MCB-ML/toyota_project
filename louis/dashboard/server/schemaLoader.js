@@ -2,16 +2,18 @@ import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { load as parseYaml } from 'js-yaml'
+import { glossary } from './schema/glossary.js'
 
-// Two-tier loader for the warehouse semantic schema (louis/docs/정의서/ 병합 결과에서
-// 파생, 187개 실업무 테이블). Mirrors semanticCatalog.js's pattern: a small always-in-context
-// index + full detail fetched on demand — except here "on demand" means reading one small
-// YAML file per table instead of a JSON path lookup, because the underlying catalog is far
-// too large (187 tables × 컬럼 상세 ≈ 150K 토큰) to keep entirely in memory-as-prompt-text.
+// Two-tier loader for the warehouse semantic schema (schema/tables/*.yaml, 20개 KPI_W 테이블,
+// rich 포맷: table/description/database/schema/grain/columns[{name,type,description}]/
+// semantics{role,keys}/filters/dimensions/features/measures/display). Mirrors semanticCatalog.js's
+// pattern: a small always-in-context index + full detail fetched on demand — except here "on
+// demand" means reading one small YAML file per table instead of a JSON path lookup, because
+// keeping every table's full column list in the prompt at once would blow the context budget.
 //
 // Intended flow for a future 그래프 생성 챗봇 (mirrors dashboardPipeline.js's Planner/Critic split):
 //   1. 의도 분류: LLM tool-calls `classify_topic` against listTopicsForPrompt() (cheap, ~2-3K
-//      토큰 컨텍스트) to pick one of the 11 topics (or reject if none fit).
+//      토큰 컨텍스트) to pick one of the 6 topics (or reject if none fit).
 //   2. loadTablesForTopic(topicId) reads only the 1-3 relevant table YAML files from disk.
 //   3. renderTablesForPrompt(tables) formats just those into the second LLM call's context.
 //
@@ -36,6 +38,16 @@ export function listTopicsForPrompt() {
   return topics
     .map(t => `- ${t.topic}: ${t.ko} (키워드: ${t.keywords.join('/')})`)
     .join('\n')
+}
+
+// 도메인 용어 사전을 topic 목록과 함께 그대로 컨텍스트로 얹는다 — classify_topic이
+// 사용자의 업계 용어/약어(코드, 줄임말 등)를 몰라서 엉뚱한 topic을 고르거나
+// reject_topic을 호출하는 걸 줄이기 위함. 별도 LLM 리라이팅 호출 없이 기존
+// classify_topic 호출 하나의 프롬프트에만 얹으므로 지연시간이 늘지 않는다.
+// 항목이 12개뿐이라 검색 없이 전체를 항상 포함(server/rag-poc/의 임베딩 검색과 달리
+// 여기선 결정론적 텍스트 삽입만 한다 — glossary.js 자체는 아무 판단도 하지 않음).
+export function renderGlossaryForPrompt() {
+  return glossary.map(g => `- ${g.term}: ${g.definition}`).join('\n')
 }
 
 // OpenAI function-calling tool schema for the classification step — same shape as
@@ -103,7 +115,7 @@ function findTableFile(db, id) {
 }
 
 // Core retrieval step: given a classified topic, load full detail for exactly the
-// tables that topic references — never the whole 187-table catalog. A single bad
+// tables that topic references — never the whole 20-table catalog. A single bad
 // reference (index.yaml entry missing/wrong `file`) is skipped rather than crashing
 // the whole request — same "drop the broken one, keep the rest" approach as
 // dashboardPagesHandler.js's rehydration.
@@ -135,14 +147,19 @@ export function loadRoutingNotes(topicId) {
 }
 
 // Compact text block for the second LLM call (chart-spec / SQL-generation stage) —
-// only the columns, not the raw YAML formatting.
+// flattens the rich per-table YAML into plain lines, not the raw YAML formatting.
 export function renderTablesForPrompt(tables) {
   return tables
     .map(t => {
-      const lines = [`### ${t.id} (${t.db})${t.ko ? ' — ' + t.ko : ''}`]
+      const primaryKeys = new Set(t.semantics?.keys?.primary || [])
+      const lines = [`### ${t.table} (${t.database}.${t.schema})${t.description ? ' — ' + t.description : ''}`]
+      if (t.grain) lines.push(`Grain: ${t.grain}`)
       if (t.note) lines.push(`참고: ${t.note}`)
       if (t.key_cols?.length) lines.push(`주요 컬럼: ${t.key_cols.join(', ')}`)
-      lines.push(...t.cols.map(c => `- ${c.n} (${c.t})${c.ko ? ': ' + c.ko : ''}${c.pk ? ' [PK]' : ''}`))
+      lines.push(...t.columns.map(c => `- ${c.name} (${c.type})${primaryKeys.has(c.name) ? ' [PK]' : ''}: ${c.description}`))
+      if (t.filters?.length) lines.push(`필터 컬럼: ${t.filters.map(f => f.column).join(', ')}`)
+      if (t.measures?.length) lines.push(`측정값(집계): ${t.measures.map(m => `${m.name}(${m.aggregation})`).join(', ')}`)
+      if (t.display?.default_columns?.length) lines.push(`기본 표시 컬럼: ${t.display.default_columns.join(', ')}`)
       return lines.join('\n')
     })
     .join('\n\n')

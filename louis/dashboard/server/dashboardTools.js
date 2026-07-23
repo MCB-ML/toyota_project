@@ -1,9 +1,9 @@
-import { listTopicsForPrompt, listTopics } from './schemaLoader.js'
+import { listTopicsForPrompt, listTopics, renderGlossaryForPrompt } from './schemaLoader.js'
 
 const CHART_CODES = ['bar', 'line', 'pie', 'table', 'kpi']
 const SIZE_CODES = ['sm', 'md', 'lg']
 
-// Stage-1 planner tool schema — picks an action + which of the 11 schema topics
+// Stage-1 planner tool schema — picks an action + which of the 6 schema topics
 // the request is about. It does NOT pick chart_type/columns here, because at this
 // point we haven't loaded the real table/column list yet (that only happens after
 // a topic is chosen — see schemaLoader.loadTablesForTopic). Stage 2's
@@ -21,6 +21,7 @@ export function buildDashboardTools() {
           type: 'object',
           properties: {
             topic: { type: 'string', enum: topicIds, description: '요청과 가장 관련있는 주제' },
+            reasoning: { type: 'string', description: '왜 이 주제로 판단했는지 1문장 (평가/디버그용)' },
           },
           required: ['topic'],
         },
@@ -51,6 +52,7 @@ export function buildDashboardTools() {
           properties: {
             widget_id: { type: 'string' },
             topic: { type: 'string', enum: topicIds },
+            reasoning: { type: 'string', description: '왜 이 주제로 판단했는지 1문장 (평가/디버그용)' },
           },
           required: ['widget_id', 'topic'],
         },
@@ -80,7 +82,7 @@ export function buildDashboardTools() {
           type: 'object',
           properties: {
             widget_id: { type: 'string' },
-            size: { type: 'string', enum: SIZE_CODES, description: 'sm=작게, md=보통(기본), lg=크게 — 같은 줄의 옆 위젯이 반대로 줄어들며 자동으로 맞춰집니다' },
+            size: { type: 'string', enum: SIZE_CODES, description: 'sm=작게, md=보통(기본), lg=크게 — 겹치는 다른 위젯은 자동으로 아래로 밀려 빈 칸 없이 재배치됩니다' },
           },
           required: ['widget_id', 'size'],
         },
@@ -117,6 +119,9 @@ export function buildDashboardSystemPrompt(dashboardState) {
 # 사용 가능한 주제
 ${listTopicsForPrompt()}
 
+# 도메인 용어 사전
+${renderGlossaryForPrompt()}
+
 # 현재 대시보드 상태
 ${widgetList}
 
@@ -150,11 +155,11 @@ export function buildWidgetQueryTools(tables) {
         parameters: {
           type: 'object',
           properties: {
-            db: { type: 'string', enum: [...new Set(tables.map(t => t.db))], description: '쿼리 대상 DB' },
-            table_id: { type: 'string', enum: tables.map(t => t.id), description: '쿼리 대상 테이블' },
+            db: { type: 'string', enum: [...new Set(tables.map(t => t.database))], description: '쿼리 대상 DB' },
+            table_id: { type: 'string', enum: tables.map(t => t.table), description: '쿼리 대상 테이블' },
             sql: {
               type: 'string',
-              description: 'T-SQL SELECT 쿼리 1개. SELECT 또는 WITH로 시작. TOP N으로 결과를 제한할 것(기본 50, kpi는 TOP 1).',
+              description: 'T-SQL SELECT 쿼리 1개. SELECT 또는 WITH로 시작. kpi 차트 타입일 때만 TOP 1로 단일 행을 강제하고, 그 외에는 사용자가 "상위 N개"처럼 개수를 직접 요청하지 않는 한 TOP으로 임의로 결과를 자르지 말 것 — 실행 시간/행 수가 과도하면 별도 안전장치가 처리한다.',
             },
             chart_type: { type: 'string', enum: CHART_CODES },
             title: { type: 'string', description: '위젯 제목 (한국어)' },
@@ -192,14 +197,15 @@ ${renderedTables}
 ${routingNotes ? `\n# 이 주제의 라우팅 규칙 + 예시\n${routingNotes}\n` : ''}
 # 지침
 1. run_widget_query 도구로 실제 실행될 SELECT와 차트 타입을 함께 지정하세요.
-2. bar/pie는 label_key/value_key를, line은 x_key/y_keys를 SQL에서 실제로 사용한 컬럼 별칭과 정확히 동일하게 지정하세요.
-3. table은 SELECT한 컬럼이 그대로 표 컬럼이 되므로 별도 key 지정이 필요 없습니다.
-4. kpi는 결과가 정확히 1행이 되도록 집계하고, 각 컬럼 별칭을 카드 제목으로 쓸 한국어로 지으세요 (예: SELECT COUNT(*) AS 총계약건수).
-5. 반드시 TOP N으로 결과 행을 제한하세요 (기본 50, kpi는 TOP 1).
-6. size는 생략하면 md(1/2폭)로 처리됩니다. 시계열 line 차트나 컬럼이 많은 table은 lg(전체폭)를 지정하세요.
-7. **위에 로드된 테이블들이 서로 다른 db에 걸쳐 있으면 하나의 쿼리에서 절대 조인하지 마세요** — 반드시 하나의 db 안에서만 SELECT하세요. 여러 db의 정보가 동시에 필요한 요청이면 하나만 우선 답하거나 reject_widget_query를 호출하세요.
-8. **날짜로 그룹핑/포맷하기 전에 그 컬럼의 타입을 위 테이블 목록에서 반드시 확인하세요** — 컬럼명 옆 괄호가 date/datetime2가 아니라 varchar면 FORMAT()/CONVERT() 같은 날짜 함수를 쓰면 SQL 에러가 납니다("Argument data type varchar is invalid"). varchar 날짜 컬럼은 LEFT(컬럼, 6)처럼 문자열로 다루거나, 같은 주제에 date 타입 컬럼을 가진 다른 테이블이 있으면 그걸 대신 쓰세요.
-9. 로드된 테이블/라우팅 규칙만으로 답할 수 없으면 reject_widget_query를 호출하세요.`
+2. **FROM/JOIN 절의 테이블명은 반드시 스키마를 포함해 \`<schema>.<table>\` 형태로 쓰세요** — 스키마는 위 테이블 정보의 \`(database.schema)\` 부분에 나와 있습니다. 스키마 없이 테이블명만 쓰면 "Invalid object name" 오류가 납니다.
+3. bar/pie는 label_key/value_key를, line은 x_key/y_keys를 SQL에서 실제로 사용한 컬럼 별칭과 정확히 동일하게 지정하세요.
+4. table은 SELECT한 컬럼이 그대로 표 컬럼이 되므로 별도 key 지정이 필요 없습니다.
+5. kpi는 결과가 정확히 1행이 되도록 집계하고, 각 컬럼 별칭을 카드 제목으로 쓸 한국어로 지으세요 (예: SELECT COUNT(*) AS 총계약건수).
+6. kpi는 반드시 TOP 1(또는 결과가 원래 1행이 되는 집계)로 만드세요. 그 외 차트 타입은 사용자가 "상위 10개만" 처럼 개수를 직접 요청하지 않는 한 TOP으로 임의로 결과를 자르지 마세요 — 결과가 많거나 쿼리가 오래 걸리면 실행 계층의 별도 안전장치(타임아웃/행수 체크)가 사용자에게 되묻습니다.
+7. size는 생략하면 md(1/2폭)로 처리됩니다. 시계열 line 차트나 컬럼이 많은 table은 lg(전체폭)를 지정하세요.
+8. **위에 로드된 테이블들이 서로 다른 db에 걸쳐 있으면 하나의 쿼리에서 절대 조인하지 마세요** — 반드시 하나의 db 안에서만 SELECT하세요. 여러 db의 정보가 동시에 필요한 요청이면 하나만 우선 답하거나 reject_widget_query를 호출하세요.
+9. **날짜로 그룹핑/포맷하기 전에 그 컬럼의 타입을 위 테이블 목록에서 반드시 확인하세요** — 컬럼명 옆 괄호가 date/datetime2가 아니라 varchar면 FORMAT()/CONVERT() 같은 날짜 함수를 쓰면 SQL 에러가 납니다("Argument data type varchar is invalid"). varchar 날짜 컬럼은 LEFT(컬럼, 6)처럼 문자열로 다루거나, 같은 주제에 date 타입 컬럼을 가진 다른 테이블이 있으면 그걸 대신 쓰세요.
+10. 로드된 테이블/라우팅 규칙만으로 답할 수 없으면 reject_widget_query를 호출하세요.`
 }
 
 // 검토 에이전트(critic) tool — deliberately narrow. Structural checks (topic
@@ -224,6 +230,56 @@ export function buildReviewTools() {
       },
     },
   ]
+}
+
+// RAG(rag-poc/pipeline.js) 경로용 — SQL은 이미 RAG가 만들어 실행까지 끝낸 상태라 여기서는
+// 그 결과 행의 실제 컬럼명(enum으로 제공) 중에서만 축을 고르게 한다. run_widget_query처럼
+// SQL을 새로 쓰게 하지 않으므로 잘못된 컬럼명을 지어낼 위험이 없다.
+export function buildRagChartSpecTools(outputColumns) {
+  return [
+    {
+      type: 'function',
+      function: {
+        name: 'set_chart_spec',
+        description: '이미 실행된 SQL 결과 컬럼 중에서 어떤 컬럼을 어떤 축으로 쓸지, 어떤 차트로 그릴지 고릅니다.',
+        parameters: {
+          type: 'object',
+          properties: {
+            chart_type: { type: 'string', enum: CHART_CODES },
+            title: { type: 'string', description: '위젯 제목 (한국어)' },
+            size: { type: 'string', enum: SIZE_CODES, description: '위젯 너비. sm=1/3, md=1/2(기본값, 생략 가능), lg=전체폭. 시계열 line 차트나 컬럼이 많은 table은 lg를 권장.' },
+            label_key: { type: 'string', enum: outputColumns, description: 'bar/pie일 때 카테고리(라벨) 컬럼' },
+            value_key: { type: 'string', enum: outputColumns, description: 'bar/pie일 때 수치 컬럼' },
+            x_key: { type: 'string', enum: outputColumns, description: 'line일 때 x축(보통 날짜/기간) 컬럼' },
+            y_keys: { type: 'array', items: { type: 'string', enum: outputColumns }, description: 'line일 때 y축 값 컬럼(들)' },
+          },
+          required: ['chart_type', 'title'],
+        },
+      },
+    },
+  ]
+}
+
+export function buildRagChartSpecPrompt(pattern, outputColumns) {
+  return `당신은 이미 실행되어 결과가 나온 SQL 쿼리를 어떤 차트로 보여줄지 정하는 에이전트입니다.
+아래 컬럼 목록에 있는 이름만 사용하세요 — 목록에 없는 컬럼명을 지어내지 마세요.
+
+# 실행된 쿼리 정보
+- 패턴: ${pattern?.name || '(알 수 없음)'}
+- 설명: ${pattern?.description || ''}
+- 의도: ${(pattern?.intent || []).join(', ')}
+- 지표: ${(pattern?.metrics || []).join(', ')}
+- 차원: ${(pattern?.dimensions || []).join(', ')}
+
+# 결과 컬럼
+${outputColumns.join(', ')}
+
+# 지침
+1. set_chart_spec 도구로 chart_type과 제목을 지정하세요.
+2. bar/pie는 label_key/value_key를, line은 x_key/y_keys를 위 컬럼 목록에서만 골라 지정하세요.
+3. table은 별도 key 지정이 필요 없습니다(전체 컬럼이 그대로 표가 됩니다).
+4. 결과가 1행뿐이고 컬럼이 수치 위주면 kpi를 고르세요.
+5. size는 생략하면 md(1/2폭)로 처리됩니다.`
 }
 
 export function buildReviewPrompt({ userMessage, summaryText, sql, tableLabel, chartCode }) {

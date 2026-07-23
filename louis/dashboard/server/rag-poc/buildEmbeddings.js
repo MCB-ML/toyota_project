@@ -1,51 +1,106 @@
-import { writeFileSync, existsSync, readFileSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import 'dotenv/config'
 import { buildTableCorpus } from './corpus.js'
 import { embedTexts } from './embedClient.js'
-import { fewShotSet, fewShotText } from './fewShotSet.js'
-import { glossary, glossaryText } from './glossary.js'
+import { queryPatterns, patternText } from './knowledgeBase/queryPatterns.js'
+import { sqlFragments } from './knowledgeBase/sqlFragments.js'
+import { businessRules } from './knowledgeBase/businessRules.js'
+import { glossary, glossaryText } from '../schema/glossary.js'
+import { COLLECTIONS, getOrCreateCollection, recreateCollection, getClient } from './chromaClient.js'
 
-// One-time (well, run-when-schema/few-shot/glossary changes) step: embeds all three
-// corpora the 4-stage pipeline (pipeline.js) searches over, and caches vectors to
-// disk so runCompare.js / pipeline runs don't re-embed on every query — only the
-// live user question gets embedded per request.
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const CACHES = {
-  tables: join(__dirname, 'embeddings.json'),
-  fewshot: join(__dirname, 'fewshot_embeddings.json'),
-  glossary: join(__dirname, 'glossary_embeddings.json'),
-}
+// Embeds every corpus the 10-stage pipeline (pipeline.js) searches over and upserts them into
+// their Chroma collections — only the live user question gets embedded per request after this.
+// Run whenever schema/knowledgeBase content changes: `node buildEmbeddings.js --force`.
+export async function buildCollection(name, collectionName, items, idFn, textFn, metaFn, force) {
+  const collection = force ? await recreateCollection(collectionName) : await getOrCreateCollection(collectionName)
 
-async function buildCache(name, path, items, textFn, force) {
-  if (existsSync(path) && !force) {
-    const cached = JSON.parse(readFileSync(path, 'utf-8'))
-    console.log(`${path} already exists (${cached.items.length} ${name}, model=${cached.model}). Use --force to rebuild.`)
-    return
+  if (!force) {
+    const existing = await collection.count()
+    if (existing > 0) {
+      console.log(`${collectionName} already has ${existing} ${name} — skipping (use --force to rebuild).`)
+      return
+    }
   }
+
   console.log(`Embedding ${items.length} ${name}...`)
   const t0 = Date.now()
-  const vectors = await embedTexts(items.map(textFn))
+  const documents = items.map(textFn)
+  const embeddings = await embedTexts(documents)
   const elapsed = Date.now() - t0
-  const withVectors = items.map((item, i) => ({ ...item, vector: vectors[i] }))
-  writeFileSync(path, JSON.stringify({
-    model: process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT,
-    builtAt: new Date().toISOString(),
-    items: withVectors,
-  }))
-  console.log(`Wrote ${path} (${withVectors.length} vectors, dim=${vectors[0]?.length}, ${elapsed}ms)`)
+
+  await collection.upsert({
+    ids: items.map(idFn),
+    embeddings,
+    documents,
+    metadatas: items.map(metaFn),
+  })
+  console.log(`Upserted ${items.length} ${name} into ${collectionName} (dim=${embeddings[0]?.length}, ${elapsed}ms)`)
+}
+
+function fragmentText(f) {
+  return `이름: ${f.fragment_name}\n설명: ${f.description}`
+}
+
+function ruleText(r) {
+  return `용어: ${r.term}\n설명: ${r.description}`
+}
+
+async function dropLegacyCollections() {
+  const client = getClient()
+  try {
+    await client.deleteCollection({ name: 'ktws_fewshot' })
+    console.log('Dropped legacy ktws_fewshot collection.')
+  } catch {
+    console.log('ktws_fewshot collection not present — nothing to drop.')
+  }
 }
 
 async function main() {
   const force = process.argv.includes('--force')
 
-  const tableCorpus = buildTableCorpus().map(c => ({ db: c.db, id: c.id, file: c.file, ko: c.ko, text: c.text }))
-  await buildCache('tables', CACHES.tables, tableCorpus, c => c.text, force)
+  if (process.argv.includes('--drop-legacy')) {
+    await dropLegacyCollections()
+  }
 
-  await buildCache('fewshot examples', CACHES.fewshot, fewShotSet, fewShotText, force)
+  const tableCorpus = buildTableCorpus()
+  await buildCollection(
+    'tables', COLLECTIONS.TABLES, tableCorpus,
+    c => `${c.db}::${c.id}`,
+    c => c.text,
+    c => ({ db: c.db, id: c.id, file: c.file, ko: c.ko || '' }),
+    force,
+  )
 
-  await buildCache('glossary terms', CACHES.glossary, glossary, glossaryText, force)
+  await buildCollection(
+    'query patterns', COLLECTIONS.PATTERNS, queryPatterns,
+    p => p.pattern_id,
+    patternText,
+    p => ({ pattern_id: p.pattern_id, name: p.name }),
+    force,
+  )
+
+  await buildCollection(
+    'sql fragments', COLLECTIONS.FRAGMENTS, sqlFragments,
+    f => f.fragment_id,
+    fragmentText,
+    f => ({ fragment_id: f.fragment_id, fragment_name: f.fragment_name }),
+    force,
+  )
+
+  await buildCollection(
+    'business rules', COLLECTIONS.RULES, businessRules,
+    r => r.rule_id,
+    ruleText,
+    r => ({ rule_id: r.rule_id, term: r.term }),
+    force,
+  )
+
+  await buildCollection(
+    'glossary terms', COLLECTIONS.GLOSSARY, glossary,
+    g => g.id,
+    glossaryText,
+    g => ({ term: g.term, definition: g.definition }),
+    force,
+  )
 }
 
 main().catch(err => {

@@ -15,6 +15,9 @@ import {
   handleGetDeployedPage,
   handleDeployPage,
   handleRollbackPage,
+  handleListTemplates,
+  handleGetTemplate,
+  handleSetTemplateFlag,
 } from './server/dashboardPagesHandler.js'
 
 loadDotenv()
@@ -81,6 +84,8 @@ function azureChatPlugin() {
       jsonRoute('/api/dashboard-pages/deployed', { GET: handleGetDeployedPage })(server)
       jsonRoute('/api/dashboard-pages/deploy', { POST: handleDeployPage })(server)
       jsonRoute('/api/dashboard-pages/rollback', { POST: handleRollbackPage })(server)
+      jsonRoute('/api/dashboard-pages/templates', { GET: handleListTemplates })(server)
+      jsonRoute('/api/dashboard-pages/template', { GET: handleGetTemplate, POST: handleSetTemplateFlag })(server)
       jsonRoute('/api/dashboard-pages', {
         GET: handleGetSavedPage,
         PUT: handleSaveSavedPage,
@@ -92,4 +97,11 @@ function azureChatPlugin() {
 
 export default defineConfig({
   plugins: [react(), azureChatPlugin()],
+  // react-grid-layout(WidgetGrid.jsx)의 의존성인 react-draggable이 브라우저에 없는
+  // `process.env.DRAGGABLE_DEBUG`를 참조해서 드래그 시작 시 "process is not defined"로
+  // 죽는다 — Vite는 process.env.NODE_ENV만 기본으로 치환해주므로 process.env 전체를 빈
+  // 객체로 정의해 막는다.
+  define: {
+    'process.env': {},
+  },
 })

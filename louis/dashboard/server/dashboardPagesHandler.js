@@ -99,7 +99,7 @@ export async function handleListSavedPages(req, res) {
   try {
     const pool = getPool()
     const { rows } = await pool.query(
-      'SELECT name, target_page_key, is_deployed, updated_at FROM dashboard_saved_pages WHERE scope_key = $1 ORDER BY updated_at DESC',
+      'SELECT name, target_page_key, is_deployed, is_template, updated_at FROM dashboard_saved_pages WHERE scope_key = $1 ORDER BY updated_at DESC',
       [scopeKey]
     )
     sendJson(res, 200, {
@@ -107,6 +107,7 @@ export async function handleListSavedPages(req, res) {
         name: r.name,
         targetPageKey: r.target_page_key,
         isDeployed: r.is_deployed,
+        isTemplate: r.is_template,
         updatedAt: r.updated_at,
       })),
       limit: MAX_SAVED_PAGES,
@@ -114,6 +115,80 @@ export async function handleListSavedPages(req, res) {
   } catch (err) {
     console.error('[dashboard-pages] 목록 조회 실패:', err)
     sendJson(res, 500, { message: `목록을 불러오지 못했습니다: ${err.message}` })
+  }
+}
+
+// 본사가 템플릿으로 지정해 둔 저장본 목록 — 모든 scope가 커스텀 대시보드를 새로 만들 때
+// 시작 레이아웃으로 고를 수 있다. 위젯 내용은 없이 이름만(선택 UI용).
+export async function handleListTemplates(req, res) {
+  try {
+    const pool = getPool()
+    const { rows } = await pool.query(
+      "SELECT name, updated_at FROM dashboard_saved_pages WHERE scope_key = 'hq' AND is_template = true ORDER BY updated_at DESC"
+    )
+    sendJson(res, 200, {
+      templates: rows.map(r => ({ name: r.name, updatedAt: r.updated_at })),
+    })
+  } catch (err) {
+    console.error('[dashboard-pages] 템플릿 목록 조회 실패:', err)
+    sendJson(res, 500, { message: `템플릿 목록을 불러오지 못했습니다: ${err.message}` })
+  }
+}
+
+// 템플릿 하나의 위젯 내용 — 다른 scope가 "템플릿 불러오기"로 캔버스를 채울 때 사용.
+export async function handleGetTemplate(req, res) {
+  const url = new URL(req.url, 'http://internal')
+  const name = url.searchParams.get('name')
+  if (!name) {
+    return sendJson(res, 400, { message: 'name이 필요합니다.' })
+  }
+
+  try {
+    const pool = getPool()
+    const { rows } = await pool.query(
+      "SELECT widgets FROM dashboard_saved_pages WHERE scope_key = 'hq' AND name = $1 AND is_template = true",
+      [name]
+    )
+    if (!rows.length) {
+      return sendJson(res, 404, { message: '템플릿을 찾을 수 없습니다.' })
+    }
+    const widgets = await rehydrateWidgets(rows[0].widgets)
+    sendJson(res, 200, { widgets })
+  } catch (err) {
+    console.error('[dashboard-pages] 템플릿 조회 실패:', err)
+    sendJson(res, 500, { message: `템플릿을 불러오지 못했습니다: ${err.message}` })
+  }
+}
+
+// 본사 저장본을 템플릿으로 지정/해제. 템플릿은 본사만 만들 수 있으므로 scopeKey는 서버에서
+// 'hq'로 강제한다(다른 scope가 요청해도 거부).
+export async function handleSetTemplateFlag(req, res) {
+  let body
+  try {
+    body = await readJsonBody(req)
+  } catch {
+    return sendJson(res, 400, { message: '잘못된 요청 본문입니다.' })
+  }
+
+  const { scopeKey, name, isTemplate } = body
+  if (!scopeKey || !name || typeof isTemplate !== 'boolean') {
+    return sendJson(res, 400, { message: 'scopeKey, name, isTemplate가 필요합니다.' })
+  }
+  if (scopeKey !== 'hq') {
+    return sendJson(res, 403, { message: '템플릿 지정은 본사만 할 수 있습니다.' })
+  }
+
+  try {
+    const pool = getPool()
+    const { rowCount } = await pool.query(
+      "UPDATE dashboard_saved_pages SET is_template = $2, updated_at = now() WHERE scope_key = 'hq' AND name = $1",
+      [name, isTemplate]
+    )
+    if (!rowCount) throw new Error('저장된 대시보드를 찾을 수 없습니다.')
+    sendJson(res, 200, { ok: true })
+  } catch (err) {
+    console.error('[dashboard-pages] 템플릿 지정 실패:', err)
+    sendJson(res, 500, { message: `템플릿 지정에 실패했습니다: ${err.message}` })
   }
 }
 

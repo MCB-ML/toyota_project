@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Send, Bot, User, Loader2, X, RefreshCw } from 'lucide-react'
 import { useDashboardState } from '../context/DashboardStateContext'
 import StageTrace from './StageTrace'
+import DebugTrace from './DebugTrace'
 import PatchPreviewCard from './PatchPreviewCard'
 import GeneratedWidget from './widgets/GeneratedWidget'
 
@@ -76,7 +77,7 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
     const assistantId = Date.now()
     setMessages(prev => [...prev, {
       id: assistantId, role: 'assistant', text: '', streaming: true,
-      stages: [], components: [], patch: null, patchStatus: 'pending', rejected: null,
+      stages: [], debug: [], components: [], patch: null, patchStatus: 'pending', rejected: null,
     }])
     const patchMessage = (updates) => setMessages(prev => prev.map(m => (
       m.id === assistantId ? { ...m, ...updates } : m
@@ -103,6 +104,10 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
         } else if (event.type === 'stage') {
           setMessages(prev => prev.map(m => (
             m.id === assistantId ? { ...m, stages: [...(m.stages || []), { stage: event.stage, label: event.label }] } : m
+          )))
+        } else if (event.type === 'debug') {
+          setMessages(prev => prev.map(m => (
+            m.id === assistantId ? { ...m, debug: [...(m.debug || []), { label: event.label, detail: event.detail }] } : m
           )))
         } else if (event.type === 'component') {
           setMessages(prev => prev.map(m => (
@@ -212,6 +217,9 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
                   )}
                   {msg.stages?.length > 0 && (
                     <StageTrace stages={msg.stages} finished={!msg.streaming} />
+                  )}
+                  {msg.debug?.length > 0 && (
+                    <DebugTrace entries={msg.debug} />
                   )}
                   {msg.components?.map((comp, i) => (
                     <div key={i} className="w-full min-w-[260px]">

@@ -59,6 +59,58 @@ SQL은 이제 표시용이 아니라 **실제로 Agora/Karete/BP_KTWS Fabric 엔
 2. [src/App.jsx](src/App.jsx)의 `pageKey` 계산에 해당 라우트 추가
 3. 필요한 테이블/주제가 `server/schema/`에 없다면 추가
 
+### 위젯 그리드 레이아웃 (react-grid-layout)
+
+위젯 크기/배치는 [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout)
+(`v2`, `react-grid-layout/legacy` — v1 호환 API로 import)이 담당한다. 예전에는 각 위젯이
+`weight`(같은 줄 안에서의 상대 너비)와 `height`(자유 px)만 가져서, 위젯이 서로 다른 높이로
+시작하거나 자유롭게 2D 배치되는 걸 표현할 수 없었다. 지금은 12칸 고정 컬럼 그리드 위에서
+위젯마다 `left`/`top`/`right`/`bottom`(칸/행 인덱스)으로 위치를 저장한다.
+
+| 항목 | 위치 |
+|---|---|
+| 그리드 상수(`GRID_COLS`, `ROW_HEIGHT` 등) + AI 크기 프리셋(sm/md/lg) ↔ 칸수 매핑, 위젯→layout item 변환 | [src/utils/gridLayout.js](src/utils/gridLayout.js) — 브라우저와 Node 서버 양쪽에서 import(`applyDashboardPatch.js`와 같은 공유 패턴) |
+| 실제 그리드 렌더링(리사이즈 핸들, 커밋 타이밍) | [src/components/WidgetGrid.jsx](src/components/WidgetGrid.jsx) |
+| 리사이즈 결과를 위젯 상태에 반영 | [src/pages/ktws/Custom.jsx](src/pages/ktws/Custom.jsx) `commitLayout()` |
+
+- **리사이즈**: 각 위젯 오른쪽 아래 모서리만 드래그 가능(`resizeHandles: ['se']`). KPI 카드
+  위젯은 리사이즈 비활성.
+- **빈 칸 자동 채움**: `compactType="vertical"` — 위젯을 줄이거나 지우면 아래 위젯들이 자동으로
+  위로 당겨져 세로 방향 빈 공간이 남지 않는다. (가로 방향 빈 공간은 자동으로 채워지지 않음 —
+  같은 줄 옆 위젯을 직접 늘려야 한다.)
+- **저장 타이밍**: 드래그 도중 매 프레임 저장하지 않는다 — 놓았을 때(`onResizeStop`)만
+  서버에 커밋된다.
+- **레거시 마이그레이션**: `weight`/`height`만 있고 좌표가 없는 옛 저장본은 렌더링 시
+  임시로 맨 아래(`y=BOTTOM` 센티널)에 놓이고, 수직 압축이 알아서 첫 빈 자리로 끌어올린다.
+  그 결과가 그대로 커밋되면서 `weight`/`height`가 새 좌표로 교체된다 — 한 번 렌더링되면
+  자동으로 새 스키마로 정착. AI가 새로 추가하는 위젯도 같은 경로(`sizeHint`만 들고 좌표 없이
+  생성 → 첫 렌더링에서 배치)를 탄다.
+- **알려진 제약**: `propose_reorder_widgets`(AI의 "순서 변경" 요청)는 위젯 배열 순서만
+  바꾸는데, 2D 그리드에서는 각 위젯이 명시적 좌표를 가지므로 배열 순서가 화면 위치에
+  영향을 주지 않는다 — 사실상 시각적으로는 no-op. 자유 배치 그리드에서는 애초에
+  "N번째로 이동" 개념 자체가 잘 안 맞아서 지금은 그대로 둔 상태.
+
+`vite.config.js`에 `define: { 'process.env': {} }`가 있는데, 이건 이 그리드 기능의
+의존성인 `react-draggable`이 브라우저에 없는 `process.env.DRAGGABLE_DEBUG`를 참조해서
+드래그 시작 시 `process is not defined`로 죽는 걸 막기 위함이다(Vite는 `process.env.NODE_ENV`만
+기본으로 치환해준다). 이후 다른 패키지도 `process.env.*`를 브라우저에서 참조하면 이 설정
+덕분에 함께 막힌다.
+
+## Text2SQL: RAG 우선 + TOPIC 폴백 (rag-poc/)
+
+프로덕션 챗봇의 Text2SQL은 **[server/rag-poc/](server/rag-poc/)의 Pattern Card / SQL
+Fragment 기반 RAG 파이프라인을 우선 시도**하고, Pattern Card가 매칭되지 않거나 실행 검증에
+실패하면 기존 `server/schemaLoader.js` + `server/warehouseTools.js`의 **TOPIC 분류 방식**으로
+폴백하는 하이브리드 구조다. `server/warehousePipeline.js`(`/api/warehouse-query`)와
+`server/chatHandler.js`(`/api/chat`의 `fetchLiveTopicData`) 두 경로 모두 이렇게 동작한다.
+
+GOLD 검증된 15개 측정값 기준 RAG 93%(14~15/15) vs TOPIC 53~60%(8~9/15)로 정확도 차이가 커서
+RAG를 우선 경로로 채택했다(지연시간은 RAG가 더 길다 — 평균 8.6초 vs 6.7초). RAG는 51개
+Pattern Card(2026-07-21 기준)로 커버되는 범위만 다루므로, TOPIC 폴백이 그 밖의 질문에 대한
+기존 커버리지를 그대로 유지한다. 설계 배경, 10-Stage 구조, 참고 논문, 테스트 결과는
+[server/rag-poc/README.md](server/rag-poc/README.md)와
+[server/rag-poc/test-report.md](server/rag-poc/test-report.md) 참고.
+
 ## KTWS BI 임베드 — 프로덕션 전환 시 처리할 것
 
 현재 `KTWS > BI` 메뉴([src/pages/ktws/Bi.jsx](src/pages/ktws/Bi.jsx))는 Power BI/Fabric의

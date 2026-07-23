@@ -24,7 +24,9 @@ export default function KtwsBiSso() {
   }, [instance, accounts])
 
   return (
-    <div className="h-full p-3">
+    // Bi.jsx와 동일한 이유로 h-full 대신 뷰포트 기준 고정 높이 사용 — DeployableTab의
+    // 래퍼 div에 height가 없어 h-full 조상 체인이 끊긴다.
+    <div className="h-[calc(100vh-6rem)] p-3">
       <div className="h-full bg-white rounded-2xl shadow-sm border border-gray-100 p-3 flex items-center justify-center">
         {error && (
           <p className="text-sm text-red-500 px-6 text-center">

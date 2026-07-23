@@ -1,7 +1,7 @@
 import { getTopic } from './schemaLoader.js'
 import { WIDGET_REQUIRED_PROPS } from './widgetSchema.js'
 
-const MAX_WIDGETS = 12
+export const MAX_WIDGETS = 12
 
 // Deterministic, fail-fast checks — run BEFORE the critic LLM call so a
 // structurally broken proposal never costs a second network round trip.

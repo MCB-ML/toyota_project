@@ -53,7 +53,8 @@ async function readJsonOrThrow(res) {
 export function DashboardStateProvider({ children, scopeKey }) {
   const [state, dispatch] = useReducer(reducer, undefined, init)
   const [name, setName] = useState(null) // 현재 열려 있는 저장본 이름
-  const [savedPages, setSavedPages] = useState([]) // [{ name, targetPageKey, isDeployed, updatedAt }]
+  const [savedPages, setSavedPages] = useState([]) // [{ name, targetPageKey, isDeployed, isTemplate, updatedAt }]
+  const [templates, setTemplates] = useState([]) // 본사가 지정해 둔 템플릿 목록 — [{ name, updatedAt }]
   const skipNextSave = useRef(false)
 
   const refreshList = useCallback(() => {
@@ -63,6 +64,16 @@ export function DashboardStateProvider({ children, scopeKey }) {
       .then(({ pages }) => { setSavedPages(pages); return pages })
       .catch(err => { console.error('[dashboard-pages] 목록 조회 실패:', err); return [] })
   }, [scopeKey])
+
+  // 본사가 지정해 둔 템플릿 목록 — scope와 무관하게 누구나 볼 수 있다.
+  const refreshTemplates = useCallback(() => {
+    return fetch('/api/dashboard-pages/templates')
+      .then(readJsonOrThrow)
+      .then(({ templates: list }) => { setTemplates(list); return list })
+      .catch(err => { console.error('[dashboard-pages] 템플릿 목록 조회 실패:', err); return [] })
+  }, [])
+
+  useEffect(() => { refreshTemplates() }, [refreshTemplates])
 
   // 소속(scope) 확정 시 저장된 목록부터 불러오고, 가장 최근 이름(없으면 기본값)을 연다.
   useEffect(() => {
@@ -132,17 +143,19 @@ export function DashboardStateProvider({ children, scopeKey }) {
   }, [scopeKey, state.present, refreshList])
 
   // 저장본 삭제(한도 슬롯 확보용). 지금 열려 있는 이름을 지우면 남은 것 중 최근 것으로 전환.
+  // 지운 저장본이 템플릿으로 지정돼 있었을 수도 있으니 템플릿 목록도 같이 새로고침한다 —
+  // 안 그러면 삭제된 템플릿이 "템플릿 불러오기" 드롭다운에 유령처럼 남아 선택해도 404가 난다.
   const deletePage = useCallback((targetName) => {
     if (!scopeKey) return Promise.resolve()
     return fetch(`/api/dashboard-pages?scopeKey=${encodeURIComponent(scopeKey)}&name=${encodeURIComponent(targetName)}`, {
       method: 'DELETE',
     })
       .then(readJsonOrThrow)
-      .then(() => refreshList())
-      .then(pages => {
+      .then(() => Promise.all([refreshList(), refreshTemplates()]))
+      .then(([pages]) => {
         if (targetName === name) setName(pages[0]?.name ?? DEFAULT_NAME)
       })
-  }, [scopeKey, name, refreshList])
+  }, [scopeKey, name, refreshList, refreshTemplates])
 
   // 지금 열려 있는 저장본을 좌측 탭(targetPageKey)에 배포 — 그 탭의 기존 배포는 자동 해제.
   const deploy = useCallback((targetPageKey) => {
@@ -155,6 +168,29 @@ export function DashboardStateProvider({ children, scopeKey }) {
       .then(readJsonOrThrow)
       .then(() => refreshList())
   }, [scopeKey, name, refreshList])
+
+  // 템플릿(본사가 지정한 저장본)의 위젯을 지금 캔버스에 채운다 — 아직 저장은 안 된 초안
+  // 상태이므로, 이어서 saveAs()로 새 이름을 정해야 scope에 실제로 남는다.
+  const loadTemplate = useCallback((templateName) => {
+    return fetch(`/api/dashboard-pages/template?name=${encodeURIComponent(templateName)}`)
+      .then(readJsonOrThrow)
+      .then(({ widgets }) => {
+        skipNextSave.current = true
+        dispatch({ type: 'loaded', present: { version: 0, widgets } })
+      })
+  }, [])
+
+  // 본사 전용: 지금 열려 있는(본사) 저장본을 템플릿으로 지정/해제.
+  const setTemplateFlag = useCallback((isTemplate) => {
+    if (!scopeKey || !name) return Promise.reject(new Error('대상이 없습니다.'))
+    return fetch('/api/dashboard-pages/template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scopeKey, name, isTemplate }),
+    })
+      .then(readJsonOrThrow)
+      .then(() => Promise.all([refreshList(), refreshTemplates()]))
+  }, [scopeKey, name, refreshList, refreshTemplates])
 
   // targetPageKey를 기본(Default) 화면으로 롤백(배포 해제) — 저장본 자체는 남는다.
   const rollback = useCallback((targetPageKey) => {
@@ -184,6 +220,9 @@ export function DashboardStateProvider({ children, scopeKey }) {
     deletePage,
     deploy,
     rollback,
+    templates,
+    loadTemplate,
+    setTemplateFlag,
   }
 
   return (

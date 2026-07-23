@@ -1,4 +1,4 @@
-import { listTopicsForPrompt } from './schemaLoader.js'
+import { listTopicsForPrompt, renderGlossaryForPrompt } from './schemaLoader.js'
 
 // OpenAI function-calling schema shared by /api/chat (free-form Q&A) and, for the
 // final widget shape only, the dashboard-customize pipeline (see widgetSchema.js).
@@ -148,6 +148,9 @@ export function buildSystemPrompt(summary) {
 
 ## 실시간 조회 가능한 주제
 ${listTopicsForPrompt()}
+
+## 도메인 용어 사전
+${renderGlossaryForPrompt()}
 
 # 응답 지침
 1. 항상 한국어로 답변하세요

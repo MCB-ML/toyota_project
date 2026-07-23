@@ -14,6 +14,9 @@ import {
   handleGetDeployedPage,
   handleDeployPage,
   handleRollbackPage,
+  handleListTemplates,
+  handleGetTemplate,
+  handleSetTemplateFlag,
 } from './server/dashboardPagesHandler.js'
 
 loadDotenv()
@@ -37,6 +40,9 @@ app.get('/api/dashboard-pages/list', handleListSavedPages)
 app.get('/api/dashboard-pages/deployed', handleGetDeployedPage)
 app.post('/api/dashboard-pages/deploy', handleDeployPage)
 app.post('/api/dashboard-pages/rollback', handleRollbackPage)
+app.get('/api/dashboard-pages/templates', handleListTemplates)
+app.get('/api/dashboard-pages/template', handleGetTemplate)
+app.post('/api/dashboard-pages/template', handleSetTemplateFlag)
 
 // ─── Serve React build (dist/) ────────────────────────────────────────────────
 const distPath = join(__dirname, 'dist')

@@ -57,6 +57,9 @@ function getPool(db) {
         },
       },
       options: { encrypt: true, trustServerCertificate: false },
+      // mssql/tedious 기본 requestTimeout(15초)은 CROSS APPLY 월별 윈도우처럼 무거운 리포트성
+      // 쿼리(예: SC 출고 매트릭스)엔 너무 짧아 타임아웃이 났다 — 60초로 넉넉히 잡는다.
+      requestTimeout: 60000,
     }
     pools.set(key, new sql.ConnectionPool(config).connect())
   }
@@ -65,14 +68,61 @@ function getPool(db) {
 
 const UNSAFE_SQL_RE = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|EXEC|EXECUTE|MERGE|TRUNCATE|CREATE|GRANT)\b/i
 
-// SELECT/WITH 만 허용 — LLM이 생성한 SQL을 실행할 가능성을 염두에 둔 최소 안전장치.
-export async function queryFabric(db, sqlText) {
+function assertReadOnly(sqlText) {
   if (!/^\s*(SELECT|WITH)\b/i.test(sqlText) || UNSAFE_SQL_RE.test(sqlText)) {
     throw new Error('읽기 전용(SELECT) 쿼리만 허용됩니다.')
   }
+}
+
+// SELECT/WITH 만 허용 — LLM이 생성한 SQL을 실행할 가능성을 염두에 둔 최소 안전장치.
+export async function queryFabric(db, sqlText) {
+  assertReadOnly(sqlText)
   const pool = await getPool(db)
   const result = await pool.request().query(sqlText)
   return result.recordset
+}
+
+// 사용자가 채팅으로 직접 트리거하는 쿼리(챗봇/대시보드 위젯)에서만 사용 — timeoutMs 안에 안
+// 끝나면 실행을 취소하고 QueryTimeoutError를 던진다. TOP N을 무조건 박아 결과를 조용히
+// 자르는 대신, 정말 오래 걸리는(=결과가 많거나 무거운) 경우에만 사용자에게 되묻기 위한 장치
+// — 호출부는 `err.isTimeout`으로 구분해 재질문 흐름으로 이어받는다.
+export class QueryTimeoutError extends Error {
+  constructor(timeoutMs) {
+    super(`이 조회가 ${Math.round(timeoutMs / 1000)}초 넘게 걸려 실행을 중단했습니다. 결과가 많거나 복잡한 조건일 수 있습니다 — 상위 몇 개만 볼지, 아니면 기간·조건을 좁혀서 다시 질문해 주시겠어요?`)
+    this.name = 'QueryTimeoutError'
+    this.isTimeout = true
+  }
+}
+
+export async function queryFabricWithTimeout(db, sqlText, timeoutMs = 30000) {
+  assertReadOnly(sqlText)
+  const pool = await getPool(db)
+  const request = pool.request()
+  let timedOut = false
+  const timer = setTimeout(() => {
+    timedOut = true
+    request.cancel()
+  }, timeoutMs)
+  try {
+    const result = await request.query(sqlText)
+    return result.recordset
+  } catch (err) {
+    if (timedOut) throw new QueryTimeoutError(timeoutMs)
+    throw err
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+// 실행은 빨랐지만(타임아웃 안 걸림) 결과 행 수 자체가 과도한 경우(TOP N을 안 걸므로 이런
+// 케이스가 생길 수 있다 — 예: 날짜 필터 없는 목록형 쿼리) — 호출부가 성공적으로 받은
+// rows.length를 이 임계값과 비교해서, 넘으면 차트/표를 그리는 대신 이 메시지로 되묻는다
+// (QueryTimeoutError와 같은 "사용자에게 되묻기" 취지, 다만 예외가 아니라 성공 이후의
+// 정상 체크라 별도 함수로 둔다).
+export const MAX_ROWS_BEFORE_REASK = 500
+
+export function tooManyRowsMessage(rowCount) {
+  return `이 조회 결과가 ${rowCount.toLocaleString()}행이나 됩니다. 상위 몇 개만 볼지, 아니면 기간·조건을 좁혀서 다시 질문해 주시겠어요?`
 }
 
 export async function testConnection(db) {

@@ -12,10 +12,14 @@ export const CHART_CODE_TO_WIDGET_TYPE = {
   kpi: 'render_kpi_cards',
 }
 
+// render_kpi_cards widgets are now one-card-per-widget going forward (see
+// dashboardPipeline.js), so the standard shape is title/value like every other
+// widget type. Legacy stored widgets built before this change (no cardKey,
+// props.cards bundle) skip this check — it only runs at creation time.
 export const WIDGET_REQUIRED_PROPS = {
   render_bar_chart: ['title', 'data', 'x_key', 'y_key'],
   render_line_chart: ['title', 'data', 'x_key', 'y_keys'],
-  render_kpi_cards: ['cards'],
+  render_kpi_cards: ['title', 'value'],
   render_table: ['title', 'columns', 'rows'],
   render_pie_chart: ['title', 'data'],
 }
@@ -54,6 +58,20 @@ export function buildWidgetPropsFromRows(chartCode, rows, spec, title) {
     }
     case 'kpi': {
       const row = data[0] || {}
+      // spec.cardKey selects a single column from the row — every KPI card is its
+      // own widget now, so rehydrate only needs to re-derive that one card's value.
+      // spec.cardTitle (if present) is the human-facing label chosen at creation time —
+      // prefer it over the raw column alias, which for RAG-authored widgets is often a
+      // technical name (e.g. "Percentage") rather than something meant to be displayed.
+      if (spec.cardKey) {
+        const value = row[spec.cardKey]
+        return {
+          type: 'render_kpi_cards',
+          props: { title: spec.cardTitle || spec.cardKey, value: typeof value === 'number' ? value.toLocaleString() : String(value ?? '-') },
+        }
+      }
+      // Legacy fallback: widgets saved before the per-card split stored no cardKey —
+      // keep rendering them as the original bundled card grid.
       const cards = Object.entries(row).map(([key, value]) => ({
         title: key,
         value: typeof value === 'number' ? value.toLocaleString() : String(value ?? '-'),

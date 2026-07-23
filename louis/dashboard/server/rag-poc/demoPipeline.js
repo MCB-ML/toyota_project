@@ -1,34 +1,43 @@
 import 'dotenv/config'
-import { runPipeline, renderPipelineForPrompt } from './pipeline.js'
+import { createAzureClient, getAzureConfig } from '../azureClient.js'
+import { runPipeline } from './pipeline.js'
 
-// Manual smoke test for the 4-stage pipeline — picks queries likely to exercise
-// each stage, including Stage 3's backfill path (queries whose best-matching
-// few-shot example is cross-table, so there's a real chance Stage 1's top-5 alone
-// misses one side of the join).
+// Manual smoke test for the 10-stage pipeline — liveValidate:false so this stays fast/free
+// (no Stage 9b Fabric round-trip), just to sanity-check every stage produces sane output and
+// composedSql looks structurally right.
 const queries = [
-  '이번달 브랜드별 계약 건수 알려줘',
-  '캠페인 타입별 실행 완료 건수를 보여줘',
-  '딜러 휴일을 제외한 이번 달 일별 입고 건수를 보여줘',
-  '재고 수량이 많은 부품 TOP 10을 보여줘',
+  '특정 딜러의 이번달 활동 건수를 보여줘',
+  '특정 딜러의 이번달 영업기회 건수를 보여줘',
+  '특정 딜러의 이번달 계약 건수를 보여줘',
+  '이번달 영업기회 대비 계약 전환율을 보여줘',
+  '캠페인 타입별 실행 완료 건수를 보여줘', // 매칭되는 Pattern Card가 없어야 정상 — reject_plan 경로 확인용
 ]
 
 async function main() {
+  const client = createAzureClient()
+  if (!client) throw new Error('Azure OpenAI env vars missing')
+  const { deployment } = getAzureConfig()
+
   for (const q of queries) {
-    const result = await runPipeline(q)
+    const result = await runPipeline({ query: q, client, deployment, opts: { liveValidate: false } })
     console.log('='.repeat(80))
     console.log('Q:', q)
-    console.log('Stage1 hitTables:', result.stage1.hitTables.map(t => `${t.db}.${t.id}(${t.score.toFixed(2)})`).join(', '))
-    console.log('Stage2 general few-shot:', result.stage2.general.map(f => f.id).join(', '))
-    console.log('Stage2 cross few-shot:', result.stage2.cross.map(f => f.id).join(', '))
-    console.log('Stage3 missingTables:', result.stage3.missingTables.map(t => `${t.db}.${t.id}`).join(', ') || '(none)')
-    console.log('Stage3 backfillSchema:', result.stage3.backfillSchema.map(t => `${t.db}.${t.id}`).join(', ') || '(none)')
-    console.log('Stage4 glossary:', result.stage4.glossaryHits.map(g => `${g.term}(${g.score.toFixed(2)})`).join(', '))
+    console.log('Stage0 structured:', JSON.stringify(result.stage0_structured))
+    console.log('Stage1 hitTables:', result.stage1_tables.map(t => `${t.db}.${t.id}(${t.score.toFixed(2)})`).join(', '))
+    console.log('Stage2 patterns:', result.stage2_patterns.map(p => `${p.pattern_id}(${p.score.toFixed(2)})`).join(', '))
+    if (result.error) {
+      console.log('ERROR:', result.error)
+      continue
+    }
+    console.log('Stage3 plan:', result.stage3_plan.pattern_id, '-', result.stage3_plan.steps.map(s => s.cte_name).join(' -> '))
+    console.log('Stage4 fragments:', result.stage4_fragments.map(f => f.fragment_id).join(', '))
+    console.log('Stage5 backfill missingTables:', result.stage5_backfill.missingTables.map(t => `${t.db}.${t.id}`).join(', ') || '(none)')
+    console.log('Stage6 rules:', result.stage6_rules.map(r => r.term).join(', '))
+    console.log('Stage6 glossary:', result.stage6_glossary.map(g => `${g.term}(${g.score.toFixed(2)})`).join(', '))
+    console.log('Stage7 steps:', result.stage7_steps.map(s => s.cte_name).join(', '))
+    console.log('\ncomposedSql:\n' + result.composedSql)
+    console.log('\nlint warnings:', JSON.stringify(result.validation.structuralWarnings))
   }
-
-  console.log('\n' + '='.repeat(80))
-  console.log('Full rendered prompt for first query:\n')
-  const first = await runPipeline(queries[0])
-  console.log(renderPipelineForPrompt(first))
 }
 
 main().catch(err => {
