@@ -1,13 +1,20 @@
 import { streamAssistantTurn } from '../../azureStream.js'
 import { buildStructureTool } from '../ragTools.js'
+import { renderGlossaryForPrompt } from '../../schemaLoader.js'
 
 // Stage 0 — turn the raw NL question into a structured summary that drives every downstream
 // retrieval stage (Stage 1 table search, Stage 2 pattern search) instead of raw question text.
+// 도메인 용어집을 함께 얹는 이유: RAG 경로는 원래 이 용어집을 Stage 6(패턴 확정 후, SQL
+// 생성 직전)에서만 검색해 썼는데, 그러면 "딜러사" 같은 업계 용어를 Stage 0가 아무 사전지식
+// 없이 잘못 구조화한 뒤라 이미 늦다 — 여기서 잘못되면 Stage 1/2 임베딩 검색까지 같이
+// 오염된다. TOPIC 경로(schemaLoader.renderGlossaryForPrompt)가 이미 항목이 적어서
+// (17개) 검색 없이 전체를 통째로 프롬프트에 얹는 방식을 쓰고 있어 그대로 재사용한다 —
+// 별도 임베딩 호출이나 top-k/임계치가 필요 없다.
 export async function structureQuestion(client, deployment, query) {
   const [call] = await streamAssistantTurn(client, {
     model: deployment,
     messages: [
-      { role: 'system', content: '사용자 질문을 구조화하세요. 확신 없는 필드는 빈 배열/빈 문자열로 두세요. entities는 질문에 실제로 언급된 값만 넣으세요 — 추측 금지.' },
+      { role: 'system', content: `사용자 질문을 구조화하세요. 확신 없는 필드는 빈 배열/빈 문자열로 두세요. entities는 질문에 실제로 언급된 값만 넣으세요 — 추측 금지.\n\n도메인 용어집(업계 용어/약어 해석에 참고):\n${renderGlossaryForPrompt()}` },
       { role: 'user', content: query },
     ],
     tools: buildStructureTool(),
