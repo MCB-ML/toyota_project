@@ -10,6 +10,11 @@
 
 # 웨어하우스 테이블/컬럼 스키마(사내 정보) 제외 — schemaLoader.js가 참조하는 생성 파일
 /louis/dashboard/server/schema/
+/louis/dashboard/deploy_backup/
+
+# BI/배포 폴더 제외 — 사내 데이터 포함(웨어하우스 스키마, .pbix 등)
+/louis/BI/
+/louis/dashboard/deploy/
 
 # 노트북 제외
 /louis/notebook/
