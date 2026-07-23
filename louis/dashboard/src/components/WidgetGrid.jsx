@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef } from 'react'
 import GridLayoutBase, { WidthProvider } from 'react-grid-layout/legacy'
+import { X } from 'lucide-react'
 import 'react-grid-layout/css/styles.css'
 import './WidgetGrid.css'
 import GeneratedWidget from './widgets/GeneratedWidget'
@@ -17,7 +18,7 @@ const MIN_CHART_PX = 80
 // 편집 권한이 없는 뷰어용). onCommitLayout은 사용자가 리사이즈를 "놓았을 때"와, 자리 없는
 // (레거시 또는 방금 추가된) 위젯이 첫 압축(compaction)으로 자리를 찾았을 때만 호출된다 —
 // 드래그 도중 매 프레임 호출되지 않으므로 그때마다 서버에 저장이 튀지 않는다.
-export default function WidgetGrid({ widgets, readOnly = false, onCommitLayout }) {
+export default function WidgetGrid({ widgets, readOnly = false, onCommitLayout, onRemoveWidget }) {
   const isInteractingRef = useRef(false)
 
   const layout = useMemo(() => {
@@ -98,6 +99,17 @@ export default function WidgetGrid({ widgets, readOnly = false, onCommitLayout }
                 className="widget-drag-handle absolute top-0 left-0 right-0 h-8 rounded-t-xl z-10"
                 title="드래그하여 이동"
               />
+            )}
+            {!readOnly && onRemoveWidget && (
+              <button
+                type="button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); onRemoveWidget(w.id) }}
+                title="위젯 삭제"
+                className="absolute top-1.5 right-1.5 z-20 w-5 h-5 flex items-center justify-center rounded border border-gray-200 bg-white text-gray-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+              >
+                <X size={12} />
+              </button>
             )}
             <GeneratedWidget name={w.type} props={w.props} height={chartHeight} />
           </div>

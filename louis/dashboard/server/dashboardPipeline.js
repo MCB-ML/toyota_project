@@ -83,7 +83,12 @@ async function tryRagWidget(client, deployment, message, sendEvent) {
     table: `RAG:${pattern.pattern_id}`,
     sql: rag.composedSql,
     chartCode: spec.chart_type,
-    querySpec: { labelKey: spec.label_key, valueKey: spec.value_key, xKey: spec.x_key, yKeys: spec.y_keys },
+    querySpec: {
+      labelKey: spec.label_key, valueKey: spec.value_key,
+      xKey: spec.x_key, yKey: spec.y_key, yKeys: spec.y_keys,
+      orientation: spec.orientation, stacked: spec.stacked, seriesKey: spec.series_key,
+      barKeys: spec.bar_keys, lineKeys: spec.line_keys,
+    },
     title: spec.title || pattern.name,
     size: spec.size,
     rows,
@@ -256,7 +261,15 @@ export async function runDashboardPipeline({ message, history, dashboardState },
           labelKey: topicQueryInfo.label_key,
           valueKey: topicQueryInfo.value_key,
           xKey: topicQueryInfo.x_key,
+          yKey: topicQueryInfo.y_key,
           yKeys: topicQueryInfo.y_keys,
+          orientation: topicQueryInfo.orientation,
+          stacked: topicQueryInfo.stacked,
+          seriesKey: topicQueryInfo.series_key,
+          xLabel: topicQueryInfo.x_label,
+          yLabel: topicQueryInfo.y_label,
+          barKeys: topicQueryInfo.bar_keys,
+          lineKeys: topicQueryInfo.line_keys,
         },
         title: topicQueryInfo.title,
         size: topicQueryInfo.size,
@@ -287,8 +300,21 @@ export async function runDashboardPipeline({ message, history, dashboardState },
 
     if (resolved.chartCode === 'kpi' && action === 'add') {
       const row = resolved.rows[0] || {}
+      // GROUP_DIM으로 필터링된 라벨 컬럼(예: dimension: "김중기")은 그 자체로 카드가
+      // 되면 안 된다 — 이름 카드 + 값 카드로 쪼개지는 대신 라벨을 값 카드의 제목에
+      // 흡수한다. 숫자로 안 바뀌는 값을 라벨로 취급하고, 숫자 컬럼이 하나도 없으면
+      // (드묾) 예전처럼 컬럼마다 카드를 만든다.
+      const isNumericValue = v => typeof v === 'number' || (typeof v === 'string' && v.trim() !== '' && !Number.isNaN(Number(v)))
+      const allEntries = Object.entries(row)
+      const numericEntries = allEntries.filter(([, v]) => isNumericValue(v))
+      const labelEntries = allEntries.filter(([, v]) => !isNumericValue(v))
+      const cardEntries = numericEntries.length ? numericEntries : allEntries
+      const labelPrefix = numericEntries.length && labelEntries.length
+        ? labelEntries.map(([, v]) => String(v)).join(' · ') + ' '
+        : ''
+
       const slotsLeft = Math.max(0, MAX_WIDGETS - dashboardState.widgets.length)
-      const entries = Object.entries(row).slice(0, slotsLeft)
+      const entries = cardEntries.slice(0, slotsLeft)
       if (!entries.length) {
         sendEvent({ type: 'error', message: `위젯 개수 제한(${MAX_WIDGETS}개)에 도달했습니다. 기존 위젯을 먼저 삭제해주세요.` })
         return
@@ -297,12 +323,13 @@ export async function runDashboardPipeline({ message, history, dashboardState },
       // 위젯 자체의 title(예: "영업기회→계약 전환율")을 카드 제목으로 쓴다 — RAG 경로는
       // SQL이 미리 저작된 fragment 템플릿이라 컬럼 별칭이 "Percentage"/"cnt"처럼 기술적인
       // 이름일 때가 많고, TOPIC 경로처럼 LLM이 매번 한국어 별칭을 새로 짓지 않기 때문.
-      // 컬럼이 여러 개면(대부분 TOPIC 경로) 각자 다른 값을 담고 있으므로 계속 컬럼명을 쓴다.
+      // 컬럼이 여러 개면(대부분 TOPIC 경로) 각자 다른 값을 담고 있으므로 라벨을 붙여
+      // 컬럼명을 계속 쓴다(예: "강남점 계약수").
       addWidgets = entries.map(([key, value]) => {
         // querySpec.cardTitle로 저장해야 살아남는다 — props는 저장 시 벗겨지고(다음
         // 로드 때 sql 재실행으로 다시 채움) widget.title은 이 요청에서 나온 모든 카드가
         // 공유하는 하나의 값이라 카드별로 다른 제목을 못 담는다.
-        const cardTitle = entries.length === 1 ? resolved.title : key
+        const cardTitle = entries.length === 1 ? resolved.title : `${labelPrefix}${key}`
         return {
           id: randomUUID(),
           ...baseWidgetFields,

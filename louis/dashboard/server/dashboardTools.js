@@ -1,7 +1,8 @@
 import { listTopicsForPrompt, listTopics, renderGlossaryForPrompt } from './schemaLoader.js'
 
-const CHART_CODES = ['bar', 'line', 'pie', 'table', 'kpi']
+const CHART_CODES = ['bar', 'line', 'area', 'pie', 'scatter', 'radar', 'combo', 'table', 'kpi']
 const SIZE_CODES = ['sm', 'md', 'lg']
+const ORIENTATION_CODES = ['vertical', 'horizontal']
 
 // Stage-1 planner tool schema — picks an action + which of the 6 schema topics
 // the request is about. It does NOT pick chart_type/columns here, because at this
@@ -163,11 +164,19 @@ export function buildWidgetQueryTools(tables) {
             },
             chart_type: { type: 'string', enum: CHART_CODES },
             title: { type: 'string', description: '위젯 제목 (한국어)' },
-            size: { type: 'string', enum: SIZE_CODES, description: '위젯 너비. sm=1/3, md=1/2(기본값, 생략 가능), lg=전체폭. 시계열 line 차트나 컬럼이 많은 table은 lg를 권장.' },
-            label_key: { type: 'string', description: 'bar/pie일 때 카테고리(라벨) 컬럼의 SQL 별칭' },
-            value_key: { type: 'string', description: 'bar/pie일 때 수치 컬럼의 SQL 별칭' },
-            x_key: { type: 'string', description: 'line일 때 x축(보통 날짜/기간) 컬럼의 SQL 별칭' },
-            y_keys: { type: 'array', items: { type: 'string' }, description: 'line일 때 y축 값 컬럼(들)의 SQL 별칭' },
+            size: { type: 'string', enum: SIZE_CODES, description: '위젯 너비. sm=1/3, md=1/2(기본값, 생략 가능), lg=전체폭. 시계열 line/area 차트나 컬럼이 많은 table은 lg를 권장.' },
+            label_key: { type: 'string', description: 'bar(단일 계열)/pie일 때 카테고리(라벨) 컬럼의 SQL 별칭' },
+            value_key: { type: 'string', description: 'bar(단일 계열)/pie일 때 수치 컬럼의 SQL 별칭' },
+            x_key: { type: 'string', description: 'line/area/bar(다계열)일 때 x축(보통 날짜/카테고리) 컬럼, radar일 때 각 축(각도) 항목 컬럼, scatter일 때 x축 수치 컬럼의 SQL 별칭' },
+            y_key: { type: 'string', description: 'scatter 전용. y축 수치 컬럼의 SQL 별칭' },
+            y_keys: { type: 'array', items: { type: 'string' }, description: 'line/area/radar일 때, 또는 bar를 여러 계열(누적/그룹)로 그릴 때 y축 값 컬럼(들)의 SQL 별칭' },
+            orientation: { type: 'string', enum: ORIENTATION_CODES, description: 'bar 전용. vertical=세로 막대(기본), horizontal=가로 막대(엑셀의 "가로 막대형" 차트)' },
+            stacked: { type: 'boolean', description: 'bar/area 전용. y_keys가 여러 개일 때 값을 쌓아서(누적) 그릴지 여부 — area는 기본 true, bar는 기본 false' },
+            series_key: { type: 'string', description: 'scatter 전용(선택). 점을 이 컬럼 값별로 나눠 색을 다르게 찍는다 — 생략하면 단일 계열' },
+            x_label: { type: 'string', description: 'scatter 전용(선택). x축 표시 이름(한국어) — 생략하면 x_key 그대로 표시' },
+            y_label: { type: 'string', description: 'scatter 전용(선택). y축 표시 이름(한국어) — 생략하면 y_key 그대로 표시' },
+            bar_keys: { type: 'array', items: { type: 'string' }, description: 'combo 전용. 막대로 그릴 컬럼(들)의 SQL 별칭' },
+            line_keys: { type: 'array', items: { type: 'string' }, description: 'combo 전용. 선으로 그릴 컬럼(들)의 SQL 별칭 — 보통 실적(bar)과 함께 목표/추세(line)를 겹쳐 보여줄 때 사용' },
           },
           required: ['db', 'table_id', 'sql', 'chart_type', 'title'],
         },
@@ -198,14 +207,21 @@ ${routingNotes ? `\n# 이 주제의 라우팅 규칙 + 예시\n${routingNotes}\n
 # 지침
 1. run_widget_query 도구로 실제 실행될 SELECT와 차트 타입을 함께 지정하세요.
 2. **FROM/JOIN 절의 테이블명은 반드시 스키마를 포함해 \`<schema>.<table>\` 형태로 쓰세요** — 스키마는 위 테이블 정보의 \`(database.schema)\` 부분에 나와 있습니다. 스키마 없이 테이블명만 쓰면 "Invalid object name" 오류가 납니다.
-3. bar/pie는 label_key/value_key를, line은 x_key/y_keys를 SQL에서 실제로 사용한 컬럼 별칭과 정확히 동일하게 지정하세요.
-4. table은 SELECT한 컬럼이 그대로 표 컬럼이 되므로 별도 key 지정이 필요 없습니다.
-5. kpi는 결과가 정확히 1행이 되도록 집계하고, 각 컬럼 별칭을 카드 제목으로 쓸 한국어로 지으세요 (예: SELECT COUNT(*) AS 총계약건수).
-6. kpi는 반드시 TOP 1(또는 결과가 원래 1행이 되는 집계)로 만드세요. 그 외 차트 타입은 사용자가 "상위 10개만" 처럼 개수를 직접 요청하지 않는 한 TOP으로 임의로 결과를 자르지 마세요 — 결과가 많거나 쿼리가 오래 걸리면 실행 계층의 별도 안전장치(타임아웃/행수 체크)가 사용자에게 되묻습니다.
-7. size는 생략하면 md(1/2폭)로 처리됩니다. 시계열 line 차트나 컬럼이 많은 table은 lg(전체폭)를 지정하세요.
-8. **위에 로드된 테이블들이 서로 다른 db에 걸쳐 있으면 하나의 쿼리에서 절대 조인하지 마세요** — 반드시 하나의 db 안에서만 SELECT하세요. 여러 db의 정보가 동시에 필요한 요청이면 하나만 우선 답하거나 reject_widget_query를 호출하세요.
-9. **날짜로 그룹핑/포맷하기 전에 그 컬럼의 타입을 위 테이블 목록에서 반드시 확인하세요** — 컬럼명 옆 괄호가 date/datetime2가 아니라 varchar면 FORMAT()/CONVERT() 같은 날짜 함수를 쓰면 SQL 에러가 납니다("Argument data type varchar is invalid"). varchar 날짜 컬럼은 LEFT(컬럼, 6)처럼 문자열로 다루거나, 같은 주제에 date 타입 컬럼을 가진 다른 테이블이 있으면 그걸 대신 쓰세요.
-10. 로드된 테이블/라우팅 규칙만으로 답할 수 없으면 reject_widget_query를 호출하세요.`
+3. 차트 타입별로 지정할 key가 다릅니다:
+   - bar(단일 계열, 가장 흔한 경우): label_key/value_key. 사용자가 "가로 막대/눕혀서" 요청하면 orientation=horizontal, "누적/쌓아서" 요청하면 y_keys에 여러 컬럼을 넣고 stacked=true.
+   - line/area: x_key/y_keys(1개 이상). area는 stacked 기본값이 true(누적 면적) — 겹쳐서 비교하려면 stacked=false.
+   - pie: label_key/value_key (도넛 형태로 렌더링됩니다).
+   - scatter: x_key/y_key(둘 다 수치 컬럼) — 두 지표의 상관관계를 볼 때 사용. 점을 그룹별로 나누고 싶으면 series_key를 추가로 지정.
+   - radar: x_key(비교 항목/지표 축), y_keys(비교 대상마다 하나씩, 예: 딜러별 비교면 딜러명 컬럼들이 아니라 각 딜러의 값 컬럼). 비교 항목이 3개 이상일 때만 의미가 있습니다.
+   - combo: x_key(공통 축), bar_keys(막대로 그릴 컬럼들), line_keys(선으로 그릴 컬럼들) — 예: 실적은 막대, 목표선은 line.
+   - table: 별도 key 지정 없이 SELECT한 컬럼이 그대로 표 컬럼이 됩니다.
+   모든 key는 SQL에서 실제로 사용한 컬럼 별칭과 정확히 동일해야 합니다.
+4. kpi는 결과가 정확히 1행이 되도록 집계하고, 각 컬럼 별칭을 카드 제목으로 쓸 한국어로 지으세요 (예: SELECT COUNT(*) AS 총계약건수).
+5. kpi는 반드시 TOP 1(또는 결과가 원래 1행이 되는 집계)로 만드세요. 그 외 차트 타입은 사용자가 "상위 10개만" 처럼 개수를 직접 요청하지 않는 한 TOP으로 임의로 결과를 자르지 마세요 — 결과가 많거나 쿼리가 오래 걸리면 실행 계층의 별도 안전장치(타임아웃/행수 체크)가 사용자에게 되묻습니다.
+6. size는 생략하면 md(1/2폭)로 처리됩니다. 시계열 line/area 차트나 컬럼이 많은 table은 lg(전체폭)를 지정하세요.
+7. **위에 로드된 테이블들이 서로 다른 db에 걸쳐 있으면 하나의 쿼리에서 절대 조인하지 마세요** — 반드시 하나의 db 안에서만 SELECT하세요. 여러 db의 정보가 동시에 필요한 요청이면 하나만 우선 답하거나 reject_widget_query를 호출하세요.
+8. **날짜로 그룹핑/포맷하기 전에 그 컬럼의 타입을 위 테이블 목록에서 반드시 확인하세요** — 컬럼명 옆 괄호가 date/datetime2가 아니라 varchar면 FORMAT()/CONVERT() 같은 날짜 함수를 쓰면 SQL 에러가 납니다("Argument data type varchar is invalid"). varchar 날짜 컬럼은 LEFT(컬럼, 6)처럼 문자열로 다루거나, 같은 주제에 date 타입 컬럼을 가진 다른 테이블이 있으면 그걸 대신 쓰세요.
+9. 로드된 테이블/라우팅 규칙만으로 답할 수 없으면 reject_widget_query를 호출하세요.`
 }
 
 // 검토 에이전트(critic) tool — deliberately narrow. Structural checks (topic
@@ -247,11 +263,17 @@ export function buildRagChartSpecTools(outputColumns) {
           properties: {
             chart_type: { type: 'string', enum: CHART_CODES },
             title: { type: 'string', description: '위젯 제목 (한국어)' },
-            size: { type: 'string', enum: SIZE_CODES, description: '위젯 너비. sm=1/3, md=1/2(기본값, 생략 가능), lg=전체폭. 시계열 line 차트나 컬럼이 많은 table은 lg를 권장.' },
-            label_key: { type: 'string', enum: outputColumns, description: 'bar/pie일 때 카테고리(라벨) 컬럼' },
-            value_key: { type: 'string', enum: outputColumns, description: 'bar/pie일 때 수치 컬럼' },
-            x_key: { type: 'string', enum: outputColumns, description: 'line일 때 x축(보통 날짜/기간) 컬럼' },
-            y_keys: { type: 'array', items: { type: 'string', enum: outputColumns }, description: 'line일 때 y축 값 컬럼(들)' },
+            size: { type: 'string', enum: SIZE_CODES, description: '위젯 너비. sm=1/3, md=1/2(기본값, 생략 가능), lg=전체폭. 시계열 line/area 차트나 컬럼이 많은 table은 lg를 권장.' },
+            label_key: { type: 'string', enum: outputColumns, description: 'bar(단일 계열)/pie일 때 카테고리(라벨) 컬럼' },
+            value_key: { type: 'string', enum: outputColumns, description: 'bar(단일 계열)/pie일 때 수치 컬럼' },
+            x_key: { type: 'string', enum: outputColumns, description: 'line/area/bar(다계열)일 때 x축 컬럼, radar일 때 축 항목 컬럼, scatter일 때 x축 수치 컬럼' },
+            y_key: { type: 'string', enum: outputColumns, description: 'scatter 전용. y축 수치 컬럼' },
+            y_keys: { type: 'array', items: { type: 'string', enum: outputColumns }, description: 'line/area/radar일 때, 또는 bar를 다계열(누적/그룹)로 그릴 때 y축 값 컬럼(들)' },
+            orientation: { type: 'string', enum: ORIENTATION_CODES, description: 'bar 전용. vertical=세로(기본), horizontal=가로 막대' },
+            stacked: { type: 'boolean', description: 'bar/area 전용. y_keys가 여러 개일 때 누적으로 그릴지 — area는 기본 true' },
+            series_key: { type: 'string', enum: outputColumns, description: 'scatter 전용(선택). 점을 이 컬럼 값별로 그룹 지어 색을 다르게 찍는다' },
+            bar_keys: { type: 'array', items: { type: 'string', enum: outputColumns }, description: 'combo 전용. 막대로 그릴 컬럼(들)' },
+            line_keys: { type: 'array', items: { type: 'string', enum: outputColumns }, description: 'combo 전용. 선으로 그릴 컬럼(들)' },
           },
           required: ['chart_type', 'title'],
         },
@@ -275,11 +297,15 @@ export function buildRagChartSpecPrompt(pattern, outputColumns) {
 ${outputColumns.join(', ')}
 
 # 지침
-1. set_chart_spec 도구로 chart_type과 제목을 지정하세요.
-2. bar/pie는 label_key/value_key를, line은 x_key/y_keys를 위 컬럼 목록에서만 골라 지정하세요.
-3. table은 별도 key 지정이 필요 없습니다(전체 컬럼이 그대로 표가 됩니다).
-4. 결과가 1행뿐이고 컬럼이 수치 위주면 kpi를 고르세요.
-5. size는 생략하면 md(1/2폭)로 처리됩니다.`
+1. set_chart_spec 도구로 chart_type과 제목을 지정하세요. 모든 key는 위 결과 컬럼 목록에서만 골라 지정하세요.
+2. bar(단일 계열)/pie는 label_key/value_key. bar를 누적/그룹 다계열로 그리려면 x_key/y_keys를 대신 쓰고 stacked를 지정하세요.
+3. line/area는 x_key/y_keys. area는 stacked 기본값이 true(누적 면적)입니다.
+4. scatter는 x_key/y_key(둘 다 수치 컬럼) — 두 지표의 상관관계를 볼 때 고르세요. 필요하면 series_key로 그룹을 나누세요.
+5. radar는 x_key(비교 항목/지표 축)와 y_keys(비교 대상마다 하나씩) — 비교 항목이 3개 이상일 때만 고르세요.
+6. combo는 x_key(공통 축)와 bar_keys/line_keys — 예: 실적(bar)과 목표추이(line)를 한 차트에 겹칠 때.
+7. table은 별도 key 지정이 필요 없습니다(전체 컬럼이 그대로 표가 됩니다).
+8. 결과가 1행뿐이고 컬럼이 수치 위주면 kpi를 고르세요.
+9. size는 생략하면 md(1/2폭)로 처리됩니다.`
 }
 
 export function buildReviewPrompt({ userMessage, summaryText, sql, tableLabel, chartCode }) {

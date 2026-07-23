@@ -7,17 +7,21 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'render_bar_chart',
-      description: '막대 차트(Bar Chart)를 생성합니다. 카테고리별 수치 비교에 사용하세요.',
+      description: '막대 차트(Bar Chart)를 생성합니다. 카테고리별 수치 비교에 사용하세요. "가로 막대/눕혀서"는 orientation=horizontal, "누적/쌓아서"는 y_keys에 여러 필드를 넣고 stacked=true.',
       parameters: {
         type: 'object',
         properties: {
           title: { type: 'string', description: '차트 제목' },
           data: { type: 'array', items: { type: 'object' }, description: '데이터 배열' },
-          x_key: { type: 'string', description: 'X축 필드명' },
-          y_key: { type: 'string', description: 'Y축 필드명' },
-          color: { type: 'string', description: '색상 hex 코드 (기본값: #3B82F6)' },
+          x_key: { type: 'string', description: 'X축(카테고리) 필드명' },
+          y_key: { type: 'string', description: 'Y축 필드명 (단일 계열일 때)' },
+          y_keys: { type: 'array', items: { type: 'string' }, description: 'Y축 필드명 목록 (누적/그룹 다계열일 때 — y_key 대신 사용)' },
+          y_labels: { type: 'array', items: { type: 'string' }, description: '각 계열의 범례 이름' },
+          color: { type: 'string', description: '색상 hex 코드 (기본값: #3B82F6, 단일 계열일 때만)' },
+          orientation: { type: 'string', enum: ['vertical', 'horizontal'], description: 'vertical=세로 막대(기본), horizontal=가로 막대' },
+          stacked: { type: 'boolean', description: 'y_keys가 여러 개일 때 누적으로 그릴지 (기본 false=그룹)' },
         },
-        required: ['title', 'data', 'x_key', 'y_key'],
+        required: ['title', 'data', 'x_key'],
       },
     },
   },
@@ -36,6 +40,81 @@ export const TOOLS = [
           y_labels: { type: 'array', items: { type: 'string' }, description: '각 선의 범례 이름' },
         },
         required: ['title', 'data', 'x_key', 'y_keys'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'render_area_chart',
+      description: '영역(면적) 차트를 생성합니다. 시계열 추이를 누적된 면적으로 강조할 때 사용하세요.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          data: { type: 'array', items: { type: 'object' } },
+          x_key: { type: 'string' },
+          y_keys: { type: 'array', items: { type: 'string' }, description: 'Y축 필드명 목록 (여러 영역)' },
+          y_labels: { type: 'array', items: { type: 'string' }, description: '각 영역의 범례 이름' },
+          stacked: { type: 'boolean', description: '여러 영역을 누적으로 쌓을지 (기본 true)' },
+        },
+        required: ['title', 'data', 'x_key', 'y_keys'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'render_scatter_chart',
+      description: '분산형(Scatter/XY) 차트를 생성합니다. 두 수치 지표 간 상관관계를 볼 때 사용하세요.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          data: { type: 'array', items: { type: 'object' } },
+          x_key: { type: 'string', description: 'X축 수치 필드명' },
+          y_key: { type: 'string', description: 'Y축 수치 필드명' },
+          x_label: { type: 'string', description: 'X축 표시 이름' },
+          y_label: { type: 'string', description: 'Y축 표시 이름' },
+          series_key: { type: 'string', description: '(선택) 점을 그룹별로 나눠 색을 다르게 찍을 필드명' },
+        },
+        required: ['title', 'data', 'x_key', 'y_key'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'render_radar_chart',
+      description: '방사형(Radar) 차트를 생성합니다. 여러 지표를 놓고 대상들을 비교할 때(3개 이상 축) 사용하세요.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          data: { type: 'array', items: { type: 'object' }, description: '각 행이 축(지표) 하나' },
+          x_key: { type: 'string', description: '축(지표) 이름 필드' },
+          y_keys: { type: 'array', items: { type: 'string' }, description: '비교 대상마다 하나씩의 필드명' },
+          y_labels: { type: 'array', items: { type: 'string' }, description: '각 비교 대상의 범례 이름' },
+        },
+        required: ['title', 'data', 'x_key', 'y_keys'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'render_combo_chart',
+      description: '막대+선 콤보 차트를 생성합니다. 예: 실적(막대)과 목표 추이(선)를 한 차트에 겹쳐 보여줄 때.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          data: { type: 'array', items: { type: 'object' } },
+          x_key: { type: 'string' },
+          bar_keys: { type: 'array', items: { type: 'string' }, description: '막대로 그릴 필드명(들)' },
+          line_keys: { type: 'array', items: { type: 'string' }, description: '선으로 그릴 필드명(들)' },
+        },
+        required: ['title', 'data', 'x_key', 'bar_keys', 'line_keys'],
       },
     },
   },

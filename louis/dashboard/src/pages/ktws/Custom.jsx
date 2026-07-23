@@ -4,14 +4,17 @@ import WidgetGrid from '../../components/WidgetGrid'
 import { useDashboardState } from '../../context/DashboardStateContext'
 import { useUser } from '../../auth/UserContext'
 import { DEPLOY_TARGETS, labelForPageKey } from '../../deployTargets'
-import { LayoutGrid, Undo2, Redo2, Sparkles, Loader2, Save, Trash2, UploadCloud, RotateCcw, LayoutTemplate, Star } from 'lucide-react'
+import {
+  LayoutGrid, Undo2, Redo2, Sparkles, Loader2, Save, Trash2, UploadCloud, RotateCcw,
+  LayoutTemplate, Star, Layers, ChevronDown, Plus,
+} from 'lucide-react'
 
 const MAX_SAVED_PAGES = 5
 
 export default function KtwsCustom() {
   const {
     dashboardState, applyPatch, undo, redo, canUndo, canRedo, isLoading,
-    name, savedPages, switchTo, saveAs, deletePage, deploy, rollback,
+    name, dirty, savedPages, switchTo, newPage, save, deletePage, deploy, rollback,
     templates, loadTemplate, setTemplateFlag,
   } = useDashboardState()
   const { user } = useUser()
@@ -19,28 +22,50 @@ export default function KtwsCustom() {
   const current = savedPages.find(p => p.name === name)
   const [templateChoice, setTemplateChoice] = useState('')
   const [deployPickerOpen, setDeployPickerOpen] = useState(false)
+  const [pageMenuOpen, setPageMenuOpen] = useState(false)
 
-  const handleSaveAs = useCallback(() => {
-    const input = window.prompt('저장할 대시보드 이름을 입력하세요.', name === '기본' ? '' : (name ?? ''))
+  // 저장 안 한 편집이 있을 때, 그걸 버리게 되는 동작(페이지 전환/새 페이지/템플릿 불러오기) 전에 한 번 확인.
+  const confirmDiscardIfDirty = useCallback((message) => {
+    return !dirty || window.confirm(message)
+  }, [dirty])
+
+  const handleNewPage = useCallback(() => {
+    if (!confirmDiscardIfDirty('저장하지 않은 변경사항이 있습니다. 새 페이지를 만들면 사라집니다. 계속할까요?')) return
+    const input = window.prompt('새 페이지 이름을 입력하세요.', '')
     const trimmed = input?.trim()
     if (!trimmed) return
-    saveAs(trimmed).catch(err => window.alert(err.message))
-  }, [name, saveAs])
+    if (savedPages.some(p => p.name === trimmed)) {
+      window.alert(`'${trimmed}' 이름은 이미 사용 중입니다. 다른 이름을 입력해 주세요.`)
+      return
+    }
+    newPage(trimmed)
+    setPageMenuOpen(false)
+  }, [confirmDiscardIfDirty, newPage, savedPages])
 
-  // 템플릿을 캔버스에 채운 뒤 곧바로 "다른 이름으로 저장"까지 유도 — 템플릿 자체는
-  // 건드리지 않고, 지금 scope에 새 저장본으로 남긴다.
+  const handleSwitchPage = useCallback((targetName) => {
+    setPageMenuOpen(false)
+    if (targetName === name) return
+    if (!confirmDiscardIfDirty('저장하지 않은 변경사항이 있습니다. 다른 페이지로 이동하면 사라집니다. 계속할까요?')) return
+    switchTo(targetName)
+  }, [name, confirmDiscardIfDirty, switchTo])
+
+  // 이름이 있는(기존) 페이지면 그대로 덮어쓰고, 새 페이지(이름 없음)면 이름을 물어본 뒤 처음 저장한다.
+  const handleSave = useCallback(() => {
+    if (!name) {
+      const input = window.prompt('저장할 페이지 이름을 입력하세요.', '')
+      const trimmed = input?.trim()
+      if (!trimmed) return
+      save(trimmed).catch(err => window.alert(err.message))
+      return
+    }
+    save().catch(err => window.alert(err.message))
+  }, [name, save])
+
   const handleLoadTemplate = useCallback(() => {
     if (!templateChoice) return
-    if (widgets.length > 0 && !window.confirm('지금 캔버스의 위젯을 템플릿 내용으로 덮어씁니다. 계속할까요?')) return
-    loadTemplate(templateChoice)
-      .then(() => {
-        const input = window.prompt('이 템플릿을 어떤 이름으로 저장할까요?', templateChoice)
-        const trimmed = input?.trim()
-        if (!trimmed) return
-        return saveAs(trimmed)
-      })
-      .catch(err => window.alert(err.message))
-  }, [templateChoice, widgets.length, loadTemplate, saveAs])
+    if (!confirmDiscardIfDirty('저장하지 않은 변경사항이 있습니다. 템플릿을 불러오면 사라집니다. 계속할까요?')) return
+    loadTemplate(templateChoice).catch(err => window.alert(err.message))
+  }, [templateChoice, confirmDiscardIfDirty, loadTemplate])
 
   const handleToggleTemplate = useCallback(() => {
     if (!current) return
@@ -54,10 +79,11 @@ export default function KtwsCustom() {
   }, [name, deletePage])
 
   const handleDeploy = useCallback((pageKey) => {
+    if (!confirmDiscardIfDirty('저장하지 않은 변경사항이 있습니다. 지금 배포하면 마지막으로 저장된 내용이 배포됩니다. 계속할까요?')) return
     deploy(pageKey)
       .then(() => setDeployPickerOpen(false))
       .catch(err => window.alert(err.message))
-  }, [deploy])
+  }, [confirmDiscardIfDirty, deploy])
 
   const handleRollback = useCallback(() => {
     if (!current?.targetPageKey) return
@@ -77,35 +103,76 @@ export default function KtwsCustom() {
     if (ops.length) applyPatch({ baseVersion: dashboardState.version, ops })
   }, [widgets, dashboardState.version, applyPatch])
 
+  // 카드 우상단 삭제 버튼 — 챗봇 없이 바로 지운다. 실수로 지워도 위의 실행취소로 복구 가능.
+  const handleRemoveWidget = useCallback((widgetId) => {
+    applyPatch({ baseVersion: dashboardState.version, ops: [{ op: 'remove', widgetId }] })
+  }, [dashboardState.version, applyPatch])
+
   return (
     <div className="p-6 space-y-6">
       <PageHeader title="대시보드 커스텀" description="오른쪽 상단 AI 챗봇에게 원하는 차트/지표를 요청하면 이 페이지에 바로 반영됩니다." />
 
       <div className="flex flex-wrap items-center gap-2">
-        <select
-          value={name ?? ''}
-          onChange={(e) => switchTo(e.target.value)}
-          title="저장된 대시보드"
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600"
-        >
-          {savedPages.length === 0 && <option value="기본">기본</option>}
-          {savedPages.map(({ name: n }) => (
-            <option key={n} value={n}>{n}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <button
+            onClick={() => setPageMenuOpen(o => !o)}
+            title="페이지 목록"
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+          >
+            <Layers size={13} />
+            {name ?? '(제목 없음)'}
+            {dirty && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" title="저장하지 않은 변경사항" />}
+            <ChevronDown size={13} className="text-gray-400" />
+          </button>
+          {pageMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setPageMenuOpen(false)} />
+              <div className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden">
+                <button
+                  onClick={handleNewPage}
+                  className="w-full flex items-center gap-1.5 px-3 py-2 text-left text-xs font-medium text-blue-600 hover:bg-blue-50 border-b border-gray-100"
+                >
+                  <Plus size={13} /> 새 페이지
+                </button>
+                <div className="max-h-64 overflow-y-auto py-1">
+                  {savedPages.length === 0 && (
+                    <div className="px-3 py-2 text-xs text-gray-400">저장된 페이지가 없습니다.</div>
+                  )}
+                  {savedPages.map(({ name: n }) => (
+                    <button
+                      key={n}
+                      onClick={() => handleSwitchPage(n)}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs ${
+                        n === name ? 'text-blue-700 font-medium bg-blue-50/60' : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{n}</span>
+                      {n === name && <span className="text-[10px] text-blue-600">보는 중</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
         <span className="text-[11px] text-gray-400">저장 {savedPages.length}/{MAX_SAVED_PAGES}</span>
 
         <button
-          onClick={handleSaveAs}
-          title="다른 이름으로 저장"
-          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+          onClick={handleSave}
+          title="저장"
+          className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border ${
+            dirty
+              ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100'
+              : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+          }`}
         >
-          <Save size={13} /> 다른 이름으로 저장
+          <Save size={13} /> 저장
         </button>
         <button
           onClick={handleDelete}
+          disabled={!name}
           title="현재 저장본 삭제"
-          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-red-50 hover:text-red-600"
+          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Trash2 size={13} /> 삭제
         </button>
@@ -151,8 +218,9 @@ export default function KtwsCustom() {
 
         <button
           onClick={() => setDeployPickerOpen(true)}
-          title="배포할 화면 선택"
-          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+          disabled={!name}
+          title={name ? '배포할 화면 선택' : '먼저 저장해야 배포할 수 있습니다'}
+          className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <UploadCloud size={13} /> 배포
         </button>
@@ -203,7 +271,7 @@ export default function KtwsCustom() {
           </p>
         </div>
       ) : (
-        <WidgetGrid widgets={widgets} onCommitLayout={commitLayout} />
+        <WidgetGrid widgets={widgets} onCommitLayout={commitLayout} onRemoveWidget={handleRemoveWidget} />
       )}
 
       {deployPickerOpen && (

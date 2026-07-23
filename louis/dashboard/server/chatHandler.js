@@ -138,7 +138,15 @@ async function fetchLiveTopicDataViaTopic(client, deployment, { topic, reasoning
     labelKey: queryInfo.label_key,
     valueKey: queryInfo.value_key,
     xKey: queryInfo.x_key,
+    yKey: queryInfo.y_key,
     yKeys: queryInfo.y_keys,
+    orientation: queryInfo.orientation,
+    stacked: queryInfo.stacked,
+    seriesKey: queryInfo.series_key,
+    xLabel: queryInfo.x_label,
+    yLabel: queryInfo.y_label,
+    barKeys: queryInfo.bar_keys,
+    lineKeys: queryInfo.line_keys,
   }, queryInfo.title)
 
   sendEvent({ type: 'component', name: built.type, props: built.props })
