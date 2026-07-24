@@ -1,0 +1,286 @@
+# Delivery (출고) Metrics
+# 근거: 2026-07-24 Power BI 라이브 데이터 모델(로컬 SSAS, ADOMD.NET 조회) DAX 실측을 1차
+# 근거로 삼는다 — GOLD SQL(sheet 2-1 gold_2_1_046/047 등)은 참고 자료로만 남겨둔다.
+# 실측 결과 GOLD SQL 문서와 실제 라이브 측정값이 다른 지점이 여럿 발견됐다(사용자 요청으로
+# 실제 BI 기준으로 전면 재정렬, 단 알려진 버그는 수정 — pma_in/out 참고).
+
+metrics:
+  - id: delivery_mtd_actual
+    name_ko: 당월 출고 실적
+    description: >
+      Power BI 라이브 측정값 '4. sales_mtd' DAX 실측 기준(2026-07-24). GOLD SQL 문서와
+      달리 취소 조건이 있다 — cancel_dt가 비어있거나, 출고일(last_retail_sales_dt) 자신이
+      속한 달 말일 이후에 취소됐으면 그래도 실적으로 인정(br_delivery_cancel_exclusion_mtd).
+    metric_type: base_metric
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(FCT_CONTRACT_KTWS.cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CONTRACT_KTWS.last_retail_sales_dt
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: [br_delivery_cancel_exclusion_mtd]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant, vehicle_model, vehicle_variant, grade_sfx]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_mtd' DAX 실측(2026-07-24) — SUM(cnt) 자체는 GOLD SQL(gold_2_1_046)과 일치, 취소 조건만 추가로 발견"}]
+    confidence: high
+
+  - id: delivery_ytd_actual
+    name_ko: 연누적 출고 실적
+    description: >
+      Power BI 라이브 측정값 '4. sales_ytd' DAX 실측 기준(2026-07-24) — GOLD SQL 문서
+      (gold_2_1_047, SUM(cnt))와 달리 실제로는 DISTINCTCOUNT(dlr_contract_no)를 쓴다.
+      한 계약이 여러 cnt 행으로 나뉘는 경우 SUM(cnt)와 값이 달라질 수 있음(계약 건수
+      기준이지, 수량 합산이 아님) — 이번 세션에서 실측으로 발견해 정정한 지점.
+    metric_type: base_metric
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: "COUNT(DISTINCT FCT_CONTRACT_KTWS.dlr_contract_no)"
+    metric_filter: null
+    aggregation: count_distinct
+    distinct_key: dlr_contract_no
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CONTRACT_KTWS.last_retail_sales_dt
+    default_time_grain: year
+    supported_time_grains: [year]
+    required_filters: [br_delivery_cancel_exclusion_ytd]
+    exclusion_rules: [sc_scope_default]
+    dimensions: [brand, dealer, showroom, department, sales_consultant, vehicle_model, vehicle_variant, grade_sfx, pma_status]
+    additive_behavior: {across_time: non_additive_distinct, across_organization: non_additive_distinct}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_ytd' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: delivery_mtd_target
+    name_ko: 당월 출고 목표 (딜러 레벨)
+    description: >
+      GOLD SQL 문서엔 원문이 없어 unresolved였으나, 실제 라이브 측정값
+      '4. sales_mtd_(target)_dealer' DAX 실측으로 확정됐다 — FCT_SALES_TARGET_DAILY의
+      ac_trgt_daily(출고타겟) 컬럼. contract_mtd_target과 마찬가지로 딜러 레벨 기준이며
+      agenticBiPipeline.js가 SC/부서/전시장 컨텍스트면 delivery_mtd_target_sc로 자동
+      치환한다(실제 Fabric 실행으로 검증 완료, 2026-07-24).
+    metric_type: target_metric
+    fact_entity: Delivery
+    base_table: FCT_SALES_TARGET_DAILY
+    expression: "SUM(FCT_SALES_TARGET_DAILY.ac_trgt_daily)"
+    metric_filter: null
+    aggregation: sum
+    grain: [dealer, month]
+    time_dimension: FCT_SALES_TARGET_DAILY.dateby
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: []
+    exclusion_rules: []
+    null_handling: "0"
+    dimensions: [brand, dealer, vehicle_model]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_mtd_(target)_dealer' DAX 실측(2026-07-24); schema/tables/FCT_SALES_TARGET_DAILY.yaml"}]
+    confidence: high
+
+  - id: delivery_ytd_target
+    name_ko: 연누적 출고 목표 (딜러 레벨)
+    description: delivery_mtd_target과 동일 소스, TOTALYTD 롤업.
+    metric_type: target_metric
+    fact_entity: Delivery
+    base_table: FCT_SALES_TARGET_DAILY
+    expression: "SUM(FCT_SALES_TARGET_DAILY.ac_trgt_daily)"
+    metric_filter: null
+    aggregation: sum
+    grain: [dealer, year]
+    time_dimension: FCT_SALES_TARGET_DAILY.dateby
+    default_time_grain: year
+    supported_time_grains: [year]
+    required_filters: []
+    exclusion_rules: []
+    null_handling: "0"
+    dimensions: [brand, dealer, vehicle_model]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_ytd_(target)_dealer' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: delivery_mtd_target_sc
+    name_ko: 당월 출고 목표 (SC 레벨)
+    description: >
+      delivery_mtd_target(딜러 레벨)의 "_cond" 자동전환 짝 — SC/부서/전시장 필터 시 이
+      정의(FCT_CRM_TARGET_M 기준)로 자동 전환된다. agenticBiPipeline.js가 자동 치환.
+    metric_type: target_metric
+    fact_entity: Delivery
+    base_table: FCT_CRM_TARGET_M
+    expression: "SUM(FCT_CRM_TARGET_M.target_cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CRM_TARGET_M.monthly_dt
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: [br_delivery_target_grp_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_mtd_(target)_sc/coalesce' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: delivery_ytd_target_sc
+    name_ko: 연누적 출고 목표 (SC 레벨)
+    description: delivery_mtd_target_sc의 YTD 버전.
+    metric_type: target_metric
+    fact_entity: Delivery
+    base_table: FCT_CRM_TARGET_M
+    expression: "SUM(FCT_CRM_TARGET_M.target_cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CRM_TARGET_M.monthly_dt
+    default_time_grain: year
+    supported_time_grains: [year]
+    required_filters: [br_delivery_target_grp_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_ytd_(target)_sc_coaleasce' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: delivery_ytd_achievement_rate
+    name_ko: 연누적 출고 달성률
+    description: >
+      실측 DAX '4. progress_sales_ytd_cond' = DIVIDE(sales_ytd, sales_ytd_(target)_cond, 0)
+      그대로 재현. 분자는 delivery_ytd_actual을 그대로 재사용(coalesce는 null 가드일 뿐 값이
+      같음), 분모는 SC/부서/전시장 컨텍스트면 delivery_ytd_target_sc로 자동 전환.
+    metric_type: ratio_metric
+    numerator_metric: delivery_ytd_actual
+    denominator_metric: delivery_ytd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=0.0)"
+    zero_denominator_result: 0.0
+    format: percentage
+    grain: [sales_consultant, year]
+    dependencies: [delivery_ytd_actual, delivery_ytd_target]
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. progress_sales_ytd_cond' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: delivery_mtd_achievement_rate
+    name_ko: 당월 출고 달성률
+    description: >
+      delivery_mtd_target이 이전엔 unresolved라 컴파일 불가였으나, 이번 BI 실측으로
+      delivery_mtd_target이 확정되면서 이 지표도 함께 컴파일 가능해짐.
+    metric_type: ratio_metric
+    numerator_metric: delivery_mtd_actual
+    denominator_metric: delivery_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=0.0)"
+    zero_denominator_result: 0.0
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [delivery_mtd_actual, delivery_mtd_target]
+    source_evidence: [{measure: "4. progress_sales_mtd_cond"}, {note: "실측 DAX의 ISFILTERED 기반 _cond 분기(딜러/SC 자동 전환)를 agenticBiPipeline.js에서 재현 — SC 필터/breakdown이 있으면 delivery_mtd_target_sc로 자동 치환(2026-07-24 실측 검증)"}]
+    confidence: medium
+
+  - id: delivery_ytd_by_model
+    name_ko: 연누적 출고 (모델별)
+    description: "delivery_ytd_actual과 동일 정의(DISTINCTCOUNT dlr_contract_no)를 vehicle_model 차원으로 breakdown"
+    metric_type: base_metric
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: "COUNT(DISTINCT FCT_CONTRACT_KTWS.dlr_contract_no)"
+    metric_filter: null
+    aggregation: count_distinct
+    distinct_key: dlr_contract_no
+    grain: [sales_consultant, vehicle_model, year]
+    time_dimension: FCT_CONTRACT_KTWS.last_retail_sales_dt
+    default_time_grain: year
+    required_filters: [br_delivery_cancel_exclusion_ytd]
+    dependencies: [delivery_ytd_actual]
+    source_evidence: [{sql_id: gold_2_3_052, note: "sheet 2-3 모델별 출고"}, {note: "Power BI '4. sales_ytd' DAX 실측 기준으로 DISTINCTCOUNT 정정(2026-07-24)"}]
+    confidence: high
+
+  - id: delivery_ytd_pma_in
+    name_ko: 연누적 출고 PMA IN
+    description: >
+      pma_yn='Y' 조건으로 delivery_ytd_actual과 동일 정의(DISTINCTCOUNT dlr_contract_no)를
+      필터한 값 — 반드시 3-way 분류 사용(br_pma_three_way). 실제 라이브 측정값
+      'sales_ytd_pmaIn'은 pma_yn<>"N"(2-way, 버그)을 쓰지만 이 metric은 의도적으로
+      pma_yn='Y'만 명시해 버그를 재현하지 않는다 — 사용자 요청으로 "실제 BI 기준을 따르되
+      버그는 고침".
+    metric_type: base_metric
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: "COUNT(DISTINCT FCT_CONTRACT_KTWS.dlr_contract_no)"
+    metric_filter: "FCT_CONTRACT_KTWS.pma_yn = 'Y'"
+    aggregation: count_distinct
+    distinct_key: dlr_contract_no
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CONTRACT_KTWS.last_retail_sales_dt
+    default_time_grain: year
+    required_filters: [br_delivery_cancel_exclusion_ytd]
+    dependencies: [delivery_ytd_actual]
+    source_evidence: [{note: "Power BI 라이브 측정값 'sales_ytd_pmaIn' DAX 실측(2026-07-24) — pma_yn<>'N' 2-way 버그 확인, 실측 당일 실제 데이터로 etc=40,478건(전체의 약 29%)이 IN에 잘못 합산되고 있음을 정량 확인. 이 metric은 pma_yn='Y'로 교정."}]
+    confidence: high
+    status: corrected_from_known_bug
+
+  - id: delivery_ytd_pma_out
+    name_ko: 연누적 출고 PMA OUT
+    description: "pma_yn='N' — 실제 라이브 측정값 'sales_ytd_pmaOut'도 이미 pma_yn=\"N\"으로 정확히 정의되어 있음(버그 없음, 실측으로 확인)."
+    metric_type: base_metric
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: "COUNT(DISTINCT FCT_CONTRACT_KTWS.dlr_contract_no)"
+    metric_filter: "FCT_CONTRACT_KTWS.pma_yn = 'N'"
+    aggregation: count_distinct
+    distinct_key: dlr_contract_no
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CONTRACT_KTWS.last_retail_sales_dt
+    default_time_grain: year
+    required_filters: [br_delivery_cancel_exclusion_ytd]
+    dependencies: [delivery_ytd_actual]
+    source_evidence: [{note: "Power BI 라이브 측정값 'sales_ytd_pmaOut' DAX 실측(2026-07-24) — pma_yn=\"N\" 정확히 일치 확인"}]
+    confidence: high
+    status: corrected_from_known_bug
+
+  - id: delivery_channel_segment
+    name_ko: 출고 채널 세그먼트 (farming/hunting/referral)
+    description: "출고를 발생시킨 채널 분류 — 실제 라이브 측정값(4. sales_mtd_farming/hunting/referral)은 존재 확인했으나 그 안의 정확한 판정 조건(DAX 원문)은 아직 조회하지 않음"
+    metric_type: row_level_attribute
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: unresolved
+    grain: [sales_consultant, month]
+    dependencies: []
+    source_evidence: [{measure: "4. sales_mtd_farming"}, {measure: "4. sales_mtd_hunting"}, {measure: "4. sales_mtd_referral"}]
+    confidence: low
+    status: unresolved
+    required_input: ["'4. sales_mtd_farming/hunting/referral' 전체 DAX 원문 조회 필요"]
+
+  - id: delivery_monthly_avg_6m
+    name_ko: 월평균 출고 (최근 6개월)
+    description: >
+      "SC 출고 현황"(sheet 7) 표의 '월평균 출고' 컬럼. 실측 DAX '4. sales_period_monthly_avg_scSelected'는
+      최근 6개월 각각의 월별 DISTINCTCOUNT(dlr_contract_no)를 구한 뒤 그 6개 값의 평균을 낸다 —
+      "한 기간을 통째로 집계"가 아니라 "월별로 나눠 집계한 뒤 평균"이라 GROUP BY(월) + 바깥쪽
+      AVG의 2단계 집계가 필요하다. compileSingleMetricQuery(단일 SELECT 조립기)로는 표현할 수
+      없어 controlled_analysis 전용 경로(agenticBiPipeline.js의 compileDeliveryMonthlyAverage)로
+      직접 SQL을 조립한다 — 등록된 SC 스코프/취소 규칙은 재사용하되 쿼리 구조 자체는 손으로 쌓음.
+      FCT_SC_GROUP_RULE의 그룹핑/구간 필터 기능(관측 기간 설정, 값 구간별 재그룹)은 리포트 UI
+      전용 기능으로 보고 구현하지 않음 — 순수 평균값만 낸다.
+    metric_type: snapshot_metric
+    fact_entity: Delivery
+    base_table: FCT_CONTRACT_KTWS
+    expression: unresolved  # controlled_analysis 경로가 대신 처리 — compileSingleMetricQuery 대상 아님
+    not_directly_compilable: true
+    controlled_analysis: true
+    trailing_window_months: 6
+    grain: [sales_consultant]
+    dimensions: [dealer, sales_consultant]
+    dependencies: [delivery_ytd_actual]
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_period_monthly_avg_scSelected' DAX 실측(2026-07-24)"}]
+    confidence: high
+    status: approximation
+    required_input: ["FCT_SC_GROUP_RULE 그룹핑/구간 필터 기능은 구현하지 않음 — 순수 평균만 제공"]

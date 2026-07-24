@@ -1,0 +1,52 @@
+# Ontology Overview — 확정된 도메인 구조
+# 상세 정의는 entities.yaml / relationships.yaml / business_vocabulary.yaml 참고.
+# 이 파일은 사용자가 요청한 "후보 구조" 대비 실제 확정된 구조를 표로 대조한다.
+
+domain: KTWS (Toyota/Lexus 딜러 CRM·영업 대시보드)
+source: server/schema/ktws_측정값_쿼리화.xlsx (13 sheets, 99 visual rows, 67 distinct GOLD SQL)
+
+structure:
+  Organization:
+    - Brand
+    - Dealer
+    - Showroom
+    - Department
+    - SalesConsultant
+  Sales_Funnel:
+    - Lead              # "Customer"는 독립 엔터티로 확정 못함 — unresolved, Lead에 속성으로 흡수
+    - Activity
+    - TestDrive          # partially_unresolved — DIM_CRM_ACT_TYPE 코드 정의서 필요
+    - Contract
+    - Cancellation       # Contract의 상태, 독립 테이블 아님
+    - Delivery           # Contract의 상태, 독립 테이블 아님
+  Vehicle:
+    - VehicleModel
+    - VehicleVariant
+    - Grade              # 후보 구조의 "SFX"는 Grade(DIM_VEHIC_SPEC)에 흡수됨, 별도 엔터티 아님
+    - SalesType           # 후보 구조에는 없었으나 실제로 발견됨(재구매/자사금융/지불유형)
+  Management:
+    - MonthlyTarget
+    - DailyTarget          # 후보 구조는 "MonthlyTarget" 하나였으나 실제로는 일별/월별 2계열
+    - TargetStatus          # 신규 발견, unresolved
+    - WorkingDay
+    - HotBoardMeeting        # 신규 발견, unresolved
+    - NPSRecord               # 신규 발견, unresolved
+    - SCGroupRule              # 신규 발견, unresolved
+    - ActivityTypeTaxonomy      # 후보 구조에 없었으나 사실상 모든 퍼널 지표의 축 — 승격
+
+deviations_from_candidate_structure:
+  - "Consultation, TestDriveRequest는 후보 구조에 있었으나 워크북에서 독립 엔터티로 확인되지 않음 — Activity/TestDrive의 상태값(tp_key 세부 유형)일 가능성이 높으나 DIM_CRM_ACT_TYPE 코드 정의서 없이 확정 불가(unresolved)."
+  - "PerformanceSnapshot은 후보 구조에 있었으나 대응하는 별도 팩트를 찾지 못함 — 각 metric의 snapshot_metric 유형 플래그로 대체."
+  - "Customer는 독립 엔터티로 승격하지 못했다 — FCT_MNG_CUST_LIST가 존재하나 컬럼 정의서 없이 Lead/Contract와의 관계를 확정할 수 없음."
+  - "SFX는 별도 엔터티가 아니라 DIM_VEHIC_SPEC(Grade)의 컬럼(sfx_cd)임이 확인됨."
+
+table_to_entity_disambiguation:
+  # DB 테이블명이 아니라 업무 개념이 우선이라는 원칙을 지키기 위한 명시적 매핑표
+  - db_table: FCT_CONTRACT_KTWS
+    entities: [Contract, Cancellation, Delivery]
+    note: "한 테이블이 3개의 업무 개념(계약/취소/출고)을 상태로 표현 — 컬럼(cancel_dt, last_retail_sales_dt)이 상태 판별자"
+  - db_table: DIM_MNG_USER
+    entities: [SalesConsultant, Brand, Showroom, Department]
+    note: "SC 1행이 곧 브랜드/전시장/부서 속성을 함께 가짐 — 4개 업무 개념이 한 테이블에 존재"
+
+diagram: ontology_diagram.mmd

@@ -1,0 +1,173 @@
+# Ontology Relationships
+# 근거: agentic_bi_design/inventory/sql_metadata.json의 joins[] + 67개 GOLD 쿼리 ON절 스캔.
+# join_path의 컬럼명은 실제 SQL에서 관찰된 표기 그대로(케이스 혼용 포함, 예: sc_key vs SC_KEY)이며
+# 정규화하지 않았다 — 정규화는 semantic/joins.yaml(등록된 조인 카탈로그)의 책임이다.
+
+relationships:
+  - id: sales_consultant_belongs_to_dealer
+    from: SalesConsultant
+    to: Dealer
+    cardinality: many_to_one
+    join_path: "DIM_MNG_USER.dealer_key = DIM_MNG_DEALER.dealer_key"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_1_1_001}]
+    confidence: high
+
+  - id: activity_performed_by_sc
+    from: Activity
+    to: SalesConsultant
+    cardinality: many_to_one
+    join_path: "FCT_ACTIVITY_v2.sc_key = DIM_MNG_USER.sc_key"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_1_1_001}]
+    confidence: high
+
+  - id: activity_targets_lead
+    from: Activity
+    to: Lead
+    cardinality: many_to_one
+    join_path: "FCT_ACTIVITY_v2.lead_key = FCT_LEAD.lead_key"
+    temporal_condition: "활동 자격 판정 시 EXISTS 서브쿼리로 a.act_dt_fr BETWEEN @MonthStart AND @MonthEnd 추가 조건 결합"
+    optional: true
+    source_evidence: [{sql_id: gold_1_2_025, note: "lead_actual CTE의 EXISTS 서브쿼리"}]
+    confidence: high
+
+  - id: lead_owned_by_sc
+    from: Lead
+    to: SalesConsultant
+    cardinality: many_to_one
+    join_path: "FCT_LEAD.cl_sc_key = DIM_MNG_USER.sc_key"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_1_2_025}]
+    confidence: high
+
+  - id: contract_originates_from_lead
+    from: Contract
+    to: Lead
+    cardinality: many_to_one
+    join_path: >
+      FCT_CONTRACT_KTWS.lead_key = FCT_LEAD.lead_key
+      AND FCT_CONTRACT_KTWS.cn_sc_key = FCT_LEAD.cl_sc_key
+      AND FCT_CONTRACT_KTWS.tp_key(경유 common_tp_nm) = FCT_LEAD.tp_key(경유 common_tp_nm)
+    temporal_condition: >
+      cntrct_actual CTE: 리드가 lead_reg_dt BETWEEN @MonthStart AND @MonthEnd 이면서
+      qualified 조건(close_dt>월말 OR NULL OR last_retail_sales_dt 존재)을 만족해야
+      "그 리드에서 나온 계약"으로 인정.
+    optional: false
+    source_evidence: [{sql_id: gold_1_2_025, note: "cntrct_actual CTE의 EXISTS(FCT_LEAD ...) 서브쿼리"}]
+    confidence: high
+
+  - id: contract_placed_by_sc
+    from: Contract
+    to: SalesConsultant
+    cardinality: many_to_one
+    join_path: "FCT_CONTRACT_KTWS.cn_sc_key = DIM_MNG_USER.sc_key"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_2_1_046}]
+    confidence: high
+
+  - id: contract_for_vehicle_spec
+    from: Contract
+    to: Grade
+    cardinality: many_to_one
+    join_path: "FCT_CONTRACT_KTWS.cn_vehic_key = DIM_VEHIC_SPEC.spec_key"
+    temporal_condition: null
+    optional: true
+    source_evidence: [{sql_id: gold_2_1_046}]
+    confidence: high
+
+  - id: grade_belongs_to_variant
+    from: Grade
+    to: VehicleVariant
+    cardinality: many_to_one
+    join_path: "DIM_VEHIC_SPEC.var_key = DIM_VEHIC_SPEC_VAR.var_key"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_2_1_046}]
+    confidence: high
+
+  - id: variant_belongs_to_model
+    from: VehicleVariant
+    to: VehicleModel
+    cardinality: many_to_one
+    join_path: "DIM_VEHIC_SPEC_VAR.model_key = DIM_VEHIC_SPEC_MDL.mdl_key"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_2_1_046}]
+    confidence: high
+
+  - id: contract_has_sales_type
+    from: Contract
+    to: SalesType
+    cardinality: many_to_one
+    join_path: "FCT_CONTRACT_KTWS.sales_tp_key = DIM_REPURC_SALES_TYPE.sales_tp_key"
+    temporal_condition: null
+    optional: true
+    source_evidence: [{sql_id: gold_2_1_046}]
+    confidence: high
+
+  - id: activity_type_rolls_up_to_taxonomy
+    from: ActivityTypeTaxonomy
+    to: ActivityTypeTaxonomy
+    cardinality: many_to_one
+    join_path: "DIM_CRM_ACT_TYPE.common_tp_nm = DIM_CRM_ACT_TYPE_ORDER.common_tp_nm"
+    temporal_condition: null
+    optional: false
+    source_evidence: [{sql_id: gold_1_1_001}]
+    confidence: high
+    risk: >
+      대리키(예: tp_key)가 아니라 자연키 텍스트(common_tp_nm)로 조인한다 — 두 테이블 중
+      한쪽의 표기가 어긋나면(오타/트림 안 된 공백 등) 조용히 매칭 실패하며 SQL 에러 없이
+      행이 누락된다. Semantic Layer joins.yaml에 join_risk: natural_key_text_join 태그 필요.
+
+  - id: monthly_target_for_sc
+    from: MonthlyTarget
+    to: SalesConsultant
+    cardinality: many_to_one
+    join_path: "FCT_CRM_TARGET_M.sc_key = DIM_MNG_USER.sc_key"
+    temporal_condition: "FCT_CRM_TARGET_M.monthly_dt = DIM_CALENDAR_KTWS.[Date] 로 연/월 필터"
+    optional: false
+    source_evidence: [{sql_id: gold_1_1_007}]
+    confidence: high
+
+  - id: daily_target_for_sc
+    from: DailyTarget
+    to: SalesConsultant
+    cardinality: many_to_one
+    join_path: "FCT_CRM_TARGET_D.sc_key = DIM_MNG_USER.sc_key"
+    temporal_condition: "FCT_CRM_TARGET_D.daily_dt = DIM_CALENDAR_KTWS.[Date], TOTALMTD 롤업"
+    optional: false
+    source_evidence: [{sql_id: gold_1_1_002}]
+    confidence: high
+
+  - id: fact_dated_by_calendar
+    from: WorkingDay
+    to: WorkingDay
+    cardinality: one_to_many
+    join_path: >
+      DIM_CALENDAR_KTWS.[Date] = { FCT_ACTIVITY_v2.act_dt_fr | FCT_CONTRACT_KTWS.contract_dt |
+      FCT_CONTRACT_KTWS.last_retail_sales_dt | FCT_CRM_TARGET_M.monthly_dt |
+      FCT_CRM_TARGET_D.daily_dt | FCT_LEAD.lead_reg_dt }
+    temporal_condition: "모든 MTD/YTD 지표의 공통 시간 축 — 팩트마다 어느 날짜 컬럼을 쓰는지가 다르므로 metric별로 time_dimension을 명시해야 함(혼용 시 값이 달라짐)"
+    optional: false
+    source_evidence: [{sql_id: gold_2_1_046}]
+    confidence: high
+
+# ── 명시적으로 확인이 필요한 관계(unresolved) ──────────────────────────────
+unresolved_relationships:
+  - candidate: "Customer ↔ Lead/Contract"
+    reason: "FCT_MNG_CUST_LIST 컬럼 정의서 없음 — 조인키 확인 불가"
+    required_input: ["FCT_MNG_CUST_LIST 컬럼 정의서"]
+  - candidate: "HotBoardMeeting ↔ SalesConsultant/Dealer"
+    reason: "FCT_HBOARD_MEETING 컬럼 정의서 없음"
+    required_input: ["FCT_HBOARD_MEETING 컬럼 정의서"]
+  - candidate: "SCGroupRule ↔ SalesConsultant"
+    reason: "FCT_SC_GROUP_RULE 컬럼 정의서 없음 — 그룹 매핑 규칙으로 추정만 가능"
+    required_input: ["FCT_SC_GROUP_RULE 컬럼 정의서"]
+  - candidate: "NPSRecord ↔ Customer/Contract"
+    reason: "FCT_NPS 컬럼 정의서 없음"
+    required_input: ["FCT_NPS 컬럼 정의서"]

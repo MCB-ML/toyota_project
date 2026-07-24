@@ -5,7 +5,7 @@ import {
   Ticket,
   MessageSquare, Network, Landmark,
   GitMerge, CalendarDays,
-  PieChart, LayoutGrid,
+  PieChart, LayoutGrid, FlaskConical,
   ChevronRight, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react'
 import AccountSwitcher from './AccountSwitcher'
@@ -52,6 +52,7 @@ const MENU_GROUPS = [
     items: [
       { path: '/ktws/bi', label: 'BI', icon: PieChart },
       { path: '/ktws/custom', label: '대시보드 커스텀', icon: LayoutGrid },
+      { path: '/ktws/agentic-bi', label: 'Agentic BI', icon: FlaskConical, badge: '실험' },
     ],
   },
 ]

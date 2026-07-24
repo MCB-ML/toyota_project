@@ -1,0 +1,346 @@
+# Contract Metrics
+# 근거: sheet 2-1 gold_2_1_042~047 (실적/취소/타겟/달성률 통합쿼리), 1-1 gold_1_1_021~024
+
+metrics:
+  - id: contract_mtd_actual
+    name_ko: 당월 계약 실적 (유효 계약, 취소 제외)
+    description: "cancel_dt가 NULL인 계약 건수 합 — 취소 건은 제외한 '유효 계약' 실적"
+    metric_type: base_metric
+    fact_entity: Contract
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(CASE WHEN FCT_CONTRACT_KTWS.cancel_dt IS NULL THEN FCT_CONTRACT_KTWS.cnt ELSE 0 END)"
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: [br_contract_cancel_exclusion]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "매칭 없으면 0 (ISNULL 처리됨)"
+    dimensions: [brand, dealer, showroom, department, sales_consultant, vehicle_model, vehicle_variant, grade_sfx]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{sql_id: gold_2_1_046, note: "CN.ac_val"}, {note: "Power BI 라이브 측정값 '3. cntrct_mtd_(ac)' DAX 실측 결과 정확히 일치 확인(2026-07-24)"}]
+    confidence: high
+
+  - id: contract_ytd_actual
+    name_ko: 연누적 계약 실적
+    description: >
+      contract_mtd_actual과 유효 계약 개념은 같지만, 취소 예외 규칙이 더 관대하다
+      (br_contract_cancel_exclusion_ytd 참고 — "리포트 기준월 말일 이후 취소"는 그래도
+      실적으로 인정). GOLD SQL 문서(gold_2_1_046)에는 이 유예 규칙이 없었는데, 실제 라이브
+      BI 측정값(cntrct_ytd_(ac)) DAX를 직접 조회해서 발견한 차이 — 이 필드는 이제 GOLD SQL이
+      아니라 그 실측 DAX를 근거로 한다.
+    metric_type: base_metric
+    fact_entity: Contract
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(FCT_CONTRACT_KTWS.cnt)"
+    metric_filter: null  # 취소 조건은 required_filters의 br_contract_cancel_exclusion_ytd가 담당
+    aggregation: sum
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: year
+    supported_time_grains: [year]
+    required_filters: [br_contract_cancel_exclusion_ytd]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_ytd_(ac)' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: contract_mtd_cancelled
+    name_ko: 당월 계약 취소 건수
+    description: "cancel_dt가 NOT NULL인 건수 합 — contract_mtd_actual과 상호 배타적(같은 팩트, 다른 CASE 분기)"
+    metric_type: base_metric
+    fact_entity: Cancellation
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(CASE WHEN FCT_CONTRACT_KTWS.cancel_dt IS NOT NULL THEN FCT_CONTRACT_KTWS.cnt ELSE 0 END)"
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: [br_contract_cancel_inclusion_flag]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, sales_consultant]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{sql_id: gold_2_1_046, note: "CN.cancel_val"}]
+    confidence: high
+
+  - id: contract_mtd_target
+    name_ko: 당월 계약 목표 (딜러 레벨)
+    description: >
+      실제 라이브 BI 측정값 '3. cntrct_mtd_(target)_dealer'는 GOLD SQL 문서(gold_2_1_046,
+      FCT_CRM_TARGET_M 기준)와 다른 테이블(FCT_SALES_TARGET_DAILY)을 쓴다 — "동일 지표인데
+      GOLD SQL 문서와 실제 BI가 다른 소스"인 실제 사례. 딜러 단위 집계(SC breakdown 없음)
+      기준이며, DAX 원본은 SC/부서/전시장으로 필터링되면 FCT_CRM_TARGET_M 기반의 다른
+      측정값(cntrct_funnel_(mtd_target)_sc)으로 자동 전환되는 조건부(_cond) 로직을 쓰지만,
+      agenticBiPipeline.js가 ir.dimensions/filters를 보고 SC/부서/전시장 컨텍스트면
+      contract_mtd_target_sc로 자동 치환한다(실제 Fabric 실행으로 검증 완료, 2026-07-24).
+    metric_type: target_metric
+    fact_entity: Contract
+    base_table: FCT_SALES_TARGET_DAILY
+    expression: "SUM(FCT_SALES_TARGET_DAILY.co_trgt_daily)"
+    metric_filter: null
+    aggregation: sum
+    grain: [dealer, month]
+    time_dimension: FCT_SALES_TARGET_DAILY.dateby
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: []
+    exclusion_rules: []
+    null_handling: "0"
+    dimensions: [brand, dealer, vehicle_model]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_mtd_(target)_dealer' DAX 실측(2026-07-24); schema/tables/FCT_SALES_TARGET_DAILY.yaml"}]
+    confidence: high
+
+  - id: contract_ytd_target
+    name_ko: 연누적 계약 목표 (딜러 레벨)
+    description: contract_mtd_target과 동일 소스, TOTALYTD 롤업.
+    metric_type: target_metric
+    fact_entity: Contract
+    base_table: FCT_SALES_TARGET_DAILY
+    expression: "SUM(FCT_SALES_TARGET_DAILY.co_trgt_daily)"
+    metric_filter: null
+    aggregation: sum
+    grain: [dealer, year]
+    time_dimension: FCT_SALES_TARGET_DAILY.dateby
+    default_time_grain: year
+    supported_time_grains: [year]
+    required_filters: []
+    exclusion_rules: []
+    null_handling: "0"
+    dimensions: [brand, dealer, vehicle_model]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_ytd_(target)_dealer' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: contract_mtd_target_sc
+    name_ko: 당월 계약 목표 (SC 레벨)
+    description: >
+      contract_mtd_target(딜러 레벨)의 "_cond" 자동전환 짝 — 실제 BI는 질문이 SC/부서/
+      전시장으로 좁혀지면 이 SC 레벨 정의(FCT_CRM_TARGET_M 기준)로 자동 전환된다.
+      agenticBiPipeline.js가 ir.dimensions/filters에 sales_consultant/department/showroom이
+      있으면 이 metric으로 자동 치환한다 — 사용자가 직접 이 id를 고를 필요는 없음.
+    metric_type: target_metric
+    fact_entity: Contract
+    base_table: FCT_CRM_TARGET_M
+    expression: "SUM(FCT_CRM_TARGET_M.target_cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CRM_TARGET_M.monthly_dt
+    default_time_grain: month
+    supported_time_grains: [month, year]
+    required_filters: [br_common_tp_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_funnel_(mtd_target)_sc' DAX 실측(2026-07-24) — SC/부서/전시장 필터 시 사용되는 조건부 분기"}]
+    confidence: high
+
+  - id: contract_ytd_target_sc
+    name_ko: 연누적 계약 목표 (SC 레벨)
+    description: contract_mtd_target_sc의 YTD 버전. tp_nm='계약'을 쓴다는 점이 MTD(common_tp_nm='계약')와 다름 — 실측 DAX 원문 그대로.
+    metric_type: target_metric
+    fact_entity: Contract
+    base_table: FCT_CRM_TARGET_M
+    expression: "SUM(FCT_CRM_TARGET_M.target_cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CRM_TARGET_M.monthly_dt
+    default_time_grain: year
+    supported_time_grains: [year]
+    required_filters: [br_contract_tp_nm_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_ytd_(target)_sc' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: contract_ytd_total_including_cancelled
+    name_ko: 연누적 계약 전체 건수 (취소 포함, 달성률 분자 전용)
+    description: >
+      contract_mtd_total_including_cancelled의 YTD 버전. 실측 DAX '3. cntrct_ytd' =
+      TOTALYTD(SUM(cnt)) — 취소 조건이 전혀 없다(contract_ytd_actual의 유예 규칙과도 다름).
+      progress_cntrct_ytd_cond(연누적 계약 달성률)의 분자 전용이며 실적으로 노출하지 말 것.
+    metric_type: base_metric
+    fact_entity: Contract
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(FCT_CONTRACT_KTWS.cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, year]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: year
+    required_filters: []
+    exclusion_rules: [sc_scope_default]
+    dimensions: [sales_consultant]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_ytd'(=TOTALYTD(SUM(cnt)), 취소조건 없음) DAX 실측(2026-07-24)"}]
+    confidence: high
+    display_only_measure: true
+
+  - id: contract_ytd_achievement_rate
+    name_ko: 연누적 계약 달성률
+    description: >
+      contract_mtd_achievement_rate의 YTD 버전. 실측 DAX '3. progress_cntrct_ytd_cond' =
+      DIVIDE(cntrct_ytd, cntrct_ytd_(target)_cond, 0) 그대로 재현 — 분모는 SC/부서/전시장
+      컨텍스트면 contract_ytd_target_sc로 자동 전환됨(agenticBiPipeline.js).
+    metric_type: ratio_metric
+    numerator_metric: contract_ytd_total_including_cancelled
+    denominator_metric: contract_ytd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=0.0)"
+    zero_denominator_result: 0.0
+    format: percentage
+    grain: [sales_consultant, year]
+    dependencies: [contract_ytd_target]
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. progress_cntrct_ytd_cond' DAX 실측(2026-07-24)"}]
+    confidence: high
+
+  - id: contract_mtd_achievement_rate
+    name_ko: 당월 계약 달성률
+    description: >
+      분자는 취소 포함 전체 SUM(F.cnt) — contract_mtd_actual(취소 제외)과 분자가 다르다는
+      점이 핵심 함정. "실적"과 "달성률의 분자"를 같은 값으로 착각하면 오차 발생.
+    metric_type: ratio_metric
+    numerator_metric: contract_mtd_total_including_cancelled
+    denominator_metric: contract_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=0.0)"
+    zero_denominator_result: 0.0
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [contract_mtd_target]
+    source_evidence: [{sql_id: gold_2_1_046, note: "달성률 = CN.total_val / TGT.val, total_val = SUM(F.cnt) 무조건"}, {note: "Power BI 라이브 '3. progress_cntrct_mtd_cond' = DIVIDE(cntrct_mtd_coalesce, cntrct_mtd_(target)_cond, 0) 확인 — cntrct_mtd_coalesce는 COALESCE(TOTALMTD(SUM(cnt)),0)로 cntrct_mtd(취소 포함 무조건 합계)와 동일한 값이라, GOLD SQL의 '분자는 취소 포함 전체' 정의가 실제 BI와도 일치함을 재확인(2026-07-24)"}]
+    confidence: high
+
+  - id: contract_mtd_total_including_cancelled
+    name_ko: 당월 계약 전체 건수 (취소 포함, 달성률 분자 전용)
+    description: "achievement_rate 계산에만 쓰이는 분자 — 사용자에게 '실적'으로 노출하지 말 것(contract_mtd_actual과 혼동 방지 목적으로 별도 id 부여)"
+    metric_type: base_metric
+    fact_entity: Contract
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(FCT_CONTRACT_KTWS.cnt)"
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: month
+    required_filters: []
+    exclusion_rules: [sc_scope_default]
+    dimensions: [sales_consultant]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{sql_id: gold_2_1_046, note: "CN.total_val"}, {note: "Power BI 라이브 측정값 '3. cntrct_mtd'(=TOTALMTD(SUM(cnt)), 취소조건 없음) DAX 실측 정확히 일치 확인(2026-07-24)"}]
+    confidence: high
+    display_only_measure: true
+
+  - id: contract_progress_rate_mtd
+    name_ko: 당월 계약 진행률
+    description: >
+      achievement_rate와 다른 지표 — 분자는 "SC 소계 레벨 계약실적"(유형 무시),
+      qualified-lead 경로를 거친 계약만 포함. 1-1 시트 주석의 핵심 함정: 실적 수에는
+      last_retail_sales_dt 존재 건을 포함하지만 진행률 계산 시엔 그 조건을 적용하지 않음.
+    metric_type: progress_metric
+    numerator_metric: contract_mtd_actual_sc_level
+    denominator_metric: contract_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=1.0)"
+    zero_denominator_result: 1.0
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [contract_mtd_target]
+    source_evidence: [{sql_id: gold_1_2_025, note: "계약진행률 CASE 식, cntrct_target/cntrct_actual_sc CTE"}]
+    confidence: high
+
+  - id: contract_mtd_actual_sc_level
+    name_ko: 당월 계약 실적 (SC 소계, 유형 무시)
+    description: "contract_mtd_actual을 활동유형 무시하고 SC 단위로만 재집계한 값 — contract_progress_rate_mtd 분자 전용"
+    metric_type: base_metric
+    fact_entity: Contract
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(contract_mtd_actual) GROUP BY sales_consultant (활동유형 무시)"
+    not_directly_compilable: true  # 다른 metric의 재집계(aggregate-of-aggregate) — compileSingleMetricQuery 대상 아님, orchestration 레이어에서 contract_mtd_actual 결과를 SC로 재그룹해서 만들 것
+    aggregation: sum
+    grain: [sales_consultant, month]
+    dependencies: [contract_mtd_actual]
+    source_evidence: [{sql_id: gold_1_2_025, note: "cntrct_actual_sc CTE"}]
+    confidence: high
+    display_only_measure: true
+
+  - id: contract_cancelled_trailing6m
+    name_ko: 계약 취소 건수 (최근 6개월, 지난달까지)
+    description: >
+      '누적취소율(scSelected)' 화면(sheet 7. SC 출고 현황)의 취소 분자. 실측 DAX는
+      DATESINPERIOD(Date, RefDate=EOMONTH(오늘,-1), -6, MONTH) 창을 쓰고, 이 창은
+      FCT_CONTRACT_KTWS↔DIM_CALENDAR_KTWS의 "활성" 관계(contract_dt)를 기준으로 한다
+      (실측으로 확인 — last_retail_sales_dt/cancel_dt 관계는 비활성). agenticBiPipeline.js가
+      ir.time_range를 이 지표 전용으로 "지난달 말일까지 6개월"로 덮어쓴다.
+    metric_type: base_metric
+    fact_entity: Cancellation
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(FCT_CONTRACT_KTWS.cnt)"
+    metric_filter: "FCT_CONTRACT_KTWS.cancel_dt IS NOT NULL AND FCT_CONTRACT_KTWS.cancel_dt < EOMONTH(CAST(GETDATE() AS DATE), -1)"
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: month
+    required_filters: []
+    exclusion_rules: [sc_scope_default]
+    dimensions: [brand, dealer, sales_consultant]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_period_(canceled_ratio)_scSelected' DAX 실측(2026-07-24), TMSCHEMA_RELATIONSHIPS로 활성 관계(contract_dt) 확인"}]
+    confidence: high
+    status: approximation
+    required_input: ["FCT_SC_GROUP_RULE의 OBS_PERIOD 설정값을 읽지 않고 기본값 6개월로 고정함(관측된 기본값)"]
+
+  - id: contract_total_trailing6m
+    name_ko: 전체 계약 건수 (최근 6개월, 지난달까지, 취소 포함)
+    description: contract_cancelled_trailing6m과 동일 기간·동일 필터, 취소 조건만 없는 분모 전용 지표.
+    metric_type: base_metric
+    fact_entity: Contract
+    base_table: FCT_CONTRACT_KTWS
+    expression: "SUM(FCT_CONTRACT_KTWS.cnt)"
+    metric_filter: null
+    aggregation: sum
+    grain: [sales_consultant, month]
+    time_dimension: FCT_CONTRACT_KTWS.contract_dt
+    default_time_grain: month
+    required_filters: []
+    exclusion_rules: [sc_scope_default]
+    dimensions: [brand, dealer, sales_consultant]
+    additive_behavior: {across_time: additive, across_organization: additive}
+    dependencies: []
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_period_(canceled_ratio)_scSelected' DAX 실측(2026-07-24)"}]
+    confidence: high
+    display_only_measure: true
+
+  - id: contract_cancellation_ratio_trailing6m
+    name_ko: 누적 취소율 (최근 6개월)
+    description: >
+      실측 DAX '4. sales_period_(canceled_ratio)_scSelected' = DIVIDE(canceled, total) 그대로
+      재현(분모 0이면 DAX 기본값인 BLANK — zero_denominator_result: null). 스크린샷의
+      "SC 출고 현황" 표 '누적취소율' 컬럼.
+    metric_type: ratio_metric
+    numerator_metric: contract_cancelled_trailing6m
+    denominator_metric: contract_total_trailing6m
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [contract_cancelled_trailing6m, contract_total_trailing6m]
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_period_(canceled_ratio)_scSelected' DAX 실측(2026-07-24)"}]
+    confidence: high
+    trailing_window_months: 6

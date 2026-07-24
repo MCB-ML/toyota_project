@@ -1,0 +1,36 @@
+# Semantic Metric Tests — 각 metric의 grain/분자·분모/zero_denominator 정책이
+# registry.js를 통해 실제로 그렇게 로드되는지 확인. GOLD SQL과 문자열 비교하지
+# 않고 "구조가 선언한 대로 나오는지"를 확인한다(스펙 11단계 요구사항).
+
+tests:
+  - test_id: smt_01_contract_achievement_numerator_differs_from_actual
+    metric_id: contract_mtd_achievement_rate
+    assertion: "numerator_metric(contract_mtd_total_including_cancelled) != contract_mtd_actual의 expression"
+    reason: "실적(취소 제외)과 달성률 분자(취소 포함)가 같은 값으로 오인되기 가장 쉬운 지점 — contract_metrics.yaml 주석 참고"
+    validation_method: registry_field_check
+
+  - test_id: smt_02_progress_rate_zero_denominator_differs_by_domain
+    metric_ids: [activity_progress_rate_mtd, lead_progress_rate_mtd]
+    assertion: "activity_progress_rate_mtd.zero_denominator_result == 1.0 AND lead_progress_rate_mtd.zero_denominator_result == 0.0"
+    reason: "같은 '진척률'이어도 도메인마다 분모 0 처리 정책이 다름을 원문에서 확인했음 — 하나로 통일하면 원본과 달라짐"
+    validation_method: registry_field_check
+    source_evidence: [{sql_id: gold_1_2_025}]
+
+  - test_id: smt_03_pma_metrics_are_three_way
+    metric_ids: [delivery_ytd_pma_in, delivery_ytd_pma_out]
+    assertion: "각 metric.metric_filter가 정확히 pma_yn = 'Y' 또는 'N' — <> 연산자 사용 금지"
+    reason: "기존 DAX 결함(2-way 축약) 재발 방지 회귀 테스트"
+    validation_method: registry_field_check
+
+  - test_id: smt_04_conversion_metrics_have_explicit_numerator_denominator
+    metric_ids: [testdrive_to_contract_conversion_rate, lead_to_testdrive_conversion_rate, activity_to_lead_conversion_rate]
+    assertion: "모든 conversion_metric은 numerator_metric/denominator_metric 필드가 별도 metric_id를 가리켜야 함(expression에 인라인 금지)"
+    reason: "완료 기준: 전환율의 분자/분모가 명시되어야 한다"
+    validation_method: registry_field_check
+
+  - test_id: smt_05_no_duplicate_metric_ids
+    assertion: "6개 metrics/*.yaml 파일을 합쳤을 때 metric id 중복이 없어야 함"
+    reason: "registry.js의 loadRegistry()가 중복 발견 시 즉시 throw하도록 이미 구현됨 — 이 테스트는 그 가드가 실제로 걸려 있는지 확인"
+    validation_method: registry_load_no_throw
+    verified: true
+    verified_note: "registry.js 스모크 테스트에서 37개 metric 무결 로드 확인(2026-07-23 세션)"

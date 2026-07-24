@@ -1,0 +1,38 @@
+# SQL Regression Tests — GOLD SQL과 Semantic Compiler SQL을 "문자열"이 아니라
+# 결과 특성으로 비교한다(스펙 11단계 명시 요구사항: 행 수/Dimension별 값/총합/
+# Metric 값/Null/중복/취소 처리/날짜 경계/조직 필터/허용 오차).
+#
+# 실행 전제: Fabric 웨어하우스 접근 권한 + fabricClient 연결. 이번 세션은 로컬에서
+# 컴파일 결과(SQL 텍스트)까지만 검증했고, 실제 웨어하우스 대상 실행 비교는
+# required_input으로 남긴다 — 값 자체를 추측해서 "통과"로 적지 않는다.
+
+tests:
+  - test_id: sqlreg_01_contract_mtd_actual
+    metric_id: contract_mtd_actual
+    gold_sql_reference: gold_2_1_046
+    compare:
+      - dimension: total_row_count
+      - dimension: metric_sum
+        tolerance: 0
+      - dimension: null_count
+        tolerance: 0
+    status: compiled_not_yet_executed
+    required_input: ["Fabric 웨어하우스 연결로 GOLD SQL vs 컴파일된 SQL 결과 실측 비교"]
+
+  - test_id: sqlreg_02_delivery_ytd_pma_sum_equals_total
+    assertion: "delivery_ytd_pma_in + delivery_ytd_pma_out + (etc 분류, 별도 산출 필요) == delivery_ytd_actual"
+    reason: "3-way 분류가 실제로 원본 합계를 보존하는지 확인 — 이전 세션에 IN=1294/OUT=852/etc=2, 합계 2148 검증한 것과 동일한 종류의 체크를 회귀로 고정"
+    status: compiled_not_yet_executed
+    required_input: ["Fabric 웨어하우스 실측"]
+
+  - test_id: sqlreg_03_working_day_no_dealer_join
+    metric_id: working_day_count_pass
+    assertion: "컴파일된 SQL에 DIM_MNG_DEALER/DIM_MNG_USER가 전혀 등장하지 않아야 함"
+    status: verified
+    verified_note: "run_compiler_checks.js gq_18에서 forbidTables 체크로 이미 확인(2026-07-23)"
+
+  - test_id: sqlreg_04_lead_mtd_actual_refuses_flat_compile
+    metric_id: lead_mtd_actual
+    assertion: "compileSingleMetricQuery가 not_directly_compilable로 명시 실패해야 함(조용히 팬아웃 SQL을 내면 안 됨)"
+    status: verified
+    verified_note: "run_compiler_checks.js gq_17에서 확인 — 이 자체가 이번 세션 중 발견한 실제 버그의 회귀 방지 테스트"

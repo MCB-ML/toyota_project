@@ -1,0 +1,92 @@
+# Component Registry — React가 렌더링할 수 있는 유일한 컴포넌트 목록.
+# Dashboard IR의 components[].type은 반드시 이 목록에 있어야 하며(schemas/dashboard_ir.schema.json
+# enum과 동기화), 프런트엔드는 registry에 없는 type을 받으면 렌더링을 거부하고 에러
+# placeholder를 그린다 — LLM이 임의 컴포넌트 이름을 지어내도 화면에 나가지 않는다.
+#
+# 기존 louis/dashboard/src/components/widgets/*(추정 — 실제 파일명은 프런트엔드 구현 시
+# 이 registry의 react_component 필드와 맞춰 연결) 스타일을 따른다.
+
+components:
+  - type: kpi_card
+    description: 단일 값 + 목표 대비 배지
+    required_query_shape: single_row_single_value
+    react_component: KpiCard
+    max_series: 1
+
+  - type: metric_comparison
+    description: 두 metric을 나란히 비교(예 실적 vs 목표)
+    required_query_shape: single_row_multi_value
+    react_component: MetricComparison
+    max_series: 4
+
+  - type: line_chart
+    description: 시계열 추이
+    required_query_shape: multi_row_time_series
+    react_component: LineChart
+    max_series: 6
+
+  - type: bar_chart
+    description: 카테고리별 단일 지표 비교
+    required_query_shape: multi_row_categorical
+    react_component: BarChart
+    max_series: 1
+    max_categories: 30
+
+  - type: stacked_bar_chart
+    description: 카테고리별 다중 지표 누적
+    required_query_shape: multi_row_categorical_multi_value
+    react_component: StackedBarChart
+    max_series: 8
+    max_categories: 30
+
+  - type: donut_chart
+    description: 비율 breakdown (합이 의미 있는 카테고리 분포에만 사용 — 비율 지표 자체를 도넛으로 그리지 말 것)
+    required_query_shape: multi_row_categorical
+    react_component: DonutChart
+    max_categories: 8
+    forbidden_metric_types: [ratio_metric, conversion_metric, progress_metric]
+
+  - type: funnel_chart
+    description: 퍼널 단계별 실적 (업무 흐름 순서 고정 — 활동→기회→시승→계약→출고)
+    required_query_shape: ordered_stages
+    react_component: FunnelChart
+    stage_order: [activity, lead, testdrive, contract, delivery]
+
+  - type: scatter_chart
+    description: 두 metric의 상관관계
+    required_query_shape: multi_row_xy
+    react_component: ScatterChart
+    max_points: 500
+
+  - type: heatmap
+    description: 2개 dimension x 1개 metric 매트릭스
+    required_query_shape: matrix
+    react_component: Heatmap
+    max_cells: 500
+
+  - type: detail_table
+    description: 상세 리스트 (계약/출고 상세 등)
+    required_query_shape: multi_row_multi_column
+    react_component: DetailTable
+    max_rows: 500
+
+  - type: risk_table
+    description: 위험 딜러/SC 등 조건부 하이라이트 테이블
+    required_query_shape: multi_row_multi_column
+    react_component: RiskTable
+    max_rows: 200
+
+  - type: narrative
+    description: InsightGenerator 텍스트 그대로 표시 (수치 재계산 없음 — 서술만)
+    required_query_shape: none
+    react_component: Narrative
+
+  - type: filter
+    description: global_filters에 연결된 대시보드 레벨 필터 컨트롤
+    required_query_shape: none
+    react_component: DashboardFilter
+
+  - type: alert
+    description: ResultValidator/FinalReviewAgent가 남긴 warn/error를 사용자에게 노출
+    required_query_shape: none
+    react_component: AlertBanner

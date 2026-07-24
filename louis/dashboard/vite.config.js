@@ -6,6 +6,7 @@ import { config as loadDotenv } from 'dotenv'
 import { handleChatRequest } from './server/chatHandler.js'
 import { handleDashboardCustomizeRequest } from './server/dashboardCustomizeHandler.js'
 import { handleWarehouseQueryRequest } from './server/warehouseQueryHandler.js'
+import { handleAgenticBiRequest } from './server/agenticBiHandler.js'
 import { handleListScopes } from './server/scopesHandler.js'
 import {
   handleGetSavedPage,
@@ -77,6 +78,7 @@ function azureChatPlugin() {
       ssePost('/api/chat', handleChatRequest)(server)
       ssePost('/api/dashboard-customize', handleDashboardCustomizeRequest)(server)
       ssePost('/api/warehouse-query', handleWarehouseQueryRequest)(server)
+      ssePost('/api/agentic-bi-ask', handleAgenticBiRequest)(server)
       jsonRoute('/api/scopes', { GET: handleListScopes })(server)
       // server.middlewares.use()는 prefix 매칭이라 등록 순서가 중요하다 — 먼저 매칭되면
       // 그걸로 응답이 끝나버리므로, /api/dashboard-pages보다 구체적인 하위 경로를 먼저 등록한다.

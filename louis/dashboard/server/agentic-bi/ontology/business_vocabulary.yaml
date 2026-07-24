@@ -1,0 +1,314 @@
+# Canonical Business Vocabulary — KTWS (Toyota/Lexus 딜러 CRM·영업 도메인)
+#
+# 추출 근거: agentic_bi_design/inventory/{visual_catalog,measure_inventory,sql_metadata}.json
+# 각 term의 source_evidence는 실제 시트/행/GOLD SQL sql_id를 가리킨다 (추측 없음).
+# 여기 없는 용어는 아직 검증되지 않은 것 — semantic/metrics/*.yaml 확장 시 이 파일도 함께 확장한다.
+
+terms:
+  - term_id: activity
+    canonical_name_ko: 영업활동
+    canonical_name_en: Sales Activity
+    synonyms: [활동, 컨택, act]
+    excluded_meanings: [영업기회(Lead와 구분), 계약]
+    related_entities: [Activity, SalesConsultant, Lead]
+    related_metrics: [activity_mtd_actual, activity_mtd_target, activity_progress_rate]
+    definition: >
+      FCT_ACTIVITY_v2 1행 = SC가 리드(고객)에게 수행한 컨택 1건. DIM_CRM_ACT_TYPE.tp_grp_1
+      IN ('관계형성','기회창출') 인 유형만 "영업활동"으로 집계한다 (그 외 tp_grp_1은 활동
+      퍼널 지표에서 제외).
+    source_evidence:
+      - {sql_id: gold_1_1_001, table: FCT_ACTIVITY_v2}
+    confidence: high
+
+  - term_id: lead
+    canonical_name_ko: 영업기회
+    canonical_name_en: Lead / Sales Opportunity
+    synonyms: [기회, 리드, opportunity]
+    excluded_meanings: [영업활동(컨택 이벤트 자체와는 다른, 고객 단위 엔터티)]
+    related_entities: [Lead, Customer, SalesConsultant]
+    related_metrics: [lead_mtd_actual, lead_mtd_target, lead_to_contract_conversion_rate]
+    definition: >
+      FCT_LEAD 1행 = 고객 1명의 영업기회. "유효 리드"는 자격 활동(관계형성/기회창출,
+      부재중 제외)을 보유하고, close_dt > 월말 OR close_dt IS NULL OR
+      last_retail_sales_dt IS NOT NULL 조건을 만족하는 리드로 정의된다
+      (오픈 유지 중이거나 이미 매출로 전환된 리드 — 중간에 실효 처리된 리드는 제외).
+    source_evidence:
+      - {sql_id: gold_1_2_025, note: "lead_actual CTE, br_qualified_lead_def"}
+    confidence: high
+
+  - term_id: test_drive
+    canonical_name_ko: 시승
+    canonical_name_en: Test Drive
+    synonyms: [TD, testdrive]
+    related_entities: [TestDrive, Lead]
+    related_metrics: [testdrive_mtd_actual, testdrive_to_contract_conversion_rate]
+    definition: >
+      리드 활동 중 시승(TD) 유형 활동. "완료된 시승"과 "시승 요청"은 서로 다른 상태이며
+      혼동 시 분자·분모 오류가 난다 — sheet 1-1의 td_funnel_(mtd_preOp)_form(신청폼 기준)과
+      td_funnel_(mtd_preOp)_leadMatch(리드 매칭 기준)가 별도 측정값으로 존재하는 이유.
+    source_evidence:
+      - {sql_id: gold_1_1_014, note: "td_funnel_(mtd_preOp)_leadMatch"}
+      - {sql_id: gold_1_1_015, note: "td_funnel_(mtd_preOp)_form"}
+    confidence: high
+
+  - term_id: contract
+    canonical_name_ko: 계약
+    canonical_name_en: Contract
+    synonyms: [계약건, contract]
+    excluded_meanings: [출고(계약과 출고는 서로 다른 시점의 서로 다른 이벤트)]
+    related_entities: [Contract, Vehicle, SalesConsultant]
+    related_metrics: [contract_mtd_count, contract_ytd_count, contract_cancellation_count]
+    definition: >
+      FCT_CONTRACT_KTWS 1행 = 계약 1건. cancel_dt가 NULL이면 유효 계약, NOT NULL이면
+      취소된 계약. "실적"(유효 계약수)과 "취소"(취소 건수)는 항상 별도 컬럼으로 집계하며
+      "달성률"의 분자는 cancel_dt 무관 전체 cnt 합(SUM(F.cnt), 취소 포함)이다 — 실적/취소/
+      달성률 세 지표가 서로 다른 카운팅 규칙을 쓰는 것이 KTWS 계약 도메인의 핵심 함정.
+    source_evidence:
+      - {sql_id: gold_2_1_046, note: "실적=cancel_dt IS NULL, 취소=cancel_dt IS NOT NULL, 달성률 분자=SUM(cnt) 전체"}
+    confidence: high
+
+  - term_id: contract_cancellation
+    canonical_name_ko: 계약 취소
+    canonical_name_en: Contract Cancellation
+    related_entities: [Contract, Cancellation]
+    related_metrics: [contract_cancellation_count, contract_cancellation_ratio]
+    definition: >
+      원계약 레코드에 cancel_dt가 기록되는 시점에 무효화 처리(별도 취소 레코드가 생기는
+      게 아니라 원행이 갱신됨). 따라서 "당월 계약"과 "당월 취소"를 같은 FCT_CONTRACT_KTWS
+      스캔에서 동시에 구해도 이중 집계가 아니라 상호 배타적 CASE 분기다.
+    source_evidence:
+      - {sql_id: gold_2_1_046}
+    confidence: high
+
+  - term_id: delivery
+    canonical_name_ko: 출고
+    canonical_name_en: Sales Delivery
+    synonyms: [판매, retail, retail sales, 출고 실적, sales]
+    excluded_meanings: [계약, 차량 입고]
+    related_entities: [Contract, Delivery, Vehicle]
+    related_metrics: [delivery_mtd_count, delivery_ytd_count, delivery_target_achievement_rate]
+    definition: >
+      "출고"는 별도 Delivery 팩트 테이블이 아니라 FCT_CONTRACT_KTWS.last_retail_sales_dt
+      (실 매출/출고 일자)가 채워진 계약 건을 가리킨다 — 즉 Contract 엔터티의 상태 전이이지
+      독립 엔터티가 아니다. sales_flag/cntrct_flag 두 측정값이 별도 존재하는 것도 "계약 발생"과
+      "출고 발생"을 같은 행에서 다른 날짜 컬럼으로 구분하기 위함.
+    source_evidence:
+      - {sql_id: gold_2_1_046, note: "F.last_retail_sales_dt"}
+      - {row_id: "2-1. 월별 판매 성취도_ROW_018", measure: "3. cntrct_flag"}
+      - {row_id: "2-1. 월별 판매 성취도_ROW_019", measure: "4. sales_flag"}
+    confidence: high
+
+  - term_id: pma_in_out
+    canonical_name_ko: PMA IN / OUT (관내 / 관외)
+    canonical_name_en: Post Market Area In/Out
+    related_entities: [Delivery, Dealer]
+    related_metrics: [sales_ytd_pma_in, sales_ytd_pma_out, sales_ytd_pma_etc]
+    definition: >
+      FCT_CONTRACT_KTWS.pma_yn 은 3가지 값(Y/N/etc)을 갖는 3-way 분류다.
+      기존 DAX 측정값 sales_ytd_pmaIn/pmaOut 은 pma_yn <> "N" 으로 2-way 분기해
+      'etc' 값(약 30%, NULL 아님)을 IN에 잘못 합산하는 결함이 있음이 확인됨 — Semantic
+      Layer의 pma_status 차원은 반드시 Y/N/etc 3-way로 정의해야 한다.
+    source_evidence:
+      - {note: "이전 세션 DMV 조사로 확인 — DIM_PMA_ORDER 3-way 매핑, 정정 DAX로 IN=1294/OUT=852/etc=2 검증(합계 2148 일치)"}
+    confidence: high
+    status: verified_bug
+
+  - term_id: target
+    canonical_name_ko: 목표
+    canonical_name_en: Target
+    related_entities: [MonthlyTarget]
+    related_metrics: [contract_mtd_target, sales_mtd_target, activity_mtd_target]
+    definition: >
+      목표는 두 개의 서로 다른 팩트 테이블에 나뉘어 있다: FCT_CRM_TARGET_D(일별 목표,
+      활동 지표에 사용, TOTALMTD 롤업) 와 FCT_CRM_TARGET_M(월별 목표, 리드/계약/출고
+      지표에 사용). 활동 목표를 월별 테이블에서, 계약 목표를 일별 테이블에서 찾으면
+      값이 항상 0이 나오는 흔한 오류 지점.
+    source_evidence:
+      - {sql_id: gold_1_1_002, table: FCT_CRM_TARGET_D}
+      - {sql_id: gold_1_1_007, table: FCT_CRM_TARGET_M}
+    confidence: high
+
+  - term_id: achievement_rate
+    canonical_name_ko: 달성률
+    canonical_name_en: Achievement Rate
+    related_metrics: [sales_mtd_achievement_rate, contract_ytd_achievement_rate]
+    definition: >
+      실적 ÷ 목표. 분모가 0이면 결과는 쿼리마다 0.0 또는 1.0으로 다르게 처리되어 있어
+      (예: gold_2_1_046은 0, 일부 progress 계열은 1.0) — Semantic Layer는 이 zero_denominator
+      정책을 metric마다 명시적으로 고정해야 하며, 임의로 통일하면 원본과 값이 달라진다.
+    source_evidence:
+      - {sql_id: gold_2_1_046}
+    confidence: high
+
+  - term_id: progress_rate
+    canonical_name_ko: 진행률 (진척률)
+    canonical_name_en: Progress Rate
+    excluded_meanings: [전환율(진행률은 목표 대비, 전환율은 퍼널 상위 대비)]
+    related_metrics: [activity_progress_rate, contract_progress_rate_mtd]
+    definition: >
+      MTD 기준 "현재까지 목표 진행 정도"를 뜻하며 achievement_rate(달성률, 보통 월말/YTD
+      기준 완료도)와 계산식은 유사하지만 의미가 다르다. 1-1 시트 헤더 주석에 명시된 함정:
+      "당월 계약 실적"에는 last_retail_sales_dt가 있는 건을 포함하지만 "계약 진행률"
+      계산 시에는 그 조건을 포함하지 않아 실적수/진행률의 분자가 서로 다르다.
+    source_evidence:
+      - {sheet: "1-1. KTWS 퍼널 월별 현황", note: "시트 상단 주석 1,2번 항목"}
+    confidence: high
+    status: verified_pitfall
+
+  - term_id: conversion_rate
+    canonical_name_ko: 전환율
+    canonical_name_en: Conversion Rate (CVR)
+    synonyms: [cvr, ratio_*_funnel]
+    related_metrics: [lead_to_testdrive_conversion_rate, testdrive_to_contract_conversion_rate, activity_to_lead_conversion_rate]
+    definition: >
+      퍼널 인접 단계 간 비율: 활동→기회(cvr_lead), 기회→시승(cvr_td), 시승→계약(cvr_cntrct).
+      항상 "하위 단계 실적 ÷ 상위 단계 실적"이며 목표(target)는 분모에 들어가지 않는다
+      (achievement_rate/progress_rate 와 명확히 구분).
+    source_evidence:
+      - {measure: "8. cvr_cntrct"}
+      - {measure: "8. cvr_lead"}
+      - {measure: "8. cvr_td"}
+    confidence: high
+
+  - term_id: dealer
+    canonical_name_ko: 딜러 / 딜러사
+    canonical_name_en: Dealer
+    synonyms: [dealer_key, dealer_nm, 대리점]
+    excluded_meanings: [브랜드(Dealer는 브랜드+지점의 조합 — 예 "렉서스 강남"은 LEXUS 브랜드의 강남 매장)]
+    related_entities: [Dealer, Brand, Showroom]
+    related_metrics: []
+    definition: >
+      "딜러/딜러사"는 회사 단위가 아니라 브랜드+지점 단위의 매장을 의미한다
+      (예: 렉서스 강남, 렉서스 강서, 토요타 강남). DIM_MNG_DEALER.dealer_nm이 자연키,
+      dealer_key가 대리키. group_name(전시장)·dept_nm(부서)이 그 아래 조직 계층.
+    source_evidence:
+      - {note: "이전 세션 glossary.js g06 갱신 근거 — server/schema/glossary.js"}
+      - {sql_id: gold_1_1_001, table: DIM_MNG_DEALER}
+    confidence: high
+
+  - term_id: sales_consultant
+    canonical_name_ko: SC (세일즈 컨설턴트)
+    canonical_name_en: Sales Consultant
+    synonyms: [SC, 영업사원, 딜러 직원]
+    related_entities: [SalesConsultant, Dealer, Department]
+    related_metrics: []
+    definition: >
+      DIM_MNG_USER 1행 = 재직/퇴직 이력을 포함한 SC 1명. 거의 모든 GOLD 쿼리에 반복되는
+      4중 조직 스코프 규칙이 이 엔터티에 걸린다: (1) facade_sc_yn = '창구SC' 제외,
+      (2) name IN ('고객지원팀','TOYOTA YM') 제외, (3) user_id 하드코딩 제외 리스트
+      (DM5103/DM9999/JB30007 등 7개, 테스트·시스템 계정), (4) active_yn 슬라이서(재직/퇴직).
+      이 4개는 67개 GOLD 쿼리 중 62~65개에서 반복 발견됨 — Semantic Layer의 전역
+      security_policy/기본 필터로 승격해야 한다.
+    source_evidence:
+      - {note: "sql_metadata.json business_rules 집계: br_exclude_front_sc(65), br_exclude_staff_names(65), br_exclude_test_users(65), br_active_staff(62)"}
+    confidence: high
+
+  - term_id: brand
+    canonical_name_ko: 브랜드
+    canonical_name_en: Brand
+    synonyms: [LEXUS, TOYOTA]
+    related_entities: [Brand, Dealer, SalesConsultant]
+    definition: DIM_MNG_USER.BRAND — LEXUS 또는 TOYOTA. SC(사람) 단위 속성으로 저장되어 있다(딜러 단위가 아님).
+    source_evidence: [{sql_id: gold_1_1_001, table: DIM_MNG_USER, column: BRAND}]
+    confidence: high
+
+  - term_id: vehicle_model_hierarchy
+    canonical_name_ko: 모델 / VARIANT / GRADE(SFX)
+    canonical_name_en: Vehicle Model / Variant / Grade(SFX)
+    related_entities: [VehicleModel, VehicleVariant, Grade]
+    definition: >
+      DIM_VEHIC_SPEC_MDL(모델) → DIM_VEHIC_SPEC_VAR(모델의 하위 VARIANT) → DIM_VEHIC_SPEC
+      (spec_key, my_cd/sfx_cd 포함 — SFX가 GRADE에 해당하는 세부 사양 코드) 3단 계층.
+      계약/출고 팩트는 cn_vehic_key로 DIM_VEHIC_SPEC(최하위)에 직접 조인하고, 상위
+      모델/VARIANT는 그 위로 체이닝해서 얻는다.
+    source_evidence: [{sql_id: gold_2_1_046, note: "spec_key→var_key→mdl_key 3단 조인 체인"}]
+    confidence: high
+
+  - term_id: repurchase_payment_type
+    canonical_name_ko: 재구매 여부 / 지불유형(자사금융 등)
+    canonical_name_en: Repurchase / Payment(Financing) Type
+    related_entities: [Contract]
+    definition: FCT_CONTRACT_KTWS.sales_tp_key → DIM_REPURC_SALES_TYPE.sales_tp_key 조인으로 재구매 여부·자사금융 여부 등을 얻는다.
+    source_evidence: [{sql_id: gold_2_1_046, table: DIM_REPURC_SALES_TYPE}]
+    confidence: high
+
+  - term_id: working_day
+    canonical_name_ko: 워킹데이
+    canonical_name_en: Working Day
+    related_metrics: [working_day_progress_ratio]
+    definition: >
+      DIM_CALENDAR_KTWS.kr_holiday = '0' 인 날짜만 워킹데이로 집계. progress_working_day
+      = (오늘까지의 워킹데이 수) ÷ (해당 월 전체 워킹데이 수) — 그 어떤 팩트 테이블도
+      쓰지 않고 캘린더 차원 하나로만 계산되는 유일한 지표 그룹.
+    source_evidence: [{sql_id: gold_3_1_057}]
+    confidence: high
+
+  - term_id: hot_board
+    canonical_name_ko: 핫보드
+    canonical_name_en: Hot Board (Meeting)
+    related_entities: [HotBoardMeeting]
+    definition: >
+      FCT_HBOARD_MEETING — 이번 분석에서 처음 발견된 팩트 테이블. 기존 워크북 갱신 이전
+      버전에는 없었고, 이번 최신 엑셀(6. 핫보드 시트)에서 신규로 GOLD 쿼리가 추가됨.
+    source_evidence: [{sql_id: gold_6_066, table: FCT_HBOARD_MEETING}]
+    confidence: medium
+    status: newly_discovered_this_pass
+
+  - term_id: nps
+    canonical_name_ko: NPS (고객 만족도)
+    canonical_name_en: Net Promoter Score
+    related_entities: [Customer]
+    definition: FCT_NPS 팩트 테이블, nps_avg(3m) 측정값(최근 3개월 평균). sheet 2-2 활동 트렌드에서 신규 발견.
+    source_evidence: [{sql_id: gold_2_2_049, table: FCT_NPS}]
+    confidence: medium
+    status: newly_discovered_this_pass
+
+  - term_id: hot_lead
+    canonical_name_ko: HOT 영업기회 (HOT 보드 대상 리드)
+    canonical_name_en: HOT Lead
+    related_entities: [Lead]
+    definition: "lead_mtd_(hot)_coalesce 측정값 — 일반 리드와 별도로 관리되는 우선순위 리드 세그먼트. 판정 조건(어떤 필드로 HOT을 정의하는지)은 GOLD 쿼리 원문 확인 필요."
+    source_evidence: [{measure: "HOT 영업기회 : 2. lead_mtd_(hot)_coalesce"}]
+    confidence: low
+    status: unresolved
+    required_input: ["HOT 판정 조건에 대한 컬럼/룰 정의서"]
+
+  - term_id: sc_group_rule
+    canonical_name_ko: SC 그룹 규칙
+    canonical_name_en: SC Group Rule
+    definition: FCT_SC_GROUP_RULE — sheet 7 SC 출고 현황에서 신규 발견된 팩트 테이블. 용도(그룹 매핑 규칙으로 추정)는 컬럼 정의서 없이 원문 SQL만으로 확정하기 어려움.
+    source_evidence: [{sql_id: gold_7_067, table: FCT_SC_GROUP_RULE}]
+    confidence: low
+    status: unresolved
+    required_input: ["FCT_SC_GROUP_RULE 컬럼 정의서"]
+
+# ── 접미사 / 약어 사전 (측정값명에서 반복 관찰) ──────────────────────────────
+suffix_dictionary:
+  - suffix: mtd
+    meaning: Month-To-Date, 당월 누적
+  - suffix: ytd
+    meaning: Year-To-Date, 연 누적
+  - suffix: "(ac)"
+    meaning: 실적(actual)
+  - suffix: target
+    meaning: 목표
+  - suffix: progress_*
+    meaning: "진행률/진척률 prefix — 실적÷목표, MTD 기준"
+  - suffix: cvr_* / ratio_*
+    meaning: 전환율 — 퍼널 하위 실적÷상위 실적
+  - suffix: coalesce
+    meaning: "SC 필터 선택 여부에 따라 SC 레벨/조직 레벨 값을 다르게 반환하는 폴백(COALESCE) 로직이 있음을 표시. 단순 산술 지표가 아니라 컨텍스트 의존 지표이므로 metric_type=snapshot_metric 후보"
+  - suffix: preOp
+    meaning: "정확한 정의 미확인 — GOLD 쿼리상 '사전운영/선행'류 필터로 추정되나 컬럼 정의서 없이 확정 불가"
+    status: unresolved
+  - suffix: cond / cond2 / cond3
+    meaning: "조건부(conditional) 게이지 측정값 — DAX 슬라이서 컨텍스트에 따라 분기하는 버전. 단일 SQL WITH...SELECT 컴포지션으로 표현 불가능한 계열(마이그레이션 분류 C 후보)"
+  - suffix: lm
+    meaning: Last Month, 전월
+  - suffix: v2 / v3
+    meaning: "측정값 버전 — 최신 버전이 GOLD로 채택된 것으로 보이나, 구버전이 다른 화면에서 여전히 참조 중일 수 있어 폐기 전 referenced_by 확인 필요"
+  - suffix: sc / dealer (grain qualifier)
+    meaning: "같은 지표의 집계 단위(SC별 vs 딜러별)를 구분하는 접미사"
+  - suffix: farming / hunting / referral
+    meaning: "출고 채널 세그먼트 차원 — 신규 발견, 정확한 판정 조건은 unresolved"
+    status: unresolved

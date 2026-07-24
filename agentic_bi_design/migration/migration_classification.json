@@ -1,0 +1,1492 @@
+[
+  {
+    "sql_id": "gold_1_1_001",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "activity_mtd_actual"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_002",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "activity_mtd_target"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_003",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_004",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_005",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_006",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_007",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_008",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_009",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_010",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_011",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_012",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_common_tp_scope",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_013",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "testdrive_progress_rate_mtd"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_common_tp_scope",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_014",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "testdrive_mtd_actual"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_015",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "testdrive_mtd_actual_form_basis"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_016",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_017",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "testdrive_mtd_target"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_018",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_019",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_020",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_021",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_022",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_023",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_1_024",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_common_tp_scope",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "window_function_grain_dependency",
+      "mixed_grain_union",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_2_025",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "activity_progress_rate_mtd",
+      "activity_to_lead_conversion_rate",
+      "contract_progress_rate_mtd",
+      "contract_mtd_actual_sc_level",
+      "lead_mtd_actual",
+      "lead_mtd_target",
+      "lead_progress_rate_mtd"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_common_tp_scope",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "hardcoded_date",
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "window_function_grain_dependency",
+      "mixed_grain_union",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 11
+  },
+  {
+    "sql_id": "gold_1_3_026",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_mtd_asof_cap",
+      "br_dealer_scope",
+      "br_working_day_def"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_027",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_mtd_asof_cap",
+      "br_dealer_scope",
+      "br_working_day_def"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_028",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_working_day_def"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_029",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_030",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_031",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_032",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_033",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_034",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_035",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_036",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_037",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_038",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_039",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_common_tp_scope",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "mixed_grain_union"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_040",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_1_3_041",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_1_042",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_contract_cancel_inclusion_flag",
+      "br_mtd_asof_cap",
+      "br_common_tp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 4
+  },
+  {
+    "sql_id": "gold_2_1_043",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_contract_cancel_inclusion_flag",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 4
+  },
+  {
+    "sql_id": "gold_2_1_044",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 3
+  },
+  {
+    "sql_id": "gold_2_1_045",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 3
+  },
+  {
+    "sql_id": "gold_2_1_046",
+    "classification": "redesign",
+    "target_metric_ids": [
+      "contract_mtd_actual",
+      "contract_ytd_actual",
+      "contract_mtd_cancelled",
+      "contract_mtd_target",
+      "contract_mtd_achievement_rate",
+      "contract_mtd_total_including_cancelled",
+      "delivery_mtd_actual"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_1_047",
+    "classification": "redesign",
+    "target_metric_ids": [
+      "delivery_ytd_actual"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_2_048",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_qualified_lead_def",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_2_049",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "nps_avg_3m"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap",
+      "br_common_tp_scope",
+      "br_qualified_lead_def",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_2_050",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "hardcoded_date",
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 3
+  },
+  {
+    "sql_id": "gold_2_2_051",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_3_052",
+    "classification": "redesign",
+    "target_metric_ids": [
+      "delivery_ytd_by_model"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_3_053",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_3_054",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_2_3_055",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_mtd_asof_cap"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_3_1_056",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_dealer_scope",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 3
+  },
+  {
+    "sql_id": "gold_3_1_057",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "working_day_progress_ratio",
+      "working_day_count_pass",
+      "working_day_count_total"
+    ],
+    "reusable_rules": [
+      "br_working_day_def"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 3
+  },
+  {
+    "sql_id": "gold_3_2_058",
+    "classification": "redesign",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "hidden_conditional_branches (IF/BEGIN/END 분기 안에 로직이 숨어 있어 정적 분석으로 전체를 못 봄)"
+    ],
+    "migration_priority": "P1_high",
+    "required_review": true,
+    "parse_status": "partial_command_blocks",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_3_2_059",
+    "classification": "semantic_metric",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_working_day_def"
+    ],
+    "duplicated_rules": [],
+    "risks": [],
+    "migration_priority": "P3_low",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_4_060",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_common_tp_scope",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "window_function_grain_dependency",
+      "mixed_grain_union",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_4_061",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_qualified_lead_def",
+      "br_act_result_exclusion",
+      "br_tp_grp_scope"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "window_function_grain_dependency",
+      "mixed_grain_union",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_4_062",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_5_1_063",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "window_function_grain_dependency",
+      "mixed_grain_union",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_5_1_064",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "fanout_join_possible",
+      "correlated_subquery",
+      "window_function_grain_dependency",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_5_2_065",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "hardcoded_date",
+      "correlated_subquery",
+      "window_function_grain_dependency",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_6_066",
+    "classification": "semantic_metric",
+    "target_metric_ids": [
+      "hot_board_meeting_count"
+    ],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "correlated_subquery",
+      "correlated_subquery (EXISTS 기반 자격 조건 — 단일 Metric 컴파일러로 표현 불가, lead_mtd_actual 사례 참고)"
+    ],
+    "migration_priority": "P3_low",
+    "required_review": false,
+    "parse_status": "ok",
+    "referenced_by_count": 1
+  },
+  {
+    "sql_id": "gold_7_067",
+    "classification": "controlled_template",
+    "target_metric_ids": [],
+    "reusable_rules": [
+      "br_exclude_front_sc",
+      "br_exclude_staff_names",
+      "br_exclude_test_users",
+      "br_active_staff",
+      "br_contract_cancel_exclusion",
+      "br_contract_cancel_inclusion_flag"
+    ],
+    "duplicated_rules": [],
+    "risks": [
+      "hardcoded_date",
+      "fanout_join_possible",
+      "correlated_subquery",
+      "mixed_grain_union",
+      "window_function_grain_dependency",
+      "mixed_grain_union",
+      "window_function_grain_dependency"
+    ],
+    "migration_priority": "P2_medium",
+    "required_review": true,
+    "parse_status": "ok",
+    "referenced_by_count": 2
+  }
+]

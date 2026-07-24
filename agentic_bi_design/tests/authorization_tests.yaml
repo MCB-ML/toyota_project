@@ -1,0 +1,27 @@
+# Authorization Tests
+# security_policies.yaml에 확정된 정책이 1개(sc_scope_default)뿐이라 이 파일 대부분은
+# 지금 실행 불가능한 unresolved 상태다 — 이것 역시 "확인 안 된 내용은 unresolved로
+# 관리"라는 완료 기준을 authorization 영역에서 지키는 것.
+
+tests:
+  - test_id: authz_01_sc_scope_default_always_injected
+    assertion: "SalesConsultant를 조인하는 모든 metric은 compiler.js가 br_exclude_front_sc/br_exclude_staff_names/br_exclude_test_users/br_dealer_scope를 자동 주입해야 함"
+    status: verified
+    verified_note: "run_compiler_checks.js 및 수동 스모크 테스트(activity/contract/delivery/lead 각 1건)에서 전부 확인(2026-07-23)"
+
+  - test_id: authz_02_working_day_no_forced_sc_scope
+    assertion: "SalesConsultant와 무관한 metric(working_day_*)은 sc_scope_default가 강제되지 않아야 함(조인 경로가 없으므로) — 동시에 거짓으로 '전체 공개'라고 주장하지도 않음"
+    status: verified
+    verified_note: "sql_regression_tests.yaml sqlreg_03과 동일 근거"
+
+  - test_id: authz_03_row_level_dealer_access
+    question: "제한된 딜러 권한 사용자가 다른 딜러 데이터를 요청"
+    status: unresolved
+    reason: "security_policies.yaml row_level_dealer_access가 unresolved — 정책 자체가 없어 테스트를 통과/실패 판정할 기준이 없음"
+    required_input: ["로그인/권한 체계 정의서", "role-to-dealer 매핑 테이블 존재 여부"]
+    golden_question_ref: gq_13_authorization_out_of_scope
+
+  - test_id: authz_04_pii_masking
+    status: unresolved
+    reason: "PII 컬럼 목록 자체가 미확정(FCT_MNG_CUST_LIST 컬럼 정의서 없음)"
+    required_input: ["FCT_MNG_CUST_LIST 컬럼 정의서", "개인정보 마스킹 대상 목록"]

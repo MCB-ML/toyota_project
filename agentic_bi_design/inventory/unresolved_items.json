@@ -1,0 +1,62 @@
+[
+  {
+    "status": "unresolved",
+    "reason": "측정값은 참조되었으나 해당 행에 GOLD 쿼리 원문이 없음",
+    "source": {
+      "workbook": "ktws_측정값_쿼리화.xlsx",
+      "sheet": "2-3. 출고 현황",
+      "row": 8,
+      "visual_name": null,
+      "measure_name": "#계약 게이지",
+      "sql_reference": null
+    },
+    "required_input": [
+      "GOLD 쿼리 원문 또는 DAX 정의"
+    ]
+  },
+  {
+    "status": "unresolved",
+    "reason": "측정값은 참조되었으나 해당 행에 GOLD 쿼리 원문이 없음",
+    "source": {
+      "workbook": "ktws_측정값_쿼리화.xlsx",
+      "sheet": "2-3. 출고 현황",
+      "row": 9,
+      "visual_name": null,
+      "measure_name": "▪고객 수 : cust_cnt",
+      "sql_reference": null
+    },
+    "required_input": [
+      "GOLD 쿼리 원문 또는 DAX 정의"
+    ]
+  },
+  {
+    "status": "unresolved",
+    "reason": "측정값은 참조되었으나 해당 행에 GOLD 쿼리 원문이 없음",
+    "source": {
+      "workbook": "ktws_측정값_쿼리화.xlsx",
+      "sheet": "7. SC 출고 현황",
+      "row": 6,
+      "visual_name": "딜러사별 / 전시장별 / 부서별 / SC 별\n연누적 출고 현황",
+      "measure_name": "▪연누적 출고4. sales_ytd",
+      "sql_reference": null
+    },
+    "required_input": [
+      "GOLD 쿼리 원문 또는 DAX 정의"
+    ]
+  },
+  {
+    "status": "unresolved",
+    "reason": "측정값은 참조되었으나 해당 행에 GOLD 쿼리 원문이 없음",
+    "source": {
+      "workbook": "ktws_측정값_쿼리화.xlsx",
+      "sheet": "7. SC 출고 현황",
+      "row": 7,
+      "visual_name": "딜러사별 / 전시장별 / 부서별 / SC 별\n연누적 출고 현황",
+      "measure_name": "▪연누적 출고4. sales_ytd",
+      "sql_reference": null
+    },
+    "required_input": [
+      "GOLD 쿼리 원문 또는 DAX 정의"
+    ]
+  }
+]

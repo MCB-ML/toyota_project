@@ -1,0 +1,307 @@
+# Ontology Entities — 업무 세계 모델 (DB 테이블 1:1 아님)
+#
+# source_tables는 근거일 뿐, entity 자체는 업무 개념이다. 예: Delivery는 독립 테이블이
+# 아니라 Contract의 상태(last_retail_sales_dt 존재)이므로 source_tables가 Contract와
+# 겹친다 — 이는 오류가 아니라 실제 스키마의 특징(agentic_bi_design/ontology/business_vocabulary.yaml
+# 의 delivery term 참고).
+#
+# 근거: agentic_bi_design/inventory/table_column_usage.json (19개 실 테이블,
+# sqlglot AST + CTE/temp-table 필터링 후 확정), sql_metadata.json의 joins.
+
+entities:
+  # ── Organization ──────────────────────────────────────────────────────
+  - id: Brand
+    name_ko: 브랜드
+    description: LEXUS 또는 TOYOTA. SC(사람) 레코드의 속성으로 저장.
+    source_tables: [DIM_MNG_USER]
+    primary_key: null
+    natural_keys: [DIM_MNG_USER.BRAND]
+    attributes: [BRAND]
+    lifecycle_states: []
+    security_scope: "슬라이서 필터 대상 — 사용자 조회 범위 제한에도 쓰일 수 있음(미검증)"
+    source_evidence: [{sql_id: gold_1_1_001}]
+
+  - id: Dealer
+    name_ko: 딜러 / 딜러사
+    description: 브랜드+지점 단위 매장(예 렉서스 강남). [[dealer]] 용어 참고.
+    source_tables: [DIM_MNG_DEALER]
+    primary_key: dealer_key
+    natural_keys: [dealer_nm]
+    attributes: [dealer_nm]
+    lifecycle_states: []
+    security_scope: unresolved
+    source_evidence: [{sql_id: gold_1_1_001, table: DIM_MNG_DEALER}]
+
+  - id: Showroom
+    name_ko: 전시장
+    description: SC 조직 계층 중 딜러 하위 레벨.
+    source_tables: [DIM_MNG_USER]
+    primary_key: null
+    natural_keys: [DIM_MNG_USER.group_name]
+    attributes: [group_name]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_1_2_025, note: "u.group_name"}]
+
+  - id: Department
+    name_ko: 부서 / 팀
+    description: SC 조직 계층 중 전시장 하위 레벨.
+    source_tables: [DIM_MNG_USER]
+    primary_key: null
+    natural_keys: [DIM_MNG_USER.dept_nm]
+    attributes: [dept_nm]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_1_2_025, note: "u.dept_nm"}]
+
+  - id: SalesConsultant
+    name_ko: SC
+    description: >
+      영업 담당자 1명. active_yn(재직/퇴직), facade_sc_yn(창구SC 여부) 등 라이프사이클/
+      권한 스코프 속성을 가진다. [[sales_consultant]] 용어 참고.
+    source_tables: [DIM_MNG_USER]
+    primary_key: sc_key
+    natural_keys: [user_id, name]
+    attributes: [name, user_id, BRAND, active_yn, facade_sc_yn, dealer_key, group_name, dept_nm]
+    lifecycle_states: ["재직", "퇴직"]
+    security_scope: >
+      전역 스코프 규칙 4종: facade_sc_yn<>'창구SC', name NOT IN('고객지원팀','TOYOTA YM'),
+      user_id NOT IN(7개 제외 계정), active_yn 슬라이서. 67개 GOLD 쿼리 중 62~65개에서
+      반복 확인됨 — Semantic Layer의 전역 security_policy 후보 1순위.
+    source_evidence:
+      - {note: "sql_metadata.json business_rules 집계 — br_exclude_front_sc(65)/br_exclude_staff_names(65)/br_exclude_test_users(65)/br_active_staff(62)"}
+
+  # ── Sales Funnel ─────────────────────────────────────────────────────
+  - id: Customer
+    name_ko: 고객
+    description: >
+      독립 팩트 테이블 없음(이번 워크북에서 확인된 범위 내) — Lead/Contract 레코드에
+      귀속된 속성으로만 존재. FCT_MNG_CUST_LIST(고객 관리 목록, 신규 발견)가 있으나
+      컬럼 정의서 미확보로 관계 확정 불가.
+    source_tables: [FCT_MNG_CUST_LIST]
+    primary_key: unresolved
+    natural_keys: []
+    attributes: []
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_2_049, table: FCT_MNG_CUST_LIST}]
+    status: unresolved
+    required_input: ["FCT_MNG_CUST_LIST 컬럼 정의서", "Lead/Contract와의 조인키"]
+
+  - id: Lead
+    name_ko: 영업기회
+    description: 고객 1명의 영업기회. [[lead]] 용어 참고.
+    source_tables: [FCT_LEAD]
+    primary_key: lead_key
+    natural_keys: []
+    attributes: [cl_sc_key, tp_key, lead_reg_dt, close_dt, last_retail_sales_dt]
+    lifecycle_states: ["오픈", "종결(close_dt)", "매출전환(last_retail_sales_dt)"]
+    security_scope: "SalesConsultant 스코프 상속(cl_sc_key 경유)"
+    source_evidence: [{sql_id: gold_1_2_025, table: FCT_LEAD}]
+
+  - id: Activity
+    name_ko: 영업활동
+    description: 리드에 대한 컨택 이벤트 1건. [[activity]] 용어 참고.
+    source_tables: [FCT_ACTIVITY_v2]
+    primary_key: null
+    natural_keys: []
+    attributes: [sc_key, lead_key, tp_key, act_dt_fr, act_result]
+    lifecycle_states: []
+    security_scope: "SalesConsultant 스코프 상속(sc_key 경유); act_result='부재중' 제외 규칙 존재"
+    source_evidence: [{sql_id: gold_1_1_001, table: FCT_ACTIVITY_v2}]
+
+  - id: TestDrive
+    name_ko: 시승
+    description: >
+      독립 팩트 테이블이 아니라 Activity의 tp_key가 시승 유형(DIM_CRM_ACT_TYPE 경유)인
+      부분집합으로 추정됨(gold_1_1_014/015 근거) — 확정하려면 DIM_CRM_ACT_TYPE의
+      tp_grp_1/common_tp_nm 값 목록(코드 정의서)이 필요.
+    source_tables: [FCT_ACTIVITY_v2, DIM_CRM_ACT_TYPE]
+    primary_key: null
+    natural_keys: []
+    attributes: []
+    lifecycle_states: ["신청(form)", "리드매칭완료(leadMatch)"]
+    security_scope: null
+    source_evidence: [{sql_id: gold_1_1_014}, {sql_id: gold_1_1_015}]
+    status: partially_unresolved
+    required_input: ["DIM_CRM_ACT_TYPE 코드값 정의서 — 시승 유형 tp_key/common_tp_nm 목록"]
+
+  - id: Contract
+    name_ko: 계약
+    description: 계약 1건. cancel_dt로 취소 여부, last_retail_sales_dt로 출고 여부를 표현. [[contract]] 참고.
+    source_tables: [FCT_CONTRACT_KTWS]
+    primary_key: null
+    natural_keys: []
+    attributes: [cn_sc_key, lead_key, contract_dt, cancel_dt, last_retail_sales_dt, cn_vehic_key, sales_tp_key, cnt]
+    lifecycle_states: ["계약 체결", "취소(cancel_dt)", "출고 완료(last_retail_sales_dt)"]
+    security_scope: "SalesConsultant 스코프 상속(cn_sc_key 경유)"
+    source_evidence: [{sql_id: gold_2_1_046, table: FCT_CONTRACT_KTWS}]
+
+  - id: Cancellation
+    name_ko: 계약 취소
+    description: 독립 엔터티가 아니라 Contract.cancel_dt IS NOT NULL 상태. [[contract_cancellation]] 참고.
+    source_tables: [FCT_CONTRACT_KTWS]
+    primary_key: null
+    natural_keys: []
+    attributes: [cancel_dt]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_1_046}]
+
+  - id: Delivery
+    name_ko: 출고
+    description: 독립 엔터티가 아니라 Contract.last_retail_sales_dt가 채워진 상태. [[delivery]] 참고.
+    source_tables: [FCT_CONTRACT_KTWS]
+    primary_key: null
+    natural_keys: []
+    attributes: [last_retail_sales_dt, pma_yn]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_1_046}]
+
+  # ── Vehicle ──────────────────────────────────────────────────────────
+  - id: VehicleModel
+    name_ko: 모델
+    description: 최상위 차량 모델.
+    source_tables: [DIM_VEHIC_SPEC_MDL]
+    primary_key: mdl_key
+    natural_keys: [model_nm]
+    attributes: [model_nm]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_1_046, table: DIM_VEHIC_SPEC_MDL}]
+
+  - id: VehicleVariant
+    name_ko: VARIANT
+    description: 모델의 하위 세부 라인.
+    source_tables: [DIM_VEHIC_SPEC_VAR]
+    primary_key: var_key
+    natural_keys: [variant_nm]
+    attributes: [variant_nm, model_key]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_1_046, table: DIM_VEHIC_SPEC_VAR}]
+
+  - id: Grade
+    name_ko: GRADE (SFX)
+    description: 최하위 세부 사양(my_cd/sfx_cd). 계약/출고 팩트가 직접 조인하는 레벨.
+    source_tables: [DIM_VEHIC_SPEC]
+    primary_key: spec_key
+    natural_keys: [my_cd, sfx_cd]
+    attributes: [my_cd, sfx_cd, var_key]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_1_046, table: DIM_VEHIC_SPEC}]
+
+  - id: SalesType
+    name_ko: 재구매/지불유형
+    description: 재구매 여부·자사금융 여부 등 계약 결제/구매 속성. [[repurchase_payment_type]] 참고.
+    source_tables: [DIM_REPURC_SALES_TYPE]
+    primary_key: sales_tp_key
+    natural_keys: []
+    attributes: []
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_1_046, table: DIM_REPURC_SALES_TYPE}]
+
+  # ── Management ───────────────────────────────────────────────────────
+  - id: MonthlyTarget
+    name_ko: 월별 목표 (리드/계약/출고)
+    description: FCT_CRM_TARGET_M — 리드/계약/출고 목표. [[target]] 참고.
+    source_tables: [FCT_CRM_TARGET_M]
+    primary_key: null
+    natural_keys: []
+    attributes: [sc_key, tp_key, monthly_dt, target_cnt]
+    lifecycle_states: []
+    security_scope: "SalesConsultant 스코프 상속"
+    source_evidence: [{sql_id: gold_1_1_007}]
+
+  - id: DailyTarget
+    name_ko: 일별 목표 (활동)
+    description: FCT_CRM_TARGET_D — 활동 목표(TOTALMTD로 롤업). [[target]] 참고.
+    source_tables: [FCT_CRM_TARGET_D]
+    primary_key: null
+    natural_keys: []
+    attributes: [sc_key, type_cd, daily_dt, target_cnt]
+    lifecycle_states: []
+    security_scope: "SalesConsultant 스코프 상속"
+    source_evidence: [{sql_id: gold_1_1_002}]
+
+  - id: TargetStatus
+    name_ko: 목표 상태/관리
+    description: >
+      FCT_CRM_TARGET_STS — sheet "4. 목표 관리"에서 발견. 목표 입력/승인 상태 관리용으로
+      추정되나 컬럼 정의서 미확보.
+    source_tables: [FCT_CRM_TARGET_STS]
+    primary_key: unresolved
+    natural_keys: []
+    attributes: []
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_4_060, table: FCT_CRM_TARGET_STS}]
+    status: unresolved
+    required_input: ["FCT_CRM_TARGET_STS 컬럼 정의서"]
+
+  - id: WorkingDay
+    name_ko: 워킹데이
+    description: DIM_CALENDAR_KTWS.kr_holiday 기반 영업일 캘린더. [[working_day]] 참고.
+    source_tables: [DIM_CALENDAR_KTWS]
+    primary_key: Date
+    natural_keys: [Date]
+    attributes: [Year, MonthNumber, MonthName, kr_holiday]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_3_1_057}]
+
+  - id: HotBoardMeeting
+    name_ko: 핫보드
+    description: FCT_HBOARD_MEETING — 이번 갱신에서 신규 발견. [[hot_board]] 참고.
+    source_tables: [FCT_HBOARD_MEETING]
+    primary_key: unresolved
+    natural_keys: []
+    attributes: []
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_6_066}]
+    status: unresolved
+    required_input: ["FCT_HBOARD_MEETING 컬럼 정의서"]
+
+  - id: NPSRecord
+    name_ko: 고객 만족도(NPS)
+    description: FCT_NPS. [[nps]] 참고.
+    source_tables: [FCT_NPS]
+    primary_key: unresolved
+    natural_keys: []
+    attributes: []
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_2_2_049}]
+    status: unresolved
+    required_input: ["FCT_NPS 컬럼 정의서"]
+
+  - id: SCGroupRule
+    name_ko: SC 그룹 규칙
+    description: FCT_SC_GROUP_RULE. [[sc_group_rule]] 참고.
+    source_tables: [FCT_SC_GROUP_RULE]
+    primary_key: unresolved
+    natural_keys: []
+    attributes: []
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_7_067}]
+    status: unresolved
+    required_input: ["FCT_SC_GROUP_RULE 컬럼 정의서"]
+
+  - id: ActivityTypeTaxonomy
+    name_ko: 활동 유형 분류체계
+    description: >
+      DIM_CRM_ACT_TYPE(세부 유형, tp_key/tp_grp_1) + DIM_CRM_ACT_TYPE_ORDER(대분류
+      common_tp_nm, 표시 순서) 2단 분류. Activity/Lead/Target 전부 이 분류를 경유해
+      "관계형성/기회창출/계약" 등 대분류로 묶인다 — 사실상 모든 퍼널 지표의 축.
+    source_tables: [DIM_CRM_ACT_TYPE, DIM_CRM_ACT_TYPE_ORDER]
+    primary_key: tp_key
+    natural_keys: [common_tp_nm]
+    attributes: [tp_grp_1, common_tp_nm]
+    lifecycle_states: []
+    security_scope: null
+    source_evidence: [{sql_id: gold_1_1_001}]

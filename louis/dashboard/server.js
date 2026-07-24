@@ -5,6 +5,7 @@ import { config as loadDotenv } from 'dotenv'
 import { handleChatRequest } from './server/chatHandler.js'
 import { handleDashboardCustomizeRequest } from './server/dashboardCustomizeHandler.js'
 import { handleWarehouseQueryRequest } from './server/warehouseQueryHandler.js'
+import { handleAgenticBiRequest } from './server/agenticBiHandler.js'
 import { handleListScopes } from './server/scopesHandler.js'
 import {
   handleGetSavedPage,
@@ -32,6 +33,7 @@ const DATA_DIR = join(__dirname, 'dist', 'data')
 app.post('/api/chat', (req, res) => handleChatRequest(req, res, { dataDir: DATA_DIR }))
 app.post('/api/dashboard-customize', (req, res) => handleDashboardCustomizeRequest(req, res, { dataDir: DATA_DIR }))
 app.post('/api/warehouse-query', handleWarehouseQueryRequest)
+app.post('/api/agentic-bi-ask', handleAgenticBiRequest)
 app.get('/api/scopes', handleListScopes)
 app.get('/api/dashboard-pages', handleGetSavedPage)
 app.put('/api/dashboard-pages', handleSaveSavedPage)

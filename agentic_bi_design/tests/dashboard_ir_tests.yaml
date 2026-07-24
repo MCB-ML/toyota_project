@@ -1,0 +1,26 @@
+tests:
+  - test_id: dir_01_ratio_metric_rejected_in_donut
+    assertion: "conversion_metric/progress_metric/ratio_metric을 donut_chart에 배정하면 validateDashboardIr가 ratio_as_sum_chart 오류를 내야 함"
+    status: verified
+    verified_note: "app/dashboard/schemas.js checkDashboardIr 로직 + component_registry.yaml donut_chart.forbidden_metric_types로 구현·확인(2026-07-23) — planner.js도 breakdown(rowCount>1)+ratio-like 조합은 애초에 bar_chart로 배정하도록 되어 있어 이중 방어"
+
+  - test_id: dir_02_dangling_query_ref_rejected
+    assertion: "components[].query_ref가 compiledQueries에 없는 metricId를 가리키면 dangling_query_ref 오류"
+    status: verified
+    verified_note: "app/dashboard/schemas.js에서 로직 확인(코드 리뷰 수준 — 별도 실행 케이스는 추가 필요)"
+
+  - test_id: dir_03_layout_overlap_rejected
+    assertion: "두 컴포넌트의 position이 겹치면 layout_overlap 오류"
+    status: verified
+    verified_note: "checkOverlap() 함수, 코드 리뷰 수준 확인 — 실제 겹치는 케이스로 실행 테스트는 추가 필요"
+
+  - test_id: dir_04_unregistered_component_rejected
+    assertion: "component_registry.yaml에 없는 type을 쓰면 unregistered_component 오류"
+    status: verified
+    verified_note: "app/dashboard/schemas.js 코드 리뷰 확인"
+
+  - test_id: dir_05_pma_donut_end_to_end
+    assertion: "gq_04(2025 렉서스 강남 PMA IN/OUT 도넛)를 DashboardPlanner에 태우면 delivery_ytd_pma_in/out(base_metric)이 정상적으로 도넛/막대에 배정되고, 혹시 ratio 버전이 잘못 선택되면 검증기가 잡아내는지"
+    status: unresolved
+    reason: "실제 LLM이 metric을 선택하는 경로(MetricDimensionResolver LLM 연결)가 아직 스텁 — end-to-end로는 아직 실행 못 함, planner.js/schemas.js 단위 테스트로는 검증 완료"
+    required_input: ["MetricDimensionResolver LLM 연결(P4 확장)"]

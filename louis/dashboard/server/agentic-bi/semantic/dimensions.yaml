@@ -1,0 +1,96 @@
+# Registered Dimensions — Semantic Query IR의 "dimensions"/"filters"에 쓸 수 있는 유일한 값 목록.
+# (기존 server/rag-poc/knowledgeBase/dimensions.js와 개념은 동일 — 이 파일은 SQL 전용이 아니라
+# Ontology entity를 경유해 정의하므로 향후 DAX/Python 실행기에도 재사용 가능하도록 분리했다.)
+
+dimensions:
+  - id: brand
+    label_ko: 브랜드
+    entity: Brand
+    column: {table: DIM_MNG_USER, column: BRAND}
+    value_type: enum
+    known_values: [LEXUS, TOYOTA]
+    source_evidence: [gold_1_1_001]
+
+  - id: dealer
+    label_ko: 딜러
+    entity: Dealer
+    column: {table: DIM_MNG_DEALER, column: dealer_nm}
+    value_type: string
+    known_values: unresolved
+    required_input: ["딜러명 마스터 목록(현재는 LLM이 자유 텍스트로 추출 — glossary.js g06 참고)"]
+    source_evidence: [gold_1_1_001]
+
+  - id: showroom
+    label_ko: 전시장
+    entity: Showroom
+    column: {table: DIM_MNG_USER, column: group_name}
+    value_type: string
+    source_evidence: [gold_1_2_025]
+
+  - id: department
+    label_ko: 부서/팀
+    entity: Department
+    column: {table: DIM_MNG_USER, column: dept_nm}
+    value_type: string
+    source_evidence: [gold_1_2_025]
+
+  - id: sales_consultant
+    label_ko: SC명
+    entity: SalesConsultant
+    column: {table: DIM_MNG_USER, column: name}
+    value_type: string
+    source_evidence: [gold_1_2_025]
+
+  - id: active_status
+    label_ko: 재직 상태
+    entity: SalesConsultant
+    column: {table: DIM_MNG_USER, column: active_yn}
+    value_type: enum
+    known_values: ["재직", "퇴직"]
+    source_evidence: [gold_1_2_025]
+
+  - id: activity_type
+    label_ko: 활동유형(대분류)
+    entity: ActivityTypeTaxonomy
+    column: {table: DIM_CRM_ACT_TYPE_ORDER, column: common_tp_nm}
+    value_type: enum
+    known_values: unresolved
+    required_input: ["DIM_CRM_ACT_TYPE_ORDER 전체 코드값 목록"]
+    source_evidence: [gold_1_1_001]
+
+  - id: vehicle_model
+    label_ko: 모델
+    entity: VehicleModel
+    column: {table: DIM_VEHIC_SPEC_MDL, column: model_nm}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+
+  - id: vehicle_variant
+    label_ko: VARIANT
+    entity: VehicleVariant
+    column: {table: DIM_VEHIC_SPEC_VAR, column: variant_nm}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+
+  - id: grade_sfx
+    label_ko: GRADE(SFX)
+    entity: Grade
+    column: {table: DIM_VEHIC_SPEC, column: sfx_cd}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+
+  - id: pma_status
+    label_ko: PMA 관내/관외
+    entity: Delivery
+    column: {table: FCT_CONTRACT_KTWS, column: pma_yn}
+    value_type: enum
+    known_values: ["Y (IN)", "N (OUT)", "etc"]
+    note: "반드시 3-way로 취급 — br_pma_three_way 참고. 2-way(<>'N')로 컴파일하는 코드는 SQL Compiler에서 거부해야 함."
+    source_evidence: [{note: "이전 세션 DMV 조사"}]
+
+  - id: time_month
+    label_ko: 월(YearMonth)
+    entity: WorkingDay
+    column: {table: DIM_CALENDAR_KTWS, column: "Year/MonthNumber"}
+    value_type: date_grain
+    source_evidence: [gold_1_1_001]

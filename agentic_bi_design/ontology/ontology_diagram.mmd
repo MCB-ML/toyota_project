@@ -1,0 +1,59 @@
+erDiagram
+    Dealer ||--o{ SalesConsultant : "belongs_to (dealer_key)"
+    SalesConsultant ||--o{ Activity : "performs (sc_key)"
+    SalesConsultant ||--o{ Lead : "owns (cl_sc_key)"
+    SalesConsultant ||--o{ Contract : "places (cn_sc_key)"
+    SalesConsultant ||--o{ MonthlyTarget : "has (sc_key)"
+    SalesConsultant ||--o{ DailyTarget : "has (sc_key)"
+
+    Lead ||--o{ Activity : "targeted_by (lead_key)"
+    Lead ||--o| Contract : "originates (lead_key + cn_sc_key, qualified-lead rule)"
+
+    Contract ||--o| Grade : "for_vehicle (cn_vehic_key = spec_key)"
+    Grade }o--|| VehicleVariant : "belongs_to (var_key)"
+    VehicleVariant }o--|| VehicleModel : "belongs_to (model_key)"
+    Contract ||--o| SalesType : "has (sales_tp_key)"
+
+    ActivityTypeTaxonomy ||--o{ Activity : "classifies (tp_key)"
+    ActivityTypeTaxonomy ||--o{ Lead : "classifies (tp_key)"
+    ActivityTypeTaxonomy ||--o{ MonthlyTarget : "classifies (tp_key)"
+
+    WorkingDay ||--o{ Activity : "dates (act_dt_fr)"
+    WorkingDay ||--o{ Contract : "dates (contract_dt / last_retail_sales_dt)"
+    WorkingDay ||--o{ MonthlyTarget : "dates (monthly_dt)"
+    WorkingDay ||--o{ DailyTarget : "dates (daily_dt)"
+
+    Contract {
+        string cn_sc_key FK
+        string lead_key FK
+        date contract_dt
+        date cancel_dt "NULL = 유효 계약"
+        date last_retail_sales_dt "채워지면 = 출고"
+        string cn_vehic_key FK
+        string sales_tp_key FK
+        string pma_yn "Y/N/etc 3-way, 기존 DAX가 2-way로 오분류하던 필드"
+    }
+
+    Lead {
+        string cl_sc_key FK
+        string tp_key FK
+        date lead_reg_dt
+        date close_dt "NULL 또는 미래 = 오픈 유지"
+        date last_retail_sales_dt "NOT NULL = 매출전환"
+    }
+
+    SalesConsultant {
+        string sc_key PK
+        string user_id
+        string name
+        string BRAND
+        string active_yn "재직/퇴직"
+        string facade_sc_yn "창구SC 여부 - 제외 대상"
+        string dealer_key FK
+        string group_name "전시장"
+        string dept_nm "부서"
+    }
+
+    %% unresolved 엔터티 — 컬럼 정의서 없이 관계 확정 불가 (점선 대체 불가하여 주석으로 표기)
+    %% Customer(FCT_MNG_CUST_LIST), HotBoardMeeting(FCT_HBOARD_MEETING),
+    %% NPSRecord(FCT_NPS), SCGroupRule(FCT_SC_GROUP_RULE), TargetStatus(FCT_CRM_TARGET_STS)

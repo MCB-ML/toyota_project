@@ -1,0 +1,98 @@
+# Activity Metrics
+# 근거: sheet "1-1. KTWS 퍼널 월별 현황" gold_1_1_001~gold_1_1_024, sheet "1-2"의 통합쿼리(gold_1_2_025)
+
+metrics:
+  - id: activity_mtd_actual
+    name_ko: 당월 영업활동 실적
+    description: "관계형성/기회창출 유형 활동 중, 자격 SC가 수행한 당월 활동 건수 합"
+    metric_type: base_metric
+    fact_entity: Activity
+    base_table: FCT_ACTIVITY_v2
+    expression: "SUM(FCT_ACTIVITY_v2.actual_cnt)"
+    aggregation: sum
+    distinct_key: null
+    grain: [sales_consultant, activity_type, month]
+    time_dimension: FCT_ACTIVITY_v2.act_dt_fr
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: [br_tp_grp_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "SUM은 매칭 행이 없으면 NULL — 0으로 COALESCE는 컴파일러 책임(원본 GOLD는 COALESCE 안 함)"
+    dimensions: [brand, dealer, showroom, department, sales_consultant, activity_type]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_001}]
+    confidence: high
+
+  - id: activity_mtd_target
+    name_ko: 당월 영업활동 목표
+    description: "일별 목표(FCT_CRM_TARGET_D)를 TOTALMTD로 롤업한 당월 활동 목표"
+    metric_type: target_metric
+    fact_entity: Activity
+    base_table: FCT_CRM_TARGET_D
+    expression: "SUM(FCT_CRM_TARGET_D.target_cnt)"
+    metric_filter: "tp_grp_1 IN ('관계형성','기회창출')"
+    aggregation: sum
+    grain: [sales_consultant, activity_type, month]
+    time_dimension: FCT_CRM_TARGET_D.daily_dt
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: [br_tp_grp_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: unresolved
+    dimensions: [brand, dealer, showroom, department, sales_consultant, activity_type]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_002}]
+    confidence: high
+
+  - id: activity_progress_rate_mtd
+    name_ko: 당월 활동 진척률
+    description: "실적÷목표. 분모 0이면 1.0(목표 미설정 시 100% 처리) — 원본 DAX DIVIDE(...,1) 그대로"
+    metric_type: progress_metric
+    numerator_metric: activity_mtd_actual
+    denominator_metric: activity_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=1.0)"
+    zero_denominator_result: 1.0
+    format: percentage
+    grain: [sales_consultant, activity_type, month]
+    dependencies: [activity_mtd_actual, activity_mtd_target]
+    source_evidence: [{sql_id: gold_1_2_025, note: "act_target/act_actual CTE 및 진척률 CASE 식"}]
+    confidence: high
+
+  - id: activity_to_lead_conversion_rate
+    name_ko: 기회전환률 (활동→기회)
+    description: "활동 실적 대비 리드(기회) 실적 비율 — 전환율은 목표가 아니라 상위 퍼널 실적을 분모로 씀"
+    metric_type: conversion_metric
+    numerator_metric: lead_mtd_actual
+    denominator_metric: activity_mtd_actual
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, activity_type, month]
+    dependencies: [lead_mtd_actual, activity_mtd_actual]
+    source_evidence: [{sql_id: gold_1_2_025, note: "기회전환률 CASE 식"}]
+    confidence: high
+
+  - id: activity_avg6m
+    name_ko: 평균 활동 추세 (최근 6개월)
+    description: "최근 6개월 활동 실적의 월평균"
+    metric_type: snapshot_metric
+    fact_entity: Activity
+    base_table: FCT_ACTIVITY_v2
+    expression: "AVG(monthly SUM(actual_cnt)) OVER 최근 6개월"
+    aggregation: avg
+    grain: [sales_consultant, month]
+    time_dimension: FCT_ACTIVITY_v2.act_dt_fr
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: unresolved
+    exclusion_rules: [sc_scope_default]
+    null_handling: unresolved
+    dimensions: [sales_consultant]
+    additive_behavior: {across_time: non_additive, across_organization: non_additive}
+    dependencies: [activity_mtd_actual]
+    source_evidence: [{row_id: "2-2. 활동 트렌드_ROW_008", measure: "평균활동 추세 : 1. act_mtd_(avg6m)"}]
+    status: unresolved
+    required_input: ["해당 행의 GOLD 쿼리 원문 없음(unresolved_items.json에는 없으나 gold_query_id가 null) — DAX 정의만 확보"]
+    confidence: low

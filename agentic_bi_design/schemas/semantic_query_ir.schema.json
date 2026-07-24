@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ktws-agentic-bi/schemas/semantic_query_ir.schema.json",
+  "title": "SemanticQueryIR",
+  "description": "LLM이 SQL 대신 생성하는 중간 표현. SQLCompiler는 이 구조만 입력으로 받는다 — SQL 텍스트를 직접 받지 않는다.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent", "metrics", "time_range"],
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "single_value", "compare_metric", "breakdown_by_dimension",
+        "trend_over_time", "ranking", "conversion_analysis",
+        "composite_analysis", "detail_list"
+      ],
+      "description": "AnalysisPlanner가 분해한 개별 분석 1건의 종류. composite_analysis는 항상 여러 semantic_query로 더 쪼개져야 하며 최종 IR로 남으면 안 됨(검증 대상)."
+    },
+    "metrics": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "description": "semantic/metrics/*.yaml에 등록된 metric id만 허용 (registry 조회는 SemanticQueryValidator 책임, 이 스키마는 문법만 검사)"
+    },
+    "dimensions": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+      "default": [],
+      "uniqueItems": true,
+      "description": "semantic/dimensions.yaml에 등록된 dimension id만 허용"
+    },
+    "filters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Filter" },
+      "default": []
+    },
+    "time_range": { "$ref": "#/$defs/TimeRange" },
+    "sort": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "direction"],
+        "properties": {
+          "field": { "type": "string" },
+          "direction": { "type": "string", "enum": ["asc", "desc"] }
+        }
+      },
+      "default": []
+    },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 500, "default": 50 },
+    "comparison": {
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "type": "string", "enum": ["vs_previous_period", "vs_previous_year", "vs_target"] }
+          }
+        }
+      ],
+      "default": null
+    },
+    "required_output": {
+      "type": "string",
+      "enum": ["table", "chart", "table_and_chart", "single_value", "narrative"],
+      "default": "table_and_chart"
+    }
+  },
+  "$defs": {
+    "Filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dimension", "operator", "values"],
+      "properties": {
+        "dimension": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "operator": { "type": "string", "enum": ["in", "not_in", "eq", "gte", "lte", "between"] },
+        "values": {
+          "type": "array",
+          "items": { "type": ["string", "number"] },
+          "minItems": 1
+        }
+      }
+    },
+    "TimeRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["relative", "absolute", "mtd", "ytd"] },
+        "value": { "type": "integer", "description": "relative일 때만: 숫자(예: 최근 6개월 -> 6)" },
+        "unit": { "type": "string", "enum": ["day", "week", "month", "year"] },
+        "anchor_date": {
+          "type": "string",
+          "const": "runtime_context",
+          "description": "LLM이 날짜를 계산해서 넣지 않는다 — 항상 이 리터럴만 허용. 실제 날짜는 AgentState.current_date로 컴파일 시점에 결정론적으로 치환된다 (semantic/time_semantics.yaml 참고)."
+        },
+        "start_date": { "type": "string", "format": "date" },
+        "end_date": { "type": "string", "format": "date" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "relative" } } },
+          "then": { "required": ["value", "unit", "anchor_date"] }
+        },
+        {
+          "if": { "properties": { "type": { "const": "absolute" } } },
+          "then": { "required": ["start_date", "end_date"] }
+        }
+      ]
+    }
+  }
+}

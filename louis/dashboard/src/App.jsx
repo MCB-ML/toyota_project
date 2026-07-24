@@ -31,6 +31,7 @@ import DsdDailyTarget from './pages/dsd/DailyTarget'
 // KTWS
 import KtwsBi from './pages/ktws/Bi'
 import KtwsCustom from './pages/ktws/Custom'
+import KtwsAgenticBi from './pages/ktws/AgenticBi'
 
 export default function App() {
   const [collapsed, setCollapsed] = useState(false)
@@ -38,7 +39,8 @@ export default function App() {
   const location = useLocation()
   const isAiPage = location.pathname === '/'
   // 챗봇을 "대시보드 커스텀 빌더" 모드로 돌릴지 여부 — DB의 배포 대상 pageKey와는 별개 개념.
-  const chatPageKey = location.pathname === '/ktws/custom' ? 'ktws-custom' : undefined
+  const chatPageKey = location.pathname === '/ktws/custom' ? 'ktws-custom'
+    : location.pathname === '/ktws/agentic-bi' ? 'agentic-bi' : undefined
   const { user } = useUser()
   // 개인 계정이 아니라 본사/딜러사 단위로 대시보드를 공유하는 키(SelectAccount에서 고른 role/dealerId 기준).
   const scopeKey = user.role === 'hq' ? 'hq' : user.role === 'dealer' ? `dealer:${user.dealerId}` : null
@@ -72,6 +74,7 @@ export default function App() {
             {/* KTWS */}
             <Route path="/ktws/bi" element={<DeployableTab pageKey="ktws-bi"><KtwsBi /></DeployableTab>} />
             <Route path="/ktws/custom" element={<KtwsCustom />} />
+            <Route path="/ktws/agentic-bi" element={<KtwsAgenticBi />} />
 
             {/* fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
@@ -96,7 +99,7 @@ export default function App() {
           open={chatOpen && !isAiPage}
           onClose={() => setChatOpen(false)}
           title="AI 어시스턴트"
-          subtitle={chatPageKey ? '대시보드 커스텀' : undefined}
+          subtitle={chatPageKey === 'agentic-bi' ? 'Agentic BI (실험)' : chatPageKey ? '대시보드 커스텀' : undefined}
           pageKey={chatPageKey}
         />
       </div>

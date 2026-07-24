@@ -84,9 +84,10 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
     )))
 
     try {
-      const endpoint = pageKey ? '/api/dashboard-customize' : '/api/chat'
-      const body = pageKey
-        ? { message: userText, history, dashboardState }
+      const endpoint = pageKey === 'agentic-bi' ? '/api/agentic-bi-ask'
+        : pageKey ? '/api/dashboard-customize' : '/api/chat'
+      const body = pageKey === 'agentic-bi' ? { message: userText, history }
+        : pageKey ? { message: userText, history, dashboardState }
         : { messages: history }
 
       const res = await fetch(endpoint, {
@@ -198,7 +199,8 @@ export default function ChatPanel({ open, onClose, title = 'AI 어시스턴트',
                 <Bot size={22} className="text-white" />
               </div>
               <p className="text-sm text-gray-500">
-                {pageKey ? '대시보드에 추가/삭제하고 싶은 내용을 말해보세요.' : '무엇이든 물어보세요.'}
+                {pageKey === 'agentic-bi' ? '등록된 지표에 대해 물어보세요 (예: "이번 달 계약 실적 알려줘").'
+                  : pageKey ? '대시보드에 추가/삭제하고 싶은 내용을 말해보세요.' : '무엇이든 물어보세요.'}
               </p>
             </div>
           ) : (

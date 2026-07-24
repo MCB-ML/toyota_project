@@ -1,0 +1,121 @@
+# Lead (영업기회) Metrics
+# 근거: sheet 1-1(gold_1_1_004~1_1_020), 1-2 통합쿼리(gold_1_2_025), 1-3 SC현황(gold_1_3_026~041)
+
+metrics:
+  - id: lead_mtd_actual
+    name_ko: 당월 기회 실적 (유효 리드 수)
+    description: "자격 활동을 가진 리드 중 br_qualified_lead_def를 만족하는 DISTINCT lead_key 수"
+    metric_type: base_metric
+    fact_entity: Lead
+    base_table: FCT_LEAD
+    expression: "COUNT(DISTINCT FCT_LEAD.lead_key)"
+    aggregation: count_distinct
+    distinct_key: lead_key
+    grain: [sales_consultant, activity_type, month]
+    time_dimension: FCT_LEAD.lead_reg_dt
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: [br_qualified_lead_def]
+    not_directly_compilable: true
+    not_directly_compilable_reason: >
+      원본 GOLD 쿼리(gold_1_2_025 lead_actual CTE)의 실제 정의는 "자격 활동을 가진
+      리드"를 FCT_ACTIVITY_v2에 대한 EXISTS 상관 서브쿼리(lead_key+sc_key+type 일치,
+      br_tp_grp_scope/br_act_result_exclusion은 그 서브쿼리 내부 조건)로 표현한다.
+      이 compiler.js v1은 flat JOIN + WHERE만 조립하므로 EXISTS 상관 서브쿼리를 낼 수
+      없다 — 그대로 flat JOIN으로 흉내 내면 FCT_LEAD가 FCT_ACTIVITY_v2와 타입 축을
+      통해서만 연결되어 팬아웃(카티전에 가까운 중복행)이 생기고, 만약 그 필터들을
+      아예 빼면 이번엔 "자격 활동 없는 리드"까지 세어버려 실적이 과대 산정된다.
+      즉 두 방향 다 조용히 틀린 값을 낸다 — 그래서 컴파일을 거부하는 쪽을 택했다.
+      Controlled Analysis SQL 경로(EXISTS 지원하는 B안)로 마이그레이션할 것
+      (migration/migration_classification.json 참고).
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0건이면 0 (COUNT는 NULL이 아닌 0을 반환)"
+    dimensions: [brand, dealer, showroom, department, sales_consultant, activity_type]
+    additive_behavior: {across_time: non_additive_distinct, across_organization: non_additive_distinct}
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_2_025, note: "lead_actual CTE"}]
+    confidence: high
+
+  - id: lead_mtd_target
+    name_ko: 당월 기회 목표
+    description: "월별 목표(FCT_CRM_TARGET_M)의 관계형성/기회창출 유형 합"
+    metric_type: target_metric
+    fact_entity: Lead
+    base_table: FCT_CRM_TARGET_M
+    expression: "SUM(FCT_CRM_TARGET_M.target_cnt)"
+    metric_filter: "tp_grp_1 IN ('관계형성','기회창출')"
+    aggregation: sum
+    grain: [sales_consultant, activity_type, month]
+    time_dimension: FCT_CRM_TARGET_M.monthly_dt
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: [br_tp_grp_scope]
+    exclusion_rules: [sc_scope_default]
+    null_handling: unresolved
+    dimensions: [brand, dealer, showroom, department, sales_consultant, activity_type]
+    additive_behavior: {across_time: non_additive_mtd_snapshot, across_organization: additive}
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_2_025, note: "lead_target CTE"}]
+    confidence: high
+
+  - id: lead_progress_rate_mtd
+    name_ko: 당월 기회 진척률
+    description: "실적÷목표. 분모 0이면 0.0 — activity_progress_rate_mtd(분모 0→1.0)와 zero_denominator 정책이 다름에 주의"
+    metric_type: progress_metric
+    numerator_metric: lead_mtd_actual
+    denominator_metric: lead_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=0.0)"
+    zero_denominator_result: 0.0
+    format: percentage
+    grain: [sales_consultant, activity_type, month]
+    dependencies: [lead_mtd_actual, lead_mtd_target]
+    source_evidence: [{sql_id: gold_1_2_025, note: "기회진척률 CASE 식 — 활동진척률과 zero_denominator 값이 다름을 원문에서 직접 확인"}]
+    confidence: high
+
+  - id: lead_to_testdrive_conversion_rate
+    name_ko: 시승전환률 (기회→시승)
+    description: "리드 실적 대비 시승 실적 비율"
+    metric_type: conversion_metric
+    numerator_metric: testdrive_mtd_actual
+    denominator_metric: lead_mtd_actual
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [testdrive_mtd_actual, lead_mtd_actual]
+    source_evidence: [{measure: "8. cvr_td"}]
+    confidence: medium
+    status: partially_unresolved
+    required_input: ["cvr_td 전용 GOLD 쿼리 원문(현재는 lead/testdrive 각 원자 지표에서 역산 추정)"]
+
+  - id: lead_mtd_coalesce
+    name_ko: 전체 영업기회 (SC 필터 인지형)
+    description: >
+      SC를 특정해 필터링했는지 여부에 따라 SC 레벨/조직 레벨 값을 다르게 반환하는
+      COALESCE 폴백 지표 — 단순 base_metric이 아니라 호출 컨텍스트 의존 지표.
+    metric_type: snapshot_metric
+    fact_entity: Lead
+    base_table: FCT_LEAD
+    expression: "COALESCE(SC별 실적, 조직 전체 실적)"
+    aggregation: count_distinct
+    grain: [sales_consultant_or_org, month]
+    dependencies: [lead_mtd_actual]
+    source_evidence: [{measure: "▪전체 영업기회 : 2. lead_mtd_coalesce"}]
+    confidence: low
+    status: unresolved
+    required_input: ["coalesce 분기 조건의 정확한 SQL — DAX만 확보, GOLD SQL 미확보"]
+
+  - id: lead_hot_mtd
+    name_ko: HOT 영업기회
+    description: "HOT 보드 대상으로 분류된 리드 수"
+    metric_type: base_metric
+    fact_entity: Lead
+    base_table: FCT_LEAD
+    expression: unresolved
+    aggregation: count_distinct
+    grain: [sales_consultant, month]
+    dependencies: []
+    source_evidence: [{measure: "HOT 영업기회 : 2. lead_mtd_(hot)_coalesce"}]
+    confidence: low
+    status: unresolved
+    required_input: ["HOT 판정 조건 컬럼/룰 정의서 — business_vocabulary.yaml hot_lead 항목 참고"]

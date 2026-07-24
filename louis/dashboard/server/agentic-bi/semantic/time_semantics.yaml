@@ -1,0 +1,43 @@
+# Time Semantics — 팩트마다 실제로 사용하는 날짜 컬럼이 다르므로 여기서 고정한다.
+# LLM이 current_date를 임의 추론하지 않도록, 실행 시작 시 AgentState.current_date를
+# 1회 주입하고 이 파일의 규칙만으로 모든 상대 날짜(이번 달/최근 N개월/연누적)를 계산한다.
+# (app/agents/state.py의 current_date, app/semantic/compiler.py가 이 파일을 읽어 컴파일)
+
+time_dimension_by_entity:
+  Activity: {table: FCT_ACTIVITY_v2, column: act_dt_fr}
+  Lead: {table: FCT_LEAD, column: lead_reg_dt}
+  Contract: {table: FCT_CONTRACT_KTWS, column: contract_dt}
+  Delivery: {table: FCT_CONTRACT_KTWS, column: last_retail_sales_dt}
+  MonthlyTarget: {table: FCT_CRM_TARGET_M, column: monthly_dt}
+  DailyTarget: {table: FCT_CRM_TARGET_D, column: daily_dt}
+  WorkingDay: {table: DIM_CALENDAR_KTWS, column: Date}
+
+supported_time_grains: [day, week, month, year]
+
+grain_definitions:
+  mtd:
+    label_ko: 당월 누적 (Month-To-Date)
+    window: "[월초, min(오늘, 월말)]"
+    asof_cap_rule: br_mtd_asof_cap
+    note: "AsOfDate가 NULL이면 캡 없이 월 전체 합계 — '당월 실적'과 'MTD 실적'이 쿼리에 따라 다른 걸 의미할 수 있어 metric.time_grain에 명시 필수"
+  ytd:
+    label_ko: 연 누적 (Year-To-Date)
+    window: "[연초, min(오늘, 연말)]"
+    asof_cap_rule: br_mtd_asof_cap
+  recent_n_month:
+    label_ko: 최근 N개월
+    window: "[오늘 - N개월, 오늘]"
+    source_evidence: "measure_inventory.json의 avg3m/avg6m/lm 접미사 — 3/6개월 평균, 전월(Last Month) 비교가 실제 쓰이고 있음이 확인됨"
+
+relative_date_resolution_policy: >
+  "이번 달", "최근 3개월", "작년 동월" 같은 상대 표현은 LLM이 계산하지 않는다.
+  QuestionNormalizer/MetricDimensionResolver 단계는 상대 표현을
+  {type: relative, unit, value, anchor: "runtime_context"} 형태로만 남기고,
+  실제 날짜 계산은 AgentState.current_date를 기준으로 SQLCompiler 직전
+  단계(app/semantic/compiler.js)에서 결정론적으로 수행한다 — LLM 호출마다 값이
+  달라지는 것을 방지하기 위함.
+
+hardcoded_date_risk_note: >
+  agentic_bi_design/inventory/sql_metadata.json risks에 hardcoded_date가 4건 태깅됨
+  (예: DECLARE @Year INT = 2026). 이런 GOLD 쿼리를 그대로 템플릿화하면 실행 시점마다
+  값이 고정되어 버린다 — 반드시 파라미터(@Year/@MonthNumber)로 되돌린 뒤 등록한다.

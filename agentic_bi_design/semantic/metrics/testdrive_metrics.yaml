@@ -1,0 +1,83 @@
+# TestDrive (시승) Metrics
+# 근거: sheet 1-1 gold_1_1_014/015/016(td_funnel 계열), 1-3 gold_1_3_032~038
+
+metrics:
+  - id: testdrive_mtd_actual
+    name_ko: 당월 시승 실적 (리드매칭 기준)
+    description: >
+      리드와 매칭된 시승 활동 DISTINCT 건수. sheet 1-1 주석에 명시된 함정: "신청폼 기준"
+      (td_funnel_(mtd_preOp)_form)과 "리드매칭 기준"(td_funnel_(mtd_preOp)_leadMatch)의
+      숫자가 다르다 — 어느 정의를 쓰는지 metric_id로 명확히 분리해야 함.
+    metric_type: base_metric
+    fact_entity: TestDrive
+    base_table: FCT_ACTIVITY_v2
+    expression: "COUNT(DISTINCT lead_key)"
+    metric_filter: unresolved  # 시승 유형 판정 조건 — DIM_CRM_ACT_TYPE 코드 정의서 필요(business_vocabulary.yaml testdrive 참고)
+    aggregation: count_distinct
+    distinct_key: lead_key
+    grain: [sales_consultant, month]
+    time_dimension: FCT_ACTIVITY_v2.act_dt_fr
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: [br_tp_grp_scope, br_act_result_exclusion]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0건이면 0"
+    dimensions: [sales_consultant, dealer]
+    additive_behavior: {across_time: non_additive_distinct, across_organization: non_additive_distinct}
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_014, note: "td_funnel_(mtd_preOp)_leadMatch"}]
+    confidence: high
+
+  - id: testdrive_mtd_actual_form_basis
+    name_ko: 당월 시승 실적 (신청폼 기준)
+    description: "리드매칭 여부와 무관하게 시승 신청폼 제출 건수 기준 — testdrive_mtd_actual과 분모/분자가 다른 별개 지표"
+    metric_type: base_metric
+    fact_entity: TestDrive
+    base_table: FCT_ACTIVITY_v2
+    expression: unresolved
+    aggregation: count
+    grain: [sales_consultant, month]
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_015, note: "td_funnel_(mtd_preOp)_form"}]
+    confidence: medium
+    status: partially_unresolved
+    required_input: ["신청폼 기준과 리드매칭 기준의 정확한 컬럼 차이 — GOLD SQL diff 필요"]
+
+  - id: testdrive_mtd_target
+    name_ko: 당월 시승 목표
+    metric_type: target_metric
+    fact_entity: TestDrive
+    base_table: FCT_CRM_TARGET_M
+    expression: unresolved
+    aggregation: sum
+    grain: [sales_consultant, month]
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_017, note: "2-1. td_funnel_(mtd_target)"}]
+    confidence: medium
+
+  - id: testdrive_progress_rate_mtd
+    name_ko: 당월 시승 진척률
+    metric_type: progress_metric
+    numerator_metric: testdrive_mtd_actual
+    denominator_metric: testdrive_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [testdrive_mtd_actual, testdrive_mtd_target]
+    source_evidence: [{sql_id: gold_1_1_013, note: "2-1. progress_td_mtd"}]
+    confidence: high
+
+  - id: testdrive_to_contract_conversion_rate
+    name_ko: 계약전환률 (시승→계약)
+    description: "시승 실적 대비 계약 실적 비율"
+    metric_type: conversion_metric
+    numerator_metric: contract_mtd_actual
+    denominator_metric: testdrive_mtd_actual
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [contract_mtd_actual, testdrive_mtd_actual]
+    source_evidence: [{measure: "8. cvr_cntrct"}]
+    confidence: medium

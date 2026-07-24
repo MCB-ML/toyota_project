@@ -1,0 +1,1262 @@
+[
+  {
+    "measure_name": "#LM",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "#MTD",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "#YTD",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "#계약 게이지",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "#출고 게이지",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "#출고현황",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "-",
+    "used_in": [],
+    "related_in": [
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_004",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_005",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_008",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_009",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_012",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_013",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_005",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_006",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_007",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_008",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_011",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_012",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_013"
+    ]
+  },
+  {
+    "measure_name": "1. act_mtd_(ac)_preOp",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_004",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_005",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_007",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_018",
+      "3-1. 활동 주차별 진행 현황_ROW_005"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_006",
+      "1-1. KTWS 퍼널 월별 현황_ROW_007",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_006",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_007",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_009",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_010",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019",
+      "3-1. 활동 주차별 진행 현황_ROW_006"
+    ]
+  },
+  {
+    "measure_name": "1. act_mtd_(target)_preOp",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_005",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_008",
+      "3-1. 활동 주차별 진행 현황_ROW_004"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_006",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_006",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_009",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "3-1. 활동 주차별 진행 현황_ROW_006"
+    ]
+  },
+  {
+    "measure_name": "1. act_mtd_(target)_v3",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_004",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "1. act_mtd_lm_preOp",
+    "used_in": [],
+    "related_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "1. progress_act_mtd_preOp",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_006",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_006",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_009",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "3-1. 활동 주차별 진행 현황_ROW_006"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "1. ratio_act_funnel_(vs lm)",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2-1. progress_td_mtd",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_023"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2-1. td_funnel_(mtd_preOp)_form",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_019"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2-1. td_funnel_(mtd_preOp)_leadMatch",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_018",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_016"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_017",
+      "1-1. KTWS 퍼널 월별 현황_ROW_024",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_015"
+    ]
+  },
+  {
+    "measure_name": "2-1. td_funnel_(mtd_target)",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_022"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_023"
+    ]
+  },
+  {
+    "measure_name": "2-1. td_mtd_total(ac)",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_021"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_023"
+    ]
+  },
+  {
+    "measure_name": "2-1. td_mtd_total(leadDistinct)",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_020"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2. lead_funnel_(mtd)_preOp",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_008",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_009",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_011",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_018"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_007",
+      "1-1. KTWS 퍼널 월별 현황_ROW_011",
+      "1-1. KTWS 퍼널 월별 현황_ROW_012",
+      "1-1. KTWS 퍼널 월별 현황_ROW_017",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_007",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_010",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_011",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_010",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_014",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_015",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "2. lead_funnel_(mtd_lm)",
+    "used_in": [],
+    "related_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "2. lead_funnel_(mtd_target_preOp)",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_010",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_008",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_013",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_011",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_010",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_014",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ]
+  },
+  {
+    "measure_name": "2. lead_mtd_coalesce",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_009",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_012"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2. progress_lead_funnel_(mtd)_sc",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_010",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2. progress_lead_mtd_s",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_014"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2. progress_lead_mtd_sc",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_011"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "2. ratio_lead_funnel_(mtd_vs lm)",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_flag",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_018"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_funnel_(mtd)",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_013",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_013",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_018"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_012",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_011",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_014",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_funnel_(mtd)_coalesce",
+    "used_in": [],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_016"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_funnel_(mtd)_td",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_025"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_024"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_funnel_(mtd_lm)",
+    "used_in": [],
+    "related_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_funnel_(mtd_target)_sc",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_015",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_012",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_016",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_014",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "2-1. 월별 판매 성취도_ROW_006"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_mtd",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_018"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_mtd_(ac)",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_mtd_(canceled)_v2",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_mtd_(target)_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_006"
+    ],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_007"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_mtd_(target)_dealer",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_006"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_mtd_coalesce",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_014"
+    ],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_007"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_mtd_td",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_026"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_ytd",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_011",
+      "2-1. 월별 판매 성취도_ROW_018"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_ytd_(ac)",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_ytd_(canceled)",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. cntrct_ytd_(target)_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_010"
+    ],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_011"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_ytd_(target)_dealer",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_010"
+    ]
+  },
+  {
+    "measure_name": "3. cntrct_ytd_(target)_sc",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_010"
+    ]
+  },
+  {
+    "measure_name": "3. progress_cntrct_funnel_(mtd)_sc",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_016",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_014",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. progress_cntrct_mtd_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_007"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. progress_cntrct_ytd_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_011"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "3. ratio_cntrct_funnel_(mtd_vs lm)",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "4. progress_sales_mtd_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_014"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "4. progress_sales_mtd_dealer",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_014"
+    ]
+  },
+  {
+    "measure_name": "4. progress_sales_mtd_sc_coaleasce",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_014"
+    ]
+  },
+  {
+    "measure_name": "4. progress_sales_ytd_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "4. sales_flag",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_019"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "4. sales_mtd",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_013"
+    ],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "4. sales_mtd_(target)_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_012"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "4. sales_mtd_(target)_dealer",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_012"
+    ]
+  },
+  {
+    "measure_name": "4. sales_mtd_(target)_sc",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_012"
+    ]
+  },
+  {
+    "measure_name": "4. sales_ytd",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_016",
+      "2-3. 출고 현황_ROW_004",
+      "2-3. 출고 현황_ROW_005",
+      "2-3. 출고 현황_ROW_006",
+      "2-3. 출고 현황_ROW_007"
+    ],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_017",
+      "2-1. 월별 판매 성취도_ROW_019"
+    ]
+  },
+  {
+    "measure_name": "4. sales_ytd_(target)_cond",
+    "used_in": [
+      "2-1. 월별 판매 성취도_ROW_015"
+    ],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_017"
+    ]
+  },
+  {
+    "measure_name": "4. sales_ytd_(target)_dealer",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_015"
+    ]
+  },
+  {
+    "measure_name": "4. sales_ytd_(target)_sc_coaleasce",
+    "used_in": [],
+    "related_in": [
+      "2-1. 월별 판매 성취도_ROW_015"
+    ]
+  },
+  {
+    "measure_name": "8. cvr_cntrct",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_012",
+      "1-1. KTWS 퍼널 월별 현황_ROW_024",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_011",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "8. cvr_lead",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_007",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_007",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_010",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "8. cvr_td",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_015"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "act_mtd",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_007",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_007",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_010",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "coalesce",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_016"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_016",
+      "2-1. 월별 판매 성취도_ROW_012"
+    ]
+  },
+  {
+    "measure_name": "coalesce — SC 필터 시 출고 목표",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "cond",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_012",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_014",
+      "4.  목표 관리_ROW_004",
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_014",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ]
+  },
+  {
+    "measure_name": "cond2",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "cond3",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "count_working_day_pass",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_005",
+      "3-1. 활동 주차별 진행 현황_ROW_007",
+      "3-2. 활동 일별 진행 현황_ROW_005"
+    ],
+    "related_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_004",
+      "3-1. 활동 주차별 진행 현황_ROW_009"
+    ]
+  },
+  {
+    "measure_name": "count_working_day_total",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_006",
+      "3-1. 활동 주차별 진행 현황_ROW_008",
+      "3-2. 활동 일별 진행 현황_ROW_005"
+    ],
+    "related_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_004",
+      "3-1. 활동 주차별 진행 현황_ROW_009"
+    ]
+  },
+  {
+    "measure_name": "ktws DIM_CALENDAR_KTWS",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_018",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_019"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "lead_mtd",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_012",
+      "1-1. KTWS 퍼널 월별 현황_ROW_017",
+      "1-1. KTWS 퍼널 월별 현황_ROW_027",
+      "1-2. KTWS 퍼널 월별 현황 목록_ROW_011",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_015",
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_017"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "progress_working_day",
+    "used_in": [
+      "1-3. KTWS 퍼널 월별 SC 현황_ROW_004",
+      "3-1. 활동 주차별 진행 현황_ROW_009",
+      "3-2. 활동 일별 진행 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "td_mtd",
+    "used_in": [
+      "1-1. KTWS 퍼널 월별 현황_ROW_024"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "total)",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005",
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪1. act_daily",
+    "used_in": [
+      "3-2. 활동 일별 진행 현황_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪1. act_daily_(target)",
+    "used_in": [],
+    "related_in": [
+      "3-2. 활동 일별 진행 현황_ROW_004"
+    ]
+  },
+  {
+    "measure_name": "▪1. act_daily_(target_remains)",
+    "used_in": [
+      "3-2. 활동 일별 진행 현황_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪2. lead_funnel_(mtd_target_preOp)",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪3. cntrct_funnel_(mtd_target)_sc",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪3. cntrct_funnel_(mtd_target)_sc — SC 필터 시 계약 목표",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪3. cntrct_mtd_(target)_cond — 게이지 목표",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪3. cntrct_mtd_(target)_dealer — 딜러 레벨 계약 목표",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪3. cntrct_mtd_coalesce — 게이지 값",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪3. progress_cntrct_mtd_cond — 진행률",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪4. progress_sales_mtd_cond — 진행률",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪4. progress_sales_mtd_dealer — 딜러 진행률",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. progress_sales_mtd_sc_coaleasce — SC 진행률",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(lm)_coalesce (Total)",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(lm)_farming",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(lm)_hunting",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(lm)_referral",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(target)_cond — 게이지 목표",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(target)_dealer — 딜러 레벨 출고 목표",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_(target)_sc",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_coalesce — 게이지 값",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪4. sales_mtd_farming",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_hunting",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_mtd_referral",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_period_(canceled_ratio)_scSelected",
+    "used_in": [],
+    "related_in": [
+      "7. SC 출고 현황_ROW_004",
+      "7. SC 출고 현황_ROW_005"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_period_monthly_avg_scSelected",
+    "used_in": [],
+    "related_in": [
+      "7. SC 출고 현황_ROW_004",
+      "7. SC 출고 현황_ROW_005"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_ytd (Total)",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_ytd_farming",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_ytd_hunting",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪4. sales_ytd_referral",
+    "used_in": [],
+    "related_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ]
+  },
+  {
+    "measure_name": "▪7. main_funnel_(mtd_target)_scActSalesTarget",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪7. main_funnel_(mtd_target)_scTotalSalesTarget",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪7. targetMulti_funnel_(mtd_target_preOp)",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪@cust_consult_dt",
+    "used_in": [
+      "5-1. 고객 관리 (칩)_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪@cust_td_dt",
+    "used_in": [
+      "5-1. 고객 관리 (칩)_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪@cust_td_dt_filter",
+    "used_in": [
+      "5-1. 고객 관리 (칩)_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪HOT 영업기회 : 2. lead_mtd_(hot)_coalesce",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_005",
+      "2-3. 출고 현황_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪LM : 4. sales_mtd_(lm)_class",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪MTD : 4. sales_mtd_class",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪NPS : nps_avg(3m)",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_005",
+      "2-3. 출고 현황_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪PMA IN : 4. sales_ytd_pmaIn",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪PMA IN 비율 : 4. sales_ytd_(ratio_pmaIn",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪PMA OUT : 4. sales_ytd_pmaOut",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪PMA OUT 비율 : 4. sales_ytd_(ratio_pmaOut",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪SC : 4. sales_period_monthly_avg_scSelected",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪YTD : 4. sales_ytd_class",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪_test",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": [
+      "7. SC 출고 현황_ROW_004"
+    ]
+  },
+  {
+    "measure_name": "▪cust_latest_act_dt(최근 활동일자)",
+    "used_in": [
+      "5-2. 영업기회 목록_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪etc. target_save_yn_conditional",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪interest_variant_first(관심 차종)",
+    "used_in": [
+      "5-2. 영업기회 목록_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪no. : sc_numbering",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪sales_actual",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_004",
+      "2-3. 출고 현황_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪td_req_dt(시승요청일)",
+    "used_in": [
+      "5-2. 영업기회 목록_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪testdrive_dt(시승일)",
+    "used_in": [
+      "5-2. 영업기회 목록_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪user_cnt_scGroup",
+    "used_in": [
+      "7. SC 출고 현황_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪visit_type(접수 유형)",
+    "used_in": [
+      "5-2. 영업기회 목록_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪고객 수 : cust_cnt",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_005",
+      "2-3. 출고 현황_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪기회 창출 영업기회 평균(3개월) : 2. lead_mtd_(avg3m)_coalesce",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_005",
+      "2-3. 출고 현황_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪누적취소율 : 4. sales_period_(canceled_ratio)_scSelected",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪매트릭스 표시 대상 SC 필터 : flag_save_yn",
+    "used_in": [],
+    "related_in": [
+      "4.  목표 관리_ROW_004"
+    ]
+  },
+  {
+    "measure_name": "▪연누적 출고 : 4. sales_ytd",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪연누적 출고4. sales_ytd",
+    "used_in": [
+      "7. SC 출고 현황_ROW_006",
+      "7. SC 출고 현황_ROW_007"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪월평균 출고 : 4. sales_period_monthly_avg_scSelected",
+    "used_in": [
+      "7. SC 출고 현황_ROW_005"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪전체 영업기회 : 2. lead_mtd_coalesce",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_005",
+      "2-3. 출고 현황_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "▪활동목표 : 1. act_mtd_(target)_preOp",
+    "used_in": [
+      "4.  목표 관리_ROW_004"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "실적 : 1. act_mtd_(ac)_preOp",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_009"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "평균활동 추세 : 1. act_mtd_(avg6m)",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_008"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "활동 타겟 수 : 1. act_mtd_(target)_preOp",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_007"
+    ],
+    "related_in": []
+  },
+  {
+    "measure_name": "활동수 : 1. act_mtd_(ac)_preOp",
+    "used_in": [
+      "2-2. 활동 트렌드_ROW_006"
+    ],
+    "related_in": []
+  }
+]

@@ -1,0 +1,154 @@
+# Registered Join Catalog
+# SQL Compiler는 이 목록에 없는 join path를 컴파일하지 않는다(P8 SQL Safety 원칙).
+# from/to의 컬럼명은 실제 스키마 표기(schema/tables/*.yaml 존재 시 그 표기 우선, 없으면
+# ontology/relationships.yaml의 관찰값 채택).
+
+joins:
+  - join_id: sc_to_dealer
+    from: {table: DIM_MNG_USER, column: dealer_key}
+    to: {table: DIM_MNG_DEALER, column: dealer_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_1_1_001]
+
+  - join_id: activity_to_sc
+    from: {table: FCT_ACTIVITY_v2, column: sc_key}
+    to: {table: DIM_MNG_USER, column: sc_key}
+    kind: INNER
+    fanout_risk: low
+    source_evidence: [gold_1_1_001]
+
+  - join_id: activity_to_type
+    from: {table: FCT_ACTIVITY_v2, column: tp_key}
+    to: {table: DIM_CRM_ACT_TYPE, column: tp_key}
+    kind: INNER
+    fanout_risk: low
+    source_evidence: [gold_1_1_001]
+
+  - join_id: type_to_type_order
+    from: {table: DIM_CRM_ACT_TYPE, column: common_tp_nm}
+    to: {table: DIM_CRM_ACT_TYPE_ORDER, column: common_tp_nm}
+    kind: INNER
+    fanout_risk: medium
+    fanout_note: "자연키 텍스트 조인 — ontology/relationships.yaml의 activity_type_rolls_up_to_taxonomy risk 참고"
+    source_evidence: [gold_1_1_001]
+
+  - join_id: lead_to_type
+    from: {table: FCT_LEAD, column: tp_key}
+    to: {table: DIM_CRM_ACT_TYPE, column: tp_key}
+    kind: INNER
+    fanout_risk: low
+    source_evidence: [{sql_id: gold_1_2_025, note: "lead_actual CTE: l.tp_key = lct.tp_key"}]
+
+  - join_id: lead_to_sc
+    from: {table: FCT_LEAD, column: cl_sc_key}
+    to: {table: DIM_MNG_USER, column: sc_key}
+    kind: INNER
+    fanout_risk: low
+    source_evidence: [gold_1_2_025]
+
+  - join_id: contract_to_sc
+    from: {table: FCT_CONTRACT_KTWS, column: cn_sc_key}
+    to: {table: DIM_MNG_USER, column: sc_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_2_1_046]
+
+  - join_id: contract_to_lead
+    from: {table: FCT_CONTRACT_KTWS, column: lead_key}
+    to: {table: FCT_LEAD, column: lead_key}
+    kind: EXISTS_SUBQUERY
+    fanout_risk: high
+    fanout_note: >
+      단순 JOIN이 아니라 EXISTS 서브쿼리(cn_sc_key=cl_sc_key 및 유형 일치 추가 조건 포함) —
+      일반 JOIN으로 대체하면 리드 1건에 계약 여러 건이 걸릴 때 팬아웃 발생. 컴파일러는
+      이 join_id를 절대 plain INNER/LEFT JOIN으로 강등해서는 안 됨.
+    source_evidence: [gold_1_2_025]
+
+  - join_id: contract_to_vehicle_spec
+    from: {table: FCT_CONTRACT_KTWS, column: cn_vehic_key}
+    to: {table: DIM_VEHIC_SPEC, column: spec_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_2_1_046]
+
+  - join_id: vehicle_spec_to_variant
+    from: {table: DIM_VEHIC_SPEC, column: var_key}
+    to: {table: DIM_VEHIC_SPEC_VAR, column: var_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_2_1_046]
+
+  - join_id: vehicle_variant_to_model
+    from: {table: DIM_VEHIC_SPEC_VAR, column: model_key}
+    to: {table: DIM_VEHIC_SPEC_MDL, column: mdl_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_2_1_046]
+
+  - join_id: contract_to_sales_type
+    from: {table: FCT_CONTRACT_KTWS, column: sales_tp_key}
+    to: {table: DIM_REPURC_SALES_TYPE, column: sales_tp_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_2_1_046]
+
+  - join_id: monthly_target_to_type
+    from: {table: FCT_CRM_TARGET_M, column: tp_key}
+    to: {table: DIM_CRM_ACT_TYPE, column: tp_key}
+    kind: INNER
+    fanout_risk: low
+    source_evidence: [{sql_id: gold_1_2_025, note: "lead_target CTE: f.tp_key = t.tp_key"}]
+
+  - join_id: daily_target_to_type
+    from: {table: FCT_CRM_TARGET_D, column: type_cd}
+    to: {table: DIM_CRM_ACT_TYPE, column: tp_key}
+    kind: INNER
+    fanout_risk: low
+    source_evidence: [gold_1_1_002]
+
+  - join_id: monthly_target_to_sc
+    from: {table: FCT_CRM_TARGET_M, column: sc_key}
+    to: {table: DIM_MNG_USER, column: sc_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_1_1_007]
+
+  - join_id: daily_target_to_sc
+    from: {table: FCT_CRM_TARGET_D, column: sc_key}
+    to: {table: DIM_MNG_USER, column: sc_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [gold_1_1_002]
+
+  - join_id: fact_to_calendar
+    from: {table: "<fact-specific date column, see time_semantics.yaml>", column: null}
+    to: {table: DIM_CALENDAR_KTWS, column: Date}
+    kind: INNER
+    fanout_risk: low
+    note: "팩트별로 실제 조인 컬럼이 다름(act_dt_fr / contract_dt / monthly_dt / daily_dt / lead_reg_dt) — time_semantics.yaml의 metric별 time_dimension 매핑을 따른다"
+    source_evidence: [gold_2_1_046]
+
+  - join_id: sales_target_daily_to_dealer
+    from: {table: FCT_SALES_TARGET_DAILY, column: dealer_key}
+    to: {table: DIM_MNG_DEALER, column: dealer_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [{note: "schema/tables/FCT_SALES_TARGET_DAILY.yaml FK; 실측 DAX cntrct_mtd_(target)_dealer/sales_mtd_(target)_dealer가 이 테이블 기준"}]
+
+  - join_id: sales_target_daily_to_model
+    from: {table: FCT_SALES_TARGET_DAILY, column: model_key}
+    to: {table: DIM_VEHIC_SPEC_MDL, column: mdl_key}
+    kind: LEFT
+    fanout_risk: low
+    source_evidence: [{note: "schema/tables/FCT_SALES_TARGET_DAILY.yaml FK"}]
+
+unresolved_joins:
+  - candidate: "FCT_MNG_CUST_LIST ↔ Lead/Contract"
+    reason: unresolved
+  - candidate: "FCT_HBOARD_MEETING ↔ SalesConsultant"
+    reason: unresolved
+  - candidate: "FCT_SC_GROUP_RULE ↔ DIM_MNG_USER"
+    reason: unresolved
+  - candidate: "FCT_NPS ↔ Customer/Contract"
+    reason: unresolved

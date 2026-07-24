@@ -1,0 +1,204 @@
+# Registered Business Rule Filters
+# 근거: agentic_bi_design/inventory/sql_metadata.json business_rules[] 자동 추출
+# (RULE_SIGNATURES 정규식 매칭, agentic_bi_design/scripts/parse_gold_sql.py) +
+# 67개 쿼리 전수 스캔한 출현 빈도.
+#
+# 이 rule_id들은 이번 세션에서 새로 만든 것이 아니라, 기존 server/rag-poc/knowledgeBase/
+# sqlFragments.js의 business_rule_ids 명명 규칙(br_dealer_scope, br_active_staff,
+# br_exclude_front_sc 등)을 그대로 계승했다 — 새 Semantic Layer와 기존 RAG 파이프라인이
+# 같은 규칙 어휘를 공유하게 하기 위함(마이그레이션 시 재작성 비용을 줄임).
+
+filters:
+  - rule_id: br_exclude_front_sc
+    description: 창구SC(facade_sc_yn = '창구SC') 제외
+    sql_fragment: "(DIM_MNG_USER.facade_sc_yn IS NULL OR DIM_MNG_USER.facade_sc_yn <> N'창구SC')"
+    applies_to_entity: SalesConsultant
+    scope: global_default
+    occurrence_count: 65
+    occurrence_ratio: "65/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_exclude_staff_names
+    description: 특정 이름(고객지원팀/TOYOTA YM — 시스템·공용 계정) 제외
+    sql_fragment: "(DIM_MNG_USER.name IS NULL OR DIM_MNG_USER.name NOT IN (N'고객지원팀', N'TOYOTA YM'))"
+    applies_to_entity: SalesConsultant
+    scope: global_default
+    occurrence_count: 65
+    occurrence_ratio: "65/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_exclude_test_users
+    description: 테스트/내부 계정 user_id 하드코딩 제외 목록
+    sql_fragment: "DIM_MNG_USER.user_id NOT IN ('DM5103','DM9999','JB30007','JB30016','KMKS176','KMKS999','JB30067')"
+    applies_to_entity: SalesConsultant
+    scope: global_default
+    occurrence_count: 65
+    occurrence_ratio: "65/67"
+    source_evidence: [sql_metadata.json]
+    risk: "하드코딩된 리스트 — 신규 테스트 계정이 생기면 GOLD 쿼리를 일일이 찾아 고쳐야 함. Semantic Layer에서는 이 리스트를 단 한 곳(이 filter 정의)에만 두고 컴파일러가 모든 metric에 주입해야 갱신 비용이 사라진다."
+
+  - rule_id: br_active_staff
+    description: 재직/퇴직(active_yn) 슬라이서 필터
+    sql_fragment: "(@ActiveYn IS NULL OR DIM_MNG_USER.active_yn = @ActiveYn)"
+    applies_to_entity: SalesConsultant
+    scope: user_selectable_slicer
+    occurrence_count: 62
+    occurrence_ratio: "62/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_tp_grp_scope
+    description: 활동 대분류(tp_grp_1 IN 관계형성/기회창출 등) 필터 — 퍼널 지표 전용
+    sql_fragment: "DIM_CRM_ACT_TYPE.tp_grp_1 IN (N'관계형성', N'기회창출')"
+    applies_to_entity: ActivityTypeTaxonomy
+    scope: metric_specific
+    occurrence_count: 45
+    occurrence_ratio: "45/67"
+    source_evidence: [sql_metadata.json]
+    note: "고정값처럼 보이지만 실제로는 DECLARE @CONST_TP_GRP 변수로 선언된 쿼리도 있음 — 완전한 상수가 아니라 파라미터화 가능한 필터로 등록"
+
+  - rule_id: br_qualified_lead_def
+    description: "유효 리드 정의: close_dt가 월말 이후 OR NULL(오픈 유지) OR last_retail_sales_dt 존재(매출전환)"
+    sql_fragment: "(FCT_LEAD.close_dt > @MonthEnd OR FCT_LEAD.close_dt IS NULL OR FCT_LEAD.last_retail_sales_dt IS NOT NULL)"
+    applies_to_entity: Lead
+    scope: metric_specific
+    occurrence_count: 26
+    occurrence_ratio: "26/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_act_result_exclusion
+    description: 부재중(act_result) 활동 제외
+    sql_fragment: "(FCT_ACTIVITY_v2.act_result IS NULL OR FCT_ACTIVITY_v2.act_result <> N'부재중')"
+    applies_to_entity: Activity
+    scope: metric_specific
+    occurrence_count: 23
+    occurrence_ratio: "23/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_mtd_asof_cap
+    description: MTD 상한일(AsOfDate 또는 오늘) 캡 — 진행 중인 달을 오늘까지만 집계
+    sql_fragment: "(@AsOfDate IS NULL OR DIM_CALENDAR_KTWS.[Date] <= @AsOfDate)"
+    compiler_note: >
+      원본 GOLD 쿼리는 DIM_CALENDAR_KTWS를 조인해 이 조건을 건다. app/semantic/compiler.js
+      v1은 캘린더 조인 없이 metric.time_dimension(팩트 자체의 날짜 컬럼)에 직접
+      BETWEEN을 걸어 같은 효과(as-of 캡)를 이미 얻으므로, 이 rule_id는 metrics/*.yaml의
+      required_filters에 넣지 않는다(중복 컴파일 방지) — 캘린더 조인이 실제로 필요한
+      Controlled Analysis SQL 경로(워킹데이 등)에서만 이 정의를 그대로 쓴다.
+    applies_to_entity: WorkingDay
+    scope: time_semantics
+    occurrence_count: 13
+    occurrence_ratio: "13/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_contract_cancel_exclusion
+    description: "유효 계약 정의: cancel_dt IS NULL"
+    sql_fragment: "FCT_CONTRACT_KTWS.cancel_dt IS NULL"
+    applies_to_entity: Contract
+    scope: metric_specific
+    occurrence_count: 12
+    occurrence_ratio: "12/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_contract_cancel_inclusion_flag
+    description: 취소 건수 자체를 집계할 때는 반대로 cancel_dt IS NOT NULL 사용
+    sql_fragment: "FCT_CONTRACT_KTWS.cancel_dt IS NOT NULL"
+    applies_to_entity: Contract
+    scope: metric_specific
+    occurrence_count: 3
+    occurrence_ratio: "3/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_contract_cancel_exclusion_ytd
+    description: >
+      YTD 계약 실적의 유효 계약 정의는 MTD(cancel_dt IS NULL)보다 관대하다 — "이번 리포트
+      기준월 말일 이후에 취소된 건은 그래도 실적으로 인정"하는 유예 규칙이 있다.
+    sql_fragment: "(FCT_CONTRACT_KTWS.cancel_dt IS NULL OR FCT_CONTRACT_KTWS.cancel_dt > EOMONTH(CAST(GETDATE() AS DATE)))"
+    applies_to_entity: Contract
+    scope: metric_specific
+    occurrence_count: 0
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_ytd_(ac)' DAX 실측(2026-07-24) — GOLD SQL 문서(gold_2_1_046)엔 이 유예 규칙이 없어 실제 BI와 달랐던 지점"}]
+    compiler_note: "EOMONTH(GETDATE())는 '오늘' 기준 — mtd/ytd처럼 오늘 기준 상대 기간 질의에는 맞지만, 과거 특정 연월을 지정한 absolute 질의에는 부정확할 수 있음(알려진 단순화)."
+
+  - rule_id: br_delivery_cancel_exclusion_mtd
+    description: "MTD 출고 실적의 유효 출고 정의 — 취소일이 출고일(last_retail_sales_dt) 이후 월이면 그래도 실적으로 인정."
+    sql_fragment: "(FCT_CONTRACT_KTWS.cancel_dt IS NULL OR FCT_CONTRACT_KTWS.cancel_dt > EOMONTH(FCT_CONTRACT_KTWS.last_retail_sales_dt))"
+    applies_to_entity: Contract
+    scope: metric_specific
+    occurrence_count: 0
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_mtd' DAX 실측(2026-07-24)"}]
+
+  - rule_id: br_delivery_cancel_exclusion_ytd
+    description: "YTD 출고 실적의 유효 출고 정의 — 오늘 기준 유예."
+    sql_fragment: "(FCT_CONTRACT_KTWS.cancel_dt IS NULL OR FCT_CONTRACT_KTWS.cancel_dt > EOMONTH(CAST(GETDATE() AS DATE)))"
+    applies_to_entity: Contract
+    scope: metric_specific
+    occurrence_count: 0
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_ytd'/'4. sales_ytd_pmaIn'/'4. sales_ytd_pmaOut' DAX 실측(2026-07-24) — pmaIn/Out 원본은 EOMONTH(...,-1) 오프셋을 쓰지만 sales_ytd 본체(0 오프셋)와의 사소한 불일치로 보고, 표준 실적 정의(sales_ytd)를 기준으로 통일함"}]
+    compiler_note: "EOMONTH(GETDATE())는 '오늘' 기준 — mtd/ytd 상대 기간 질의에만 정확, absolute 질의엔 알려진 단순화."
+
+  - rule_id: br_dealer_scope
+    description: 딜러명 NULL/빈값 제외 (유효 딜러만 대상)
+    sql_fragment: "DIM_MNG_DEALER.dealer_nm IS NOT NULL AND LTRIM(RTRIM(DIM_MNG_DEALER.dealer_nm)) <> N''"
+    applies_to_entity: Dealer
+    scope: global_default
+    occurrence_count: 9
+    occurrence_ratio: "9/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_common_tp_scope
+    description: 활동유형을 '계약'으로 한정 — 계약 목표 소계(유형 무시) 레벨 계산 시 사용
+    sql_fragment: "DIM_CRM_ACT_TYPE.common_tp_nm = N'계약'"
+    applies_to_entity: ActivityTypeTaxonomy
+    scope: metric_specific
+    occurrence_count: 8
+    occurrence_ratio: "8/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_working_day_def
+    description: 공휴일(kr_holiday) 제외 워킹데이 정의
+    sql_fragment: "DIM_CALENDAR_KTWS.kr_holiday = N'0'"
+    applies_to_entity: WorkingDay
+    scope: metric_specific
+    occurrence_count: 5
+    occurrence_ratio: "5/67"
+    source_evidence: [sql_metadata.json]
+
+  - rule_id: br_pma_three_way
+    description: "PMA IN/OUT/etc 3-way 분류 — Y=IN, N=OUT, 그 외=etc. 2-way(<>'N')로 축약 금지"
+    sql_fragment: null
+    compiler_note: >
+      이 rule_id는 원칙 문서일 뿐 컴파일러가 그대로 주입 가능한 SQL 조각이 아니다
+      (metric마다 pma_yn = 'Y'/'N'/'etc' 중 어느 값을 쓸지가 다르므로 파라미터화 불가).
+      실제 강제는 metric 정의 쪽에서 한다: delivery_ytd_pma_in/out의 metric_filter가
+      각각 pma_yn='Y'/'N'을 명시하고, 리뷰 시 "혹시 <>'N' 2-way로 축약되지 않았는지"를
+      체크리스트로 확인하는 용도로 이 rule_id를 남겨둔다. required_filters에는 넣지 말 것
+      (넣으면 sql_fragment=null이 그대로 WHERE절에 들어가 컴파일 에러가 남).
+    applies_to_entity: Delivery
+    scope: metric_specific
+    occurrence_count: 0
+    occurrence_ratio: "0/67 (GOLD SQL 미포함 — 기존 DAX 측정값에서만 발견된 결함, 이번 워크북 GOLD 쿼리에는 PMA 분기 쿼리가 없음)"
+    source_evidence: [{note: "이전 세션 DMV 조사 결과, business_vocabulary.yaml의 pma_in_out 항목 참고"}]
+    status: verified_bug_not_yet_in_gold_query
+
+  - rule_id: br_contract_tp_nm_scope
+    description: "SC 레벨 계약 목표 필터 — common_tp_nm이 아니라 tp_nm='계약' 사용(YTD SC 타겟 DAX가 이 컬럼을 씀)"
+    sql_fragment: "DIM_CRM_ACT_TYPE.tp_nm = N'계약'"
+    applies_to_entity: ActivityTypeTaxonomy
+    scope: metric_specific
+    occurrence_count: 0
+    source_evidence: [{note: "Power BI 라이브 측정값 '3. cntrct_ytd_(target)_sc' DAX 실측(2026-07-24)"}]
+
+  - rule_id: br_delivery_target_grp_scope
+    description: "SC 레벨 출고 목표 필터 — target_grp_nm='Main' AND tp_grp_1='판매목표 대수'"
+    sql_fragment: "DIM_CRM_ACT_TYPE.target_grp_nm = N'Main' AND DIM_CRM_ACT_TYPE.tp_grp_1 = N'판매목표 대수'"
+    applies_to_entity: ActivityTypeTaxonomy
+    scope: metric_specific
+    occurrence_count: 0
+    source_evidence: [{note: "Power BI 라이브 측정값 '4. sales_mtd_(target)_sc/coalesce' / '4. sales_ytd_(target)_sc_coaleasce' DAX 실측(2026-07-24)"}]
+
+global_default_filter_bundle:
+  # SalesConsultant를 조인 대상으로 갖는 모든 metric에 항상 적용해야 하는 최소 필터 집합
+  id: sc_scope_default
+  includes: [br_exclude_front_sc, br_exclude_staff_names, br_exclude_test_users, br_dealer_scope]
+  note: >
+    br_active_staff는 global_default가 아니라 slicer(사용자가 재직/퇴직을 선택)이므로
+    기본값은 "전체(NULL)", 강제 적용 대상이 아니다. 여기 4개만 항상 강제 적용한다.
