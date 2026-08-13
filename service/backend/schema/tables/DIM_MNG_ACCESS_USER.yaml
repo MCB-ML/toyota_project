@@ -1,0 +1,106 @@
+table: "DIM_MNG_ACCESS_USER"
+description: "Power BI 등 리포트의 권한관리(행 수준 보안) 필터에 사용하는 사용자-딜러 매핑 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "사용자ID(user_id) 단위의 권한관리 필터 정보."
+columns:
+  -
+    name: "user_id"
+    type: "varchar(100)"
+    description: "사용자ID. 이 테이블의 기준 키."
+  -
+    name: "sc_key"
+    type: "varchar(100)"
+    description: "SC키(user_id와 동일 값). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "name"
+    type: "varchar(100)"
+    description: "사용자명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "email"
+    type: "varchar(100)"
+    description: "권한관리계정(이메일). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "title"
+    type: "varchar(100)"
+    description: "직급. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "dealer_key"
+    type: "varchar(200)"
+    description: "딜러키. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "dealer_id"
+    type: "varchar(100)"
+    description: "딜러ID. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "dealer_nm"
+    type: "varchar(100)"
+    description: "딜러명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "ACCESS_CONTROL"
+    - "USER_DIMENSION"
+  keys:
+    primary:
+      - "user_id"
+dimensions:
+  - "user_id"
+  - "sc_key"
+  - "name"
+  - "email"
+  - "title"
+  - "dealer_key"
+  - "dealer_id"
+  - "dealer_nm"
+  - "BRAND"
+features:
+  -
+    name: "user_id"
+    synonyms:
+      - "사용자ID"
+  -
+    name: "sc_key"
+    synonyms:
+      - "SC키"
+  -
+    name: "name"
+    synonyms:
+      - "사용자명"
+  -
+    name: "email"
+    synonyms:
+      - "권한관리계정"
+  -
+    name: "title"
+    synonyms:
+      - "직급"
+  -
+    name: "dealer_key"
+    synonyms:
+      - "딜러키"
+  -
+    name: "dealer_id"
+    synonyms:
+      - "딜러ID"
+  -
+    name: "dealer_nm"
+    synonyms:
+      - "딜러명"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "user_id"
+    - "name"
+    - "title"
+    - "dealer_nm"

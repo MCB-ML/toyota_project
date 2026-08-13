@@ -1,0 +1,212 @@
+table: "DIM_MNG_USER"
+description: "SC(영업사원/서비스컨설턴트) 사용자 차원 테이블. 소속 지점/딜러/부서 정보를 포함한다."
+database: "KPI_W"
+schema: "ktws"
+grain: "SC키(sc_key) 단위의 사용자 정보."
+columns:
+  -
+    name: "sc_key"
+    type: "varchar(100)"
+    description: "SC키(user_id와 동일 값). 이 테이블의 기준 키이며, 대부분의 팩트 테이블이 sc_key로 이 테이블과 조인한다."
+  -
+    name: "user_id"
+    type: "varchar(100)"
+    description: "사용자ID(sc_key와 동일 값). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "name"
+    type: "varchar(100)"
+    description: "사용자명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "birth_dt"
+    type: "date"
+    description: "생년월일. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "age_grp"
+    type: "varchar(100)"
+    description: "연령대. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "work_start_dt"
+    type: "date"
+    description: "입사일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "profile_url"
+    type: "varchar(max)"
+    description: "프로필사진 URL."
+  -
+    name: "email"
+    type: "varchar(100)"
+    description: "이메일. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "title"
+    type: "varchar(100)"
+    description: "직급. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "dept_cd"
+    type: "varchar(100)"
+    description: "부서코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "dept_nm"
+    type: "varchar(100)"
+    description: "부서명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "group_id"
+    type: "varchar(100)"
+    description: "지점ID. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "group_name"
+    type: "varchar(100)"
+    description: "지점명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "dealer_key"
+    type: "varchar(200)"
+    description: "딜러키. DIM_MNG_DEALER와 조인할 때 사용한다."
+  -
+    name: "dealer_id"
+    type: "varchar(100)"
+    description: "딜러ID. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "dealer_nm"
+    type: "varchar(100)"
+    description: "딜러명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "active_yn"
+    type: "varchar(10)"
+    description: "재직 상태. 값은 '재직'/'퇴사' — Y/N이 아니다. 재직 중인 SC만 볼 때 = '재직'."
+  -
+    name: "facade_sc_yn"
+    type: "varchar(20)"
+    description: "창구SC 여부. 값 중 하나가 '창구SC'. 실적/활동 집계 시 창구SC는 관례적으로 제외한다(facade_sc_yn != '창구SC')."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "USER_DIMENSION"
+    - "SC_MASTER"
+  keys:
+    primary:
+      - "sc_key"
+    foreign:
+      -
+        column: "dealer_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_DEALER"
+          column: "dealer_key"
+        description: "딜러 상세 정보를 조회할 때 사용한다."
+filters:
+  -
+    column: "active_yn"
+    description: "재직 상태 ('재직'/'퇴사')"
+  -
+    column: "facade_sc_yn"
+    description: "창구SC 여부"
+dimensions:
+  - "sc_key"
+  - "user_id"
+  - "name"
+  - "birth_dt"
+  - "age_grp"
+  - "work_start_dt"
+  - "profile_url"
+  - "email"
+  - "title"
+  - "dept_cd"
+  - "dept_nm"
+  - "group_id"
+  - "group_name"
+  - "dealer_key"
+  - "dealer_id"
+  - "dealer_nm"
+  - "BRAND"
+features:
+  -
+    name: "sc_key"
+    synonyms:
+      - "SC키"
+  -
+    name: "user_id"
+    synonyms:
+      - "사용자ID"
+  -
+    name: "name"
+    synonyms:
+      - "사용자명"
+  -
+    name: "birth_dt"
+    synonyms:
+      - "생년월일"
+  -
+    name: "age_grp"
+    synonyms:
+      - "연령대"
+  -
+    name: "work_start_dt"
+    synonyms:
+      - "입사일자"
+  -
+    name: "profile_url"
+    synonyms:
+      - "프로필사진URL"
+  -
+    name: "email"
+    synonyms:
+      - "이메일"
+  -
+    name: "title"
+    synonyms:
+      - "직급"
+  -
+    name: "dept_cd"
+    synonyms:
+      - "부서코드"
+  -
+    name: "dept_nm"
+    synonyms:
+      - "부서명"
+  -
+    name: "group_id"
+    synonyms:
+      - "지점ID"
+  -
+    name: "group_name"
+    synonyms:
+      - "지점명"
+  -
+    name: "dealer_key"
+    synonyms:
+      - "딜러키"
+  -
+    name: "dealer_id"
+    synonyms:
+      - "딜러ID"
+  -
+    name: "dealer_nm"
+    synonyms:
+      - "딜러명"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+  -
+    name: "active_yn"
+    synonyms:
+      - "재직 상태"
+  -
+    name: "facade_sc_yn"
+    synonyms:
+      - "창구SC 여부"
+display:
+  default_columns:
+    - "sc_key"
+    - "name"
+    - "title"
+    - "dept_nm"
+    - "group_name"
+    - "dealer_nm"
+    - "active_yn"

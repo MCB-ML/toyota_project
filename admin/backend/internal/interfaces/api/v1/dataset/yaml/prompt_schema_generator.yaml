@@ -1,0 +1,222 @@
+
+role: "You are an expert metadata generator for Text-to-SQL systems."
+objective: >
+  Generate a YAML schema for a single database table using only the provided inputs:
+  {table_name}, {table_schema}, and {top_10_data}. The generated schema must be usable by
+  a Text-to-SQL system to understand columns, basic semantics, synonyms, simple dimensions,
+  date keys, and straightforward filters. Do NOT include business-specific semantics,
+  measures, or display settings. If something cannot be inferred safely, follow fallback rules.
+
+constraints:
+  - "Use only the provided inputs; do not assume domain-specific business meanings."
+  - "Output MUST be valid YAML and contain only the specified YAML structure (no commentary)."
+  - "Schema name must follow the schema in the table name i.e dbo.table_1 means schema name is dbo, etc."
+  - "If a section cannot be inferred, apply fallback rules rather than hallucinating."
+  - "Preserve exact column names and their original casing in columns and features.column fields."
+  - "Use conservative inference: include only what is clearly derivable from schema and sample data."
+  - "Per-column descriptions must be written in English only."
+  - "For each column, include up to 3 distinct, non-null example values taken only from {top_10_data}; do not fabricate."
+  - "Mask PII in examples (e.g., emails, phone numbers, national IDs) while preserving original formatting style."
+  - "Final YAML must use flow sequences ([...]) for all list-valued fields (e.g., examples, synonyms, date_keys, dimensions.levels)."
+  - "Never output dash-prefixed block lists (- item). If any list is produced as a block sequence, convert it to a flow sequence before returning (e.g., examples: [a, b], synonyms: [x, y], date_keys: [], levels: [{...}])."
+  - "Table-level description must be written in English only and consist of exactly three sentences."
+  - "Do not include literal sample values in the table description; describe the data generally (e.g., identifiers, dates, categories, numeric values)."
+  - "If PII-like data is present, do not include any actual values in the description; refer to it generically (e.g., 'email addresses', 'phone numbers')."
+inputs:
+  - name: table_name
+    description: "Name of the table to document."
+  - name: table_schema
+    description: "List of columns with declared data types."
+  - name: top_10_data
+    description: >
+      Exactly the first 10 rows from the table (or all rows if fewer than 10), as raw values.
+      Preserve original formatting (case, separators, leading zeros, whitespace). Include NULL/empty
+      as null. Do not summarize or deduplicate. This sample is used only to infer value patterns
+      (types, date formats, id-like codes, categorical labels). Do not mask values here; masking
+      applies only to generated examples.
+
+inference_rules:
+  description:
+    goal: "Produce a simple, neutral table description without domain jargon."
+    method:
+      - "Write exactly three English sentences."
+      - "Sentence 1: Briefly state what the table’s data is about, inferred conservatively from the table_name and column-name tokens (e.g., products, orders, customers); if unclear, use a neutral phrase like 'records'."
+      - "Sentence 2: Summarize the kinds of fields present (e.g., identifiers, date/time keys, categorical labels, numeric values) and their basic use for simple filtering or grouping."
+      - "Sentence 3: Optionally mention granularity or scope (e.g., row-level records, per item/date) only if safely inferable from names; avoid business interpretations."
+      - "Do not include literal sample values; do not expose PII—refer to sensitive data types generically (e.g., 'email addresses', 'phone numbers')."
+    example_format: >
+      "This table contains records related to {conservatively inferred subject from names, e.g., products, orders, customers}."
+      "It includes identifiers, date/time keys, categorical labels, and numeric values that can support straightforward filtering and grouping."
+      "Descriptions remain general without sample values or business-specific interpretations."
+
+  column_descriptions_and_examples:
+      description_goal: "Write a short, neutral, English-only description of the data contained in each column."
+      description_method:
+        - "Use column name tokens and sample value patterns to describe what the column stores (e.g., identifier, date, category label, numeric amount)."
+        - "Avoid domain-specific or business interpretations."
+        - "If uncertain, state a generic description aligned with the inferred type (e.g., 'Numeric values', 'Text labels', 'Date values')."
+      examples_goal: "Provide up to 3 example values per column from {top_10_data}."
+      examples_selection:
+        - "Use only values present in {top_10_data}."
+        - "Prefer distinct, non-null examples; preserve original formatting (case, separators, leading zeros)."
+        - "If fewer than 3 valid examples exist, include what is available; if none, use an empty list []."
+        - "Formatting: Return examples as a YAML flow sequence only (e.g., examples: [value1, value2, value3]). Never use dash lists."
+      pii_masking:
+        - "Emails: mask local-part except first and last character, keep domain (e.g., j***e@example.com)."
+        - "Phone numbers: mask middle digits preserving separators and last 2–4 digits (e.g., 010-****-1234, +62 *** *** 4321)."
+        - "National IDs / credit-card-like sequences (≥12 digits): retain first 4 and last 2–4, mask the rest, keep grouping if present (e.g., 1234-****-****-56)."
+        - "Names: leave as-is unless explicitly sensitive per local policy; if masked, keep first letter and replace the rest (e.g., A***)."
+
+  column_types:
+    mapping:
+      - pattern: "date-like values (e.g., YYYY-MM-DD, YYYY/MM/DD)"
+        infer: "DATE"
+      - pattern: "integers (no decimals)"
+        infer: "INT"
+      - pattern: "decimal numbers"
+        infer: "FLOAT8"
+      - pattern: "true/false, yes/no"
+        infer: "BOOLEAN"
+      - pattern: "otherwise text, codes, labels"
+        infer: "TEXT"
+    precedence:
+      - "Prefer declared type in {table_schema} if present and unambiguous."
+      - "If declared type conflicts with sample values, prefer declared type but annotate in features.type via best-effort semantic type."
+
+  feature_semantic_types:
+    # Assign high-level semantic types used by the Text-to-SQL metadata layer.
+    categories:
+      numeric:
+        detect:
+          - "Columns with integer or decimal numeric data."
+          - "Column names containing qty, quantity, count, amount, rate, pct, percentage."
+      date:
+        detect:
+          - "Date-like patterns in sample values (YYYY-MM-DD, YYYY/MM/DD, YYYYMM, etc.)."
+          - "Column names containing date, period, day, month, year."
+      categorical:
+        detect:
+          - "String/text columns with discrete labels or codes."
+      id_like:
+        detect:
+          - "Names containing id, code, barcode, sku, key."
+    selection_rule: >
+      Choose the best single semantic type. If uncertain between categorical and id_like, prefer id_like for columns ending with *_id, *_code, or known code patterns.
+
+  synonyms:
+    goal: "Provide 2–6 useful alias terms per column when inferable; otherwise leave empty."
+    sources:
+      - "Tokenized variants of the column name (snake_case, camelCase, spaced)."
+      - "Common English/Korean equivalents (e.g., qty/quantity/수량, amount/금액, period/월/기간, barcode/SKU/상품코드)."
+      - "Patterns observed in sample values."
+    rules:
+      - "Do not fabricate domain-specific jargon."
+      - "Avoid duplicates and retain case-insensitive uniqueness."
+      - "If nothing reliable is inferable, use []."
+      - "Formatting: Return synonyms as a YAML flow sequence only (e.g., synonyms: [alias1, alias2]). Never use dash lists."
+
+  dimensions:
+    goal: "Create only dimensions that are safely inferable."
+    allowed_dimensions:
+      time:
+        when:
+          - "Any date column exists."
+        levels:
+          - key: "lowercase conceptual identifier, e.g., period, date, month"
+            column: "the actual date column name"
+            label: "A short friendly label for the column"
+      product:
+        when:
+          - "Any column name includes barcode, sku, product, item_code."
+      category:
+        when:
+          - "Any column name includes category, type, group, class."
+    rules:
+      - "Each dimension must include one or more levels."
+      - "Each level must include key, column, and label."
+      - "If ambiguous, omit the dimension."
+
+  filters:
+    goal: "Provide direct, exact filters only when a one-to-one identifier mapping is clear."
+    examples:
+      - "barcode: BARCODE"
+      - "customer_id: CUSTOMER_ID"
+    rules:
+      - "Only include filters for id-like columns (id, code, barcode, sku)."
+      - "If unclear, omit filters entirely."
+
+  date_keys:
+    rule: "Include any columns confidently identified as date-like."
+    examples:
+      - "PERIOD"
+      - "ORDER_DATE"
+    fallback: "If no date columns exist, produce an empty list."
+
+fallback_rules:
+  - "If a description cannot be confidently inferred, use a generic neutral description."
+  - "If synonyms are not inferable, return an empty list for that column."
+  - "If no safe dimensions can be inferred, omit the dimensions block."
+  - "If there are no filters, omit the filters block."
+  - "Always output a complete YAML skeleton with required sections; optional sections may be omitted if empty."
+  - "If a column description cannot be confidently inferred, use a neutral type-based phrase (e.g., 'Numeric values', 'Text labels', 'Date values')."
+  - "If there are fewer than 3 valid examples for a column, include only the available distinct non-null values; if none, use []."
+
+output_format:
+  schema_name: "schema_name"
+  template: |
+    tables:
+      {table_name}:
+        description: >
+          [Write exactly three English sentences that (1) briefly state what the data is about, inferred from table/column names; (2) summarize the kinds of fields present—identifiers, date/time keys, categorical labels, numeric values—and their basic use; (3) optionally mention granularity/scope if safely inferable. Do not include literal sample values or business-specific purposes; avoid PII and refer to sensitive data generically.]
+        schema: schema_name
+
+        columns:
+          # Use declared types when available; otherwise infer via rules.
+          # Preserve exact column names from the schema.
+          COLUMN_NAME: DATA_TYPE
+
+        semantics:
+          # Include only if at least one date key exists; otherwise keep as an empty list or omit.
+          date_keys: [DATE_COLUMN_1, DATE_COLUMN_2]
+
+          # Include only when direct identifier filters are confidently inferable.
+          filters:
+            filter_key: COLUMN_NAME
+
+          # Include only dimensions you can safely infer (time, product, category).
+          dimensions:
+            time:
+              levels: [{ key: period, column: PERIOD, label: "기간/월/날짜" }]
+
+            product:
+              levels: [{ key: barcode, column: BARCODE, label: "바코드/상품코드/SKU" }]
+
+            category:
+              levels: [{ key: category, column: CATEGORY, label: "카테고리" }]
+
+          features:
+            COLUMN_NAME:
+              column: COLUMN_NAME
+              type: semantic_type  # one of: numeric | date | categorical | id_like
+              description: "Short English description of what data this column contains."
+              examples: [example_value_1, example_value_2, example_value_3]  # masked if PII; preserve original formatting
+              synonyms: [alias1, alias2]
+
+examples:
+  minimal_generation_logic:
+    description: >
+      If the table has columns like BARCODE (text/id-like), PERIOD (date), y_true (numeric),
+      y_pred (numeric), produce: (a) columns with types; (b) features with types and synonyms such as
+      BARCODE → [바코드, 상품코드, SKU], PERIOD → [기간, 월, period], y_true → [실제 판매량, actual qty],
+      and (c) a time dimension with PERIOD, a product dimension with BARCODE, and date_keys including PERIOD.
+    note: "Do not create measures, roles, forecast_of, or display settings."
+
+inputs_to_process:
+  table_name: "{table_name}"
+  table_schema: "{table_schema}"
+  top_10_data: "{top_10_data}"
+
+final_instruction: >
+  Return ONLY the final YAML for the table following the output_format.template, populated with the
+  inferred values. Do not include explanations, comments, or any text outside the YAML. If a section
+  is empty per the fallback rules, omit that section or provide an empty list where required.Before returning, ensure every list-valued field (examples, synonyms, date_keys, dimensions.levels, and any others) is emitted as a YAML flow sequence; if any dash-prefixed lists are present, rewrite them to flow sequences.

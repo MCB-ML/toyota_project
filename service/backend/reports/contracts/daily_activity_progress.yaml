@@ -1,0 +1,183 @@
+# [활동 일별 진행 현황] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "3-2. 활동 일별 진행 현황" 페이지의 최종 GOLD.
+# 다른 리포트들이 월 단위인 것과 달리 이건 **일 단위** grain이다 —
+# "오늘/특정일 활동이 얼마나 남았나"를 보는 화면이다.
+
+report_id: daily_activity_progress
+version: v1
+title: 활동 일별 진행 현황
+description: >
+  연×월×일 기준 활동목표·일일활동실적·일일잔여타겟을 브랜드/딜러/전시장/팀
+  (선택 시 SC)×활동유형분류×활동유형 레벨로 보여주는 일별 진행표.
+  월 단위 리포트로는 답할 수 없는 "특정 날짜의 활동 진행" 질문을 담당한다.
+
+sql_file: sql/daily_activity_progress.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 3-2. 활동 일별 진행 현황
+  value_name: 딜러별 / 전시장별 / 부서별 / SC별 / 영업유형별 활동 일별 진행현황
+  gold_column: 최종 GOLD 쿼리
+  original_length: 14786
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 11개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지.
+    - id: pad_null_guard
+      what: "NULL 가능한 pad 변수 11개에 CASE WHEN @X IS NULL THEN NULL ELSE ... END 추가"
+      why: >
+        Fabric에서 N',' + NULL + N',' 는 ',,' 가 되어 "NULL=전체"가 뒤집힌다.
+        상수 파생인 @excl_common_tpPad/@excl_tp_grpPad/@excl_deptPad/@excl_usersPad는
+        NULL이 될 수 없어 손대지 않았다.
+
+    - id: filter_trim_guard
+      what: "LIKE 패딩 필터의 컬럼 값을 LTRIM(RTRIM())으로 감쌈 (26곳)"
+      why: >
+        차원 이름에 끝 공백이 들어간 값이 있다(2026-08-03 실측: DIM_MNG_USER 기준
+        팀 7종/56명, SC 36종/36명, 전시장 1종/27명 — 총 44종 119명).
+        패턴이 N'%,토요타 동대문 ,%' 가 되어 사용자가 넘긴 ',토요타 동대문,' 과
+        매칭되지 않아 필터가 오류 없이 0건이 된다. NOT LIKE(제외 목록)도 같은 이유로
+        제외에 실패해 빠져야 할 행이 남는다.
+        숫자에서 만든 CAST(...) 표현식은 공백이 생길 수 없어 건드리지 않았다.
+        재현·정량화: notebook/05_차원이름_공백_진단.ipynb
+        주의: SQL Server의 = 비교는 끝 공백을 무시하므로 STRING_SPLIT 방식을 쓰는
+        funnel_full_structure는 애초에 영향이 없어 수정 대상이 아니다.
+      verified_on: 2026-08-03
+    - id: exclude_by_sc_name
+      what: "제외 목록을 dept_nm 뿐 아니라 DIM_MNG_USER.name 에도 적용(2곳)"
+      why: >
+        워크북 시트의 갱신본(2026-08-04 수령)에 들어온 조건이다. 원문 주석:
+        "BI와 동일하게 고객지원팀·TOYOTA YM을 제외하기 위해 dept_nm뿐 아니라
+        DIM_MNG_USER.name도 동일한 제외 목록으로 필터링. 예: dept_nm='영업팀',
+        name='고객지원팀'인 DTCUST도 제외."
+        실측(2026-08-04): name 이 제외 대상인데 dept_nm 은 다른 사용자가 3명 있다
+        (CRM팀/고객지원팀, 영업부공통/'TOYOTA YM ', 영업팀/고객지원팀).
+        이 조건이 없으면 그 3명의 활동이 BI와 달리 집계에 남는다.
+        원문과 달리 LTRIM(RTRIM())을 씌웠다 — 'TOYOTA YM '처럼 끝 공백이 있는 값이
+        있어 원문 그대로는 제외되지 않는다(filter_trim_guard 와 같은 이유).
+      verified_on: 2026-08-04
+sql_sha256: 8abaa0ab9d28d75c1c24f18423c51b6871549049347b66211f60e893704a94ca
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false   # 이 리포트는 합계 행을 만들지 않는다(라이브 확인: 875행 전부 상세)
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - name: year
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "연도. 다중 가능. 비우면 전체 연도."
+  - name: month
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "월. 다중 가능. 비우면 전체 월."
+  - name: day
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: >
+      일. 다중 가능(예: 15 또는 1,15). 비우면 그 달 전체 일자가 행으로 나온다.
+      이 리포트의 핵심 파라미터다 — 특정 날짜를 물으면 반드시 채울 것.
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[BRAND]
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: DIM_MNG_DEALER[dealer_nm]
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[group_name] 전시장
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[dept_nm] 팀
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: DIM_MNG_USER[active_yn]
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true
+    authorization_dimension: sales_consultant
+    description: >
+      NULL → SC 열 없음(팀 레벨). 'ALL' → SC 열 표시 + 전체 SC.
+      값 → SC 열 표시 + 해당 SC만.
+  - name: common_tp
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: 활동유형(common_tp_nm)
+  - name: tp_grp_1
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: >
+      활동유형분류(tp_grp_1). 비우면 전체.
+      원본이 '연락,판매목표 대수,활동기준 대수'는 상수로 제외하고 있다.
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: brand,             column: 브랜드 }
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: department,        column: 팀 }
+  - { id: sales_consultant,  column: SC }
+  - { id: activity_type,     column: 활동유형 }
+  - { id: activity_group,    column: 활동유형분류 }
+
+dimension_columns:
+  branch_a: ['연도', '월', '일', '브랜드', '딜러', '전시장', '팀', '활동유형분류', '활동유형']
+  branch_b: ['연도', '월', '일', '브랜드', '딜러', '전시장', '팀', 'SC', '활동유형분류', '활동유형']
+
+# 이 쿼리는 합계 행을 만들지 않는다 — 2026-04-15 실행 시 875행이 모두 상세였다.
+# 합계가 필요하면 활동목표/일일활동실적을 grain 단위로 합산하면 된다(둘 다 additive).
+total_row: null
+
+column_semantics:
+  '활동목표':     { type: additive, grain: row }
+  '일일활동실적': { type: additive, grain: row }
+  # GOLD 주석 그대로: 일일잔여타겟 = MAX(0, 목표 − 실적).
+  # 0으로 바닥이 잡혀 있어 **더하면 안 된다.** 실적이 목표를 넘긴 행이 0으로 잘리면서
+  # 음수 상쇄분이 사라져 합이 부풀려진다 — 2026-08-05 실측(2026-04-03 렉서스 강남 자사출고):
+  # 행별 합 161 vs 올바른 값 143(= 목표 339 − 실적 196).
+  # 롤업은 목표·실적을 각각 합산한 뒤 이 식을 다시 계산한다.
+  '일일잔여타겟':
+    type: derived_difference
+    minuend: '활동목표'
+    subtrahend: '일일활동실적'
+    floor: 0
+    direct_sum_forbidden: true
+    correct_aggregation: MAX(0, SUM(활동목표) - SUM(일일활동실적))
+
+format:
+  integer: ['활동목표', '일일활동실적', '일일잔여타겟']
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

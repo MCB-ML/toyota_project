@@ -1,0 +1,221 @@
+# [SC 카드 · 월별] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "2-3. 출고 현황" NO=6 (J9 셀)의 최종 GOLD v1.
+# BI 2-3 화면 왼쪽 프로필/판매진행률/요약 카드가 이 쿼리다.
+#
+# 이 리포트가 없을 때 챗봇은 "고객수·HOT영업기회·NPS·근속년수는 등록된 지표가
+# 아닙니다"라고 거절했다(2026-08-04 평가표 No.34·35). BI 화면에는 보이는데
+# 답하지 못하는 상태였다.
+
+report_id: sc_card_monthly
+version: v1
+title: SC 카드 · 월별 (프로필 · 판매 진행률 · 고객/영업기회/NPS 요약)
+description: >
+  연×월 기준으로 SC(또는 팀) 단위의 프로필(근속년수·나이·SC인원),
+  계약/출고 진행률, 그리고 고객수·HOT영업기회·전체영업기회·기회창출 3개월평균·NPS를
+  한 행에 모아 보여준다. BI "2-3. 출고 현황" 왼쪽 카드 영역과 같은 값이다.
+
+sql_file: sql/sc_card_monthly.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 2-3. 출고 현황
+  no: 6
+  gold_column: 최종 GOLD 쿼리 v1
+  # 이 카드는 BI 두 페이지가 함께 쓴다 — "2-2. 활동 트렌드"와 "2-3. 출고 현황"의
+  # 왼쪽 패널이 같은 화면이다(2026-08-04 두 화면 대조: 고객수 1,825 / HOT 10 / 전체 114 /
+  # 3개월평균 63 / NPS 10.0 / 계약 71% / 출고 87% 모두 동일).
+  # 워크북에도 같은 쿼리가 두 곳에 실려 있다: 2-3 시트 J9, 2-2 시트 H5.
+  also_used_by:
+    - sheet: 2-2. 활동 트렌드
+      cell: H5
+  bi_pages: ['2-2. 활동 트렌드', '2-3. 출고 현황']
+  # 다른 리포트는 우리가 LIKE 패딩에 LTRIM(RTRIM())을 덧씌워 filter_trim_guard 편차로
+  # 남겼는데, 이 GOLD는 원문이 이미 감싸고 있다(헤더에도 "속성 비교는 LTRIM(RTRIM())으로
+  # 공백 변형 방지"라고 적혀 있다). 우리가 바꾼 게 없으므로 편차가 아니다.
+  trim_guard: original
+  deviations:
+    - id: print_removed
+      what: "선두의 실행 버전 확인용 PRINT 문 제거"
+      why: >
+        드라이버는 결과셋만 받는다. PRINT는 메시지 스트림으로 나가 결과에 영향이 없지만,
+        SELECT/WITH로 시작하지 않는 본문이 되어 실행 가드에 걸린다.
+    - id: parameters_bound
+      what: "파라미터 DECLARE 8개 제거 (@year·@month·@brand·@dealer_nm·@group_name·@dept_nm·@active_yn·@sc_name)"
+      why: >
+        드라이버 바인딩으로 대체 — 문자열 치환 금지. 파생 변수(@today·@*Pad)와
+        제외 상수(@exclude_facade·@exclude_dept·@exclude_users)는 원문 그대로 둔다.
+    - id: pad_null_guard
+      what: "NULL 가능한 pad 변수 6개에 CASE WHEN @X IS NULL THEN NULL ELSE ... END 추가"
+      why: >
+        Fabric에서 N',' + NULL + N',' 는 ',,' 가 되어 "비우면 전체"가 "결과 없음"으로
+        뒤집힌다. 상수 파생인 @excl_deptPad·@excl_usersPad는 NULL이 될 수 없어 손대지 않았다.
+      verified_on: 2026-08-04
+
+sql_sha256: 5337e4d059bee80e725a1f2a8c04f67ad11ea2a7a8c0363eb38f7cc1f89c2578
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false      # 이 쿼리에는 합계 행이 없다
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  # @year·@month는 LIKE 패딩이 아니라 INT 스칼라 비교(YEAR(x.d) = @year)다 —
+  # 다른 리포트처럼 콤마 다중을 넘기면 안 된다.
+  - name: year
+    sql_type: int
+    nullable: true
+    multi_value: false
+    description: "연도(예: 2026). 비우면 계약·출고가 있는 모든 연도."
+  - name: month
+    sql_type: int
+    nullable: true
+    multi_value: false
+    description: "월 1~12. 비우면 모든 월."
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[BRAND]
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: DIM_MNG_DEALER[dealer_nm] 딜러
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[group_name] 전시장
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[dept_nm] 팀
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: DIM_MNG_USER[active_yn]
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true
+    authorization_dimension: sales_consultant
+    description: >
+      NULL이면 SC 열 없이 팀 레벨(프로필 대신 SC인원), 'ALL'이면 전체 SC,
+      값을 주면 해당 SC만. 출력 컬럼 구성 자체가 달라진다.
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: brand,             column: 브랜드 }
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: department,        column: 팀 }
+  - { id: sales_consultant,  column: SC }
+
+dimension_columns:
+  branch_a: ['연도', '월', '브랜드', '딜러', '전시장', '팀']
+  branch_b: ['연도', '월', '브랜드', '딜러', '전시장', '팀', 'SC', '소속팀']
+
+total_row: null
+
+# 질문에 쓰이는 말 → 표시 컬럼. LLM이 selected_columns를 비워 보낼 때만 쓴다.
+#
+# 이 리포트는 20열을 낸다(프로필·계약·출고·고객·NPS). 다 내보내면 묻지 않은 지표가
+# 답에 섞이고, LLM이 좁힐 때와 답이 갈린다 — 2026-08-10 실측(평가 No.28): 같은 질문에
+# 9열과 20열이 번갈아 나왔다. 계약과 출고가 나란히 있어 어느 쪽을 물었는지가 특히 중요하다.
+column_aliases:
+  '출고': ['출고 건수', '출고건수', '출고 실적']
+  '출고목표': ['출고 목표', '출고목표']
+  '출고진행률': ['출고 진행률', '출고 달성률']
+  '계약': ['계약 건수', '계약건수', '계약 실적']
+  '계약목표': ['계약 목표', '계약목표']
+  '계약진행률': ['계약 진행률', '계약 달성률']
+  '근속년수': ['근속년수', '근속 연수']
+  '고객수': ['고객수', '고객 수']
+  'HOT영업기회': ['HOT영업기회', 'HOT 영업기회']
+  '전체영업기회': ['전체영업기회', '전체 영업기회']
+  'NPS': ['NPS']
+
+column_semantics:
+  # ── 분기 A 전용 ──────────────────────────────────────────────────────────
+  'SC인원':
+    type: distinct_count
+    grain: ['브랜드', '딜러', '전시장', '팀']
+    direct_sum_forbidden: true
+    note: >
+      팀 단위 COUNT(DISTINCT sc_key)다. 연×월과 무관하게 같은 값이 매월 반복된다
+      (team_dim CTE에 기간 조건이 없다) — 월을 접어 더하면 개월 수만큼 부풀려진다.
+
+  # ── 분기 B 전용 (프로필) ─────────────────────────────────────────────────
+  # 오늘(GETDATE) 기준으로 계산되므로 과거 월 행에도 현재 값이 들어간다.
+  # 즉 "2026년 1월의 근속년수"가 아니라 "지금 근속년수"다.
+  '근속년수':
+    type: repeated_higher_grain_value
+    grain_branch_b: ['SC']
+    direct_sum_forbidden: true
+    correct_aggregation: SC 단위로 중복 제거 후 평균(합산은 의미 없음)
+    note: 오늘 기준 만 근속. work_start_dt가 없으면 0.
+  '나이':
+    type: repeated_higher_grain_value
+    grain_branch_b: ['SC']
+    direct_sum_forbidden: true
+    correct_aggregation: SC 단위로 중복 제거 후 평균
+    note: 오늘 기준 연도차. birth_dt가 없으면 NULL.
+
+  # ── 판매 진행률 ──────────────────────────────────────────────────────────
+  '계약':     { type: additive, grain: row }
+  '계약목표': { type: additive, grain: row }
+  '계약진행률': { type: ratio, numerator: '계약', denominator: '계약목표', direct_average_forbidden: true, recompute_ratio: true, zero_denominator_result: 0, ratio_basis: target }
+  '출고':     { type: additive, grain: row }
+  '출고목표': { type: additive, grain: row }
+  '출고진행률': { type: ratio, numerator: '출고', denominator: '출고목표', direct_average_forbidden: true, recompute_ratio: true, zero_denominator_result: 0, ratio_basis: target }
+
+  # ── 요약 ─────────────────────────────────────────────────────────────────
+  '고객수':
+    type: repeated_higher_grain_value
+    grain_branch_a: ['브랜드', '딜러', '전시장', '팀']
+    grain_branch_b: ['SC']
+    direct_sum_forbidden: true
+    correct_aggregation: 조직 grain 단위로 중복 제거 후 합산
+    note: >
+      cust CTE에 기간 조건이 없다 — 시점 무관 전체 고객수이며 매월 같은 값이 반복된다.
+      월을 축으로 더하면 개월 수만큼 부풀려진다.
+
+  'HOT영업기회':   { type: additive, grain: row }
+  '전체영업기회':  { type: additive, grain: row }
+
+  '기회창출영업기회_3개월평균':
+    type: additive
+    grain: row
+    note: >
+      (당월+전월+전전월)/3 이라 조직 축으로는 더해도 된다(각 그룹 평균의 합 = 전체 평균).
+      다만 월 축으로 더하면 같은 달이 여러 번 세어져 의미가 없다.
+
+  'NPS':
+    type: opaque_ratio      # 응답 수가 출력에 없어 재계산이 불가능하다
+    direct_sum_forbidden: true
+    direct_average_forbidden: true
+    recompute_ratio: false
+    note: >
+      기준월을 제외한 직전 3개월 응답의 AVG(promoter_score)다. 분모(응답 수)가 출력에
+      없어 상위 레벨 값을 다시 만들 수 없다 — 필요하면 원하는 grain으로 다시 조회할 것.
+      응답이 없으면 NULL이며 0이 아니다.
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

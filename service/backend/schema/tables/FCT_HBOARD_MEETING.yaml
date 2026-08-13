@@ -1,0 +1,367 @@
+table: "FCT_HBOARD_MEETING"
+description: "해피보드(HOT고객 관리) 미팅 팩트 테이블. 미팅별로 논의된 HOT 고객(칩) 단위 상세를 담는다."
+database: "KPI_W"
+schema: "ktws"
+grain: "미팅시퀀스(meet_seq) + 영업기회코드(lead_id) 단위의 해피보드 미팅 상세."
+columns:
+  -
+    name: "meet_seq"
+    type: "varchar(200)"
+    description: "미팅시퀀스. 이 테이블의 기준 키 중 하나."
+  -
+    name: "mng_sc_key"
+    type: "varchar(200)"
+    description: "담당SC 키. DIM_MNG_USER와 조인해 담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+  -
+    name: "meet_status"
+    type: "varchar(200)"
+    description: "미팅 상태코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "meet_status_nm"
+    type: "varchar(200)"
+    description: "미팅 상태명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "meet_dt"
+    type: "date"
+    description: "미팅일자. DIM_CALENDAR_KTWS.Date와 조인할 때 사용한다."
+  -
+    name: "meet_ym_seq"
+    type: "int"
+    description: "미팅 회차."
+  -
+    name: "lead_id"
+    type: "varchar(200)"
+    description: "영업기회코드. 이 테이블의 기준 키 중 하나이며, 어떤 리드/고객이 논의됐는지 식별한다."
+  -
+    name: "hot_reg_dt"
+    type: "date"
+    description: "HOT등록일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "contact_nm"
+    type: "varchar(200)"
+    description: "접견자명(고객명). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "owner_nm"
+    type: "varchar(200)"
+    description: "소유자명(개인/법인 명의자). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "hold_type_cd"
+    type: "varchar(200)"
+    description: "활동유형코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "hold_type_nm"
+    type: "varchar(200)"
+    description: "활동유형명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "int_var_key"
+    type: "varchar(200)"
+    description: "관심차량키. DIM_VEHIC_SPEC_VAR와 조인해 관심 차종명을 조회할 때 사용한다."
+  -
+    name: "hboard_reg_dt"
+    type: "date"
+    description: "핫보드등록일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "chip_status_eng"
+    type: "varchar(200)"
+    description: "칩(고객) 상태코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "chip_status_nm"
+    type: "varchar(200)"
+    description: "칩(고객) 상태명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "next_act_seq"
+    type: "varchar(200)"
+    description: "계획활동번호. FCT_ACTIVITY_v2.act_pk와 연결할 때 사용한다."
+  -
+    name: "next_hold_tp"
+    type: "varchar(200)"
+    description: "계획활동유형. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "next_plant_dt"
+    type: "date"
+    description: "다음 활동계획일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "contract_ratio"
+    type: "varchar(100)"
+    description: "계약확률(퍼센트/등급 값). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "remark"
+    type: "varchar(2000)"
+    description: "비고."
+  -
+    name: "mng_remark"
+    type: "varchar(2000)"
+    description: "담당SC 비고."
+  -
+    name: "pay_type_nm"
+    type: "varchar(100)"
+    description: "지불유형명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "own_model_pdt"
+    type: "varchar(100)"
+    description: "소유모델구입일자."
+  -
+    name: "own_model_nm"
+    type: "varchar(100)"
+    description: "소유모델명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "own_model_cd"
+    type: "varchar(100)"
+    description: "소유모델코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "own_brand_nm"
+    type: "varchar(100)"
+    description: "소유브랜드명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "own_brand_cd"
+    type: "varchar(100)"
+    description: "소유브랜드코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "comp_model_nm"
+    type: "varchar(100)"
+    description: "비교브랜드모델명(타사). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "comp_model_cd"
+    type: "varchar(100)"
+    description: "비교브랜드모델코드(타사). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "comp_brand_nm"
+    type: "varchar(100)"
+    description: "비교브랜드명(타사). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "comp_brand_cd"
+    type: "varchar(100)"
+    description: "비교브랜드코드(타사). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "close_yn"
+    type: "varchar(20)"
+    description: "종료여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "close_dt"
+    type: "date"
+    description: "종료일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "BRAND"
+    type: "varchar(20)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMETAMP"
+    type: "datetime"
+    description: "ETL 타임스탬프(원본 컬럼명 오탈자 그대로 유지: ETL_TIMETAMP). 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "HBOARD_MEETING_FACT"
+    - "HOT_CUSTOMER"
+  keys:
+    primary:
+      - "meet_seq"
+      - "lead_id"
+    foreign:
+      -
+        column: "mng_sc_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_USER"
+          column: "sc_key"
+        description: "담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+      -
+        column: "meet_dt"
+        references:
+          schema: "ktws"
+          table: "DIM_CALENDAR_KTWS"
+          column: "Date"
+        description: "날짜 차원으로 그룹핑할 때 사용한다."
+      -
+        column: "int_var_key"
+        references:
+          schema: "ktws"
+          table: "DIM_VEHIC_SPEC_VAR"
+          column: "var_key"
+        description: "관심 차종명을 조회할 때 사용한다."
+filters:
+  -
+    column: "close_yn"
+    description: "종료여부"
+dimensions:
+  - "meet_seq"
+  - "mng_sc_key"
+  - "meet_status"
+  - "meet_status_nm"
+  - "meet_dt"
+  - "meet_ym_seq"
+  - "lead_id"
+  - "hot_reg_dt"
+  - "contact_nm"
+  - "owner_nm"
+  - "hold_type_cd"
+  - "hold_type_nm"
+  - "int_var_key"
+  - "hboard_reg_dt"
+  - "chip_status_eng"
+  - "chip_status_nm"
+  - "next_act_seq"
+  - "next_hold_tp"
+  - "next_plant_dt"
+  - "contract_ratio"
+  - "pay_type_nm"
+  - "own_model_nm"
+  - "own_model_cd"
+  - "own_brand_nm"
+  - "own_brand_cd"
+  - "comp_model_nm"
+  - "comp_model_cd"
+  - "comp_brand_nm"
+  - "comp_brand_cd"
+  - "close_yn"
+  - "close_dt"
+  - "BRAND"
+features:
+  -
+    name: "meet_seq"
+    synonyms:
+      - "미팅시퀀스"
+  -
+    name: "mng_sc_key"
+    synonyms:
+      - "담당SC 키"
+  -
+    name: "meet_status"
+    synonyms:
+      - "상태코드"
+  -
+    name: "meet_status_nm"
+    synonyms:
+      - "상태명"
+  -
+    name: "meet_dt"
+    synonyms:
+      - "미팅일자"
+  -
+    name: "meet_ym_seq"
+    synonyms:
+      - "미팅 회차"
+  -
+    name: "lead_id"
+    synonyms:
+      - "영업기회코드"
+  -
+    name: "hot_reg_dt"
+    synonyms:
+      - "HOT등록일자"
+  -
+    name: "contact_nm"
+    synonyms:
+      - "접견자명"
+  -
+    name: "owner_nm"
+    synonyms:
+      - "소유자명"
+  -
+    name: "hold_type_cd"
+    synonyms:
+      - "활동유형코드"
+  -
+    name: "hold_type_nm"
+    synonyms:
+      - "활동유형명"
+  -
+    name: "int_var_key"
+    synonyms:
+      - "관심차량키"
+  -
+    name: "hboard_reg_dt"
+    synonyms:
+      - "핫보드등록일자"
+  -
+    name: "chip_status_eng"
+    synonyms:
+      - "상태코드"
+  -
+    name: "chip_status_nm"
+    synonyms:
+      - "상태명"
+  -
+    name: "next_act_seq"
+    synonyms:
+      - "계획활동번호"
+  -
+    name: "next_hold_tp"
+    synonyms:
+      - "계획활동유형"
+  -
+    name: "next_plant_dt"
+    synonyms:
+      - "활동계획일자"
+  -
+    name: "contract_ratio"
+    synonyms:
+      - "계약확률"
+  -
+    name: "remark"
+    synonyms:
+      - "비고"
+  -
+    name: "mng_remark"
+    synonyms:
+      - "담당SC 비고"
+  -
+    name: "pay_type_nm"
+    synonyms:
+      - "지불유형"
+  -
+    name: "own_model_pdt"
+    synonyms:
+      - "소유모델구입일자"
+  -
+    name: "own_model_nm"
+    synonyms:
+      - "소유모델명"
+  -
+    name: "own_model_cd"
+    synonyms:
+      - "소유모델코드"
+  -
+    name: "own_brand_nm"
+    synonyms:
+      - "소유브랜드명"
+  -
+    name: "own_brand_cd"
+    synonyms:
+      - "소유브랜드코드"
+  -
+    name: "comp_model_nm"
+    synonyms:
+      - "비교브랜드모델명"
+  -
+    name: "comp_model_cd"
+    synonyms:
+      - "비교브랜드모델코드"
+  -
+    name: "comp_brand_nm"
+    synonyms:
+      - "비교브랜드명"
+  -
+    name: "comp_brand_cd"
+    synonyms:
+      - "비교브랜드코드"
+  -
+    name: "close_yn"
+    synonyms:
+      - "종료여부"
+  -
+    name: "close_dt"
+    synonyms:
+      - "종료일자"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "meet_seq"
+    - "lead_id"
+    - "meet_status_nm"
+    - "meet_dt"
+    - "mng_sc_key"
+    - "contract_ratio"
+    - "chip_status_nm"

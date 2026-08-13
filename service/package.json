@@ -1,0 +1,52 @@
+{
+  "name": "toyota-dashboard",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --test backend/llm/*.test.js backend/*.test.js backend/dynamic/*.test.js backend/agentic-bi/*.test.js backend/agentic-bi/funnelDerived/*.test.js backend/agentic-bi/semantic/*.test.js backend/reports/*.test.js backend/dealerFunnel/*.test.js",
+    "llm:check": "node backend/agentic-bi/llmCheck.mjs",
+    "llm:check:http": "node backend/agentic-bi/llmCheck.mjs --http",
+    "preview": "vite preview",
+    "start": "node backend/server.js",
+    "db:seed": "node backend/applyAppSchema.js",
+    "dynamic:harvest": "node backend/dynamic/catalog/harvest.js",
+    "rag:seed": "node backend/rag-poc/seedKnowledgeBase.js",
+    "rag:embeddings": "node backend/rag-poc/buildEmbeddings.js --force",
+    "rag:check": "node backend/rag-poc/checkDataStores.js",
+    "rag:chroma:peek": "node backend/rag-poc/peekChroma.js",
+    "chroma:browser": "node backend/rag-poc/chromaBrowser.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "@azure/msal-browser": "^5.15.0",
+    "@azure/msal-react": "^5.5.0",
+    "chromadb": "^3.5.0",
+    "dotenv": "^17.4.2",
+    "echarts": "^5.6.0",
+    "express": "^5.2.1",
+    "js-yaml": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.441.0",
+    "mssql": "^12.7.0",
+    "openai": "^6.44.0",
+    "pg": "^8.22.0",
+    "powerbi-client": "^2.23.10",
+    "powerbi-client-react": "^2.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-grid-layout": "^2.2.3",
+    "react-router-dom": "^6.26.2",
+    "recharts": "^3.9.0",
+    "redis": "^4.7.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.12",
+    "vite": "^5.4.8"
+  }
+}

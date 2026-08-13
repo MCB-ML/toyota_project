@@ -1,0 +1,108 @@
+# [계약 목록 (계약 단위 명세)] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "2-1. 월별 판매 성취도" NO=15의 최종 GOLD.
+
+report_id: contract_list_detail
+version: v1
+title: 계약 목록 (계약 단위 명세)
+description: >
+  계약 한 건이 한 행. 계약번호·고객명·계약일자·출고일자·리드타임과 지불유형을 담는다.
+
+sql_file: sql/contract_list_detail.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 2-1. 월별 판매 성취도
+  no: 15
+  gold_column: 최종 GOLD 쿼리
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 12개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지. 제외 상수(@Excl*)는 원문 유지.
+    - id: pad_null_guard
+      what: "콤마 패딩 변수 11개에 CASE NULL 가드 추가"
+      why: >
+        Fabric에서 ',' + NULL + ',' 는 ',,' 가 되어 "비우면 전체"가 "결과 없음"으로 뒤집힌다.
+
+    - id: filter_trim_guard
+      what: "LIKE 패딩 필터의 컬럼 값을 LTRIM(RTRIM())으로 감쌈 (21곳)"
+      why: >
+        차원 이름에 끝 공백이 들어간 값이 있다(2026-08-03 실측: DIM_MNG_USER 기준
+        팀 7종/56명, SC 36종/36명, 전시장 1종/27명 — 총 44종 119명).
+        패턴이 N'%,토요타 동대문 ,%' 가 되어 사용자가 넘긴 ',토요타 동대문,' 과
+        매칭되지 않아 필터가 오류 없이 0건이 된다. NOT LIKE(제외 목록)도 같은 이유로
+        제외에 실패해 빠져야 할 행이 남는다.
+        숫자에서 만든 CAST(...) 표현식은 공백이 생길 수 없어 건드리지 않았다.
+        재현·정량화: notebook/05_차원이름_공백_진단.ipynb
+        주의: SQL Server의 = 비교는 끝 공백을 무시하므로 STRING_SPLIT 방식을 쓰는
+        funnel_full_structure는 애초에 영향이 없어 수정 대상이 아니다.
+      verified_on: 2026-08-03
+sql_sha256: ec5857cfe051ecc27b8df6efa49f734b29cf838dda61c86e8bbae740a1f72460
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - { name: Year,      sql_type: nvarchar, nullable: true, multi_value: true, description: "연도. 다중 가능. 비우면 전체." }
+  - { name: Brand,     sql_type: nvarchar, nullable: true, multi_value: true, description: "브랜드" }
+  - { name: DealerNm,  sql_type: nvarchar, nullable: true, multi_value: true, authorization_dimension: dealer, description: "딜러" }
+  - { name: GroupName, sql_type: nvarchar, nullable: true, multi_value: true, description: "전시장" }
+  - { name: DeptNm,    sql_type: nvarchar, nullable: true, multi_value: true, description: "팀" }
+  - { name: ActiveYn,  sql_type: nvarchar, nullable: true, multi_value: true, allowed_values: ['재직','퇴직'], description: "재직여부" }
+  - name: ScName
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true
+    authorization_dimension: sales_consultant
+    description: "NULL이면 SC 열 없음, 'ALL'이면 전체 SC, 값을 주면 해당 SC만"
+  - { name: ModelNm,   sql_type: nvarchar, nullable: true, multi_value: true, description: "모델명" }
+  - { name: VariantNm, sql_type: nvarchar, nullable: true, multi_value: true, description: "차종" }
+  - { name: MyCd,      sql_type: nvarchar, nullable: true, multi_value: true, description: "연식" }
+  - { name: SfxCd,     sql_type: nvarchar, nullable: true, multi_value: true, description: "SFX 코드" }
+  - { name: AsOfDate,  sql_type: date, nullable: true, description: "기준일. 비우면 제한 없음." }
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: brand,             column: 브랜드 }
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: department,        column: 팀 }
+  - { id: active_status,     column: 재직여부 }
+  - { id: sales_consultant,  column: SC }
+  - { id: vehicle_model,     column: Model }
+  - { id: vehicle_variant,   column: 차종 }
+  - { id: vehicle_year,      column: 연식 }
+  - { id: grade_sfx,         column: SFX }
+
+dimension_columns:
+  branch_a: ['연도', '브랜드', '딜러', '전시장', '팀', '재직여부', '차종', '연식', '계약번호', '고객명', '계약일자', '출고일자', 'Model', 'SFX', '재구매 여부', '자사금융 여부', '지불유형 여부']
+  branch_b: ['연도', '브랜드', '딜러', '전시장', '팀', '재직여부', 'SC', '차종', '연식', '계약번호', '고객명', '계약일자', '출고일자', 'Model', 'SFX', '재구매 여부', '자사금융 여부', '지불유형 여부']
+
+total_row: null
+
+column_semantics:
+  '리드타임(일)':
+    type: duration
+    direct_sum_forbidden: true
+    note: "계약일자→출고일자 일수. 행마다 한 건이라 합산은 의미가 없고 평균만 뜻이 있다."
+  'cntrct_flag':
+    type: flag
+    direct_sum_forbidden: true
+    note: "계약 여부 플래그. 건수는 합계가 아니라 행 수로 셀 것."
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['DealerNm', 'ScName']

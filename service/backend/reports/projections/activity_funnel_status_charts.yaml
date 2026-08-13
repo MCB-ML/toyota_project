@@ -1,0 +1,62 @@
+# 활동 퍼널 현황 — 등록된 차트 프리셋.
+#
+# 리포트 결과는 기본적으로 표로 낸다. 표를 차트로 바꾸는 건 자유롭게 허용하지 않는다:
+# 계약목표처럼 상위 grain 값이 반복된 컬럼을 그냥 SUM하면 조용히 틀린 그래프가 되기 때문이다.
+# 여기 등록된 조합만 차트로 만들 수 있고, 나머지는 표로 두거나 Certified Metric 경로로 보낸다.
+
+presets:
+  - id: funnel_actual_by_activity_type
+    title: 활동유형별 퍼널 실적
+    chart: bar
+    dimension: 활동유형
+    measures: ['활동실적', '기회실적', '계약실적']
+    exclude_total_row: true
+    note: 전부 additive라 활동유형 단위로 그대로 합산해도 안전하다.
+
+  - id: funnel_target_vs_actual_activity
+    title: 활동 목표 대비 실적
+    chart: bar
+    dimension: 활동유형
+    measures: ['활동목표', '활동실적']
+    exclude_total_row: true
+
+  - id: funnel_actual_by_dealer
+    title: 딜러별 퍼널 실적
+    chart: bar
+    dimension: 딜러
+    measures: ['활동실적', '기회실적', '계약실적']
+    exclude_total_row: true
+
+  - id: funnel_monthly_trend
+    title: 월별 퍼널 추이
+    chart: line
+    dimension: 월
+    measures: ['활동실적', '기회실적', '계약실적']
+    exclude_total_row: true
+    requires_multiple_months: true
+
+  # 비율 컬럼은 단순 평균이 금지돼 있다. 상세 행을 그대로 쓰는 대신
+  # 이미 올바르게 계산된 합계 행 하나만 보여주거나, 재계산 규칙을 적용한다.
+  - id: funnel_rates_total
+    title: 퍼널 진척률·전환률 (합계 기준)
+    chart: bar
+    dimension: 지표
+    measures: ['활동진척률', '기회전환률', '기회진척률', '계약전환률', '계약진행률']
+    source_rows: total_row_only
+    transpose: true
+    note: 합계 행의 비율은 SQL이 분자·분모를 재합산해 계산한 값이라 그대로 쓸 수 있다.
+
+# 차트로 만들 수 없는 컬럼과 그 이유 — 거절할 때 사용자에게 그대로 설명한다.
+blocked_measures:
+  계약목표:
+    reason: 팀(또는 SC) 단위 값이 활동유형 행마다 반복돼 있어 그대로 합산하면 중복 집계된다.
+    suggestion: 합계 행의 계약목표를 쓰거나, 활동유형 없이 팀 단위로 조회하세요.
+  계약진행률:
+    reason: 상위 grain 비율이라 행 평균이 의미가 없다.
+    suggestion: 합계 행 기준 값을 쓰거나 Certified Metric의 계약진행률 지표를 조회하세요.
+  활동진척률: &ratio_block
+    reason: 비율은 행 평균이 아니라 분자·분모를 재합산해 계산해야 한다.
+    suggestion: 합계 기준 프리셋(funnel_rates_total)을 쓰세요.
+  기회전환률: *ratio_block
+  기회진척률: *ratio_block
+  계약전환률: *ratio_block

@@ -1,0 +1,152 @@
+# schema/index.yaml — 항상 메모리에 로드되는 컴팩트 색인.
+# KTWS DW ktws 스키마(스타 스키마: DIM 11 + FCT 11)를 기준으로 한다.
+# 원본: "7-4. KTWS_DW 분석테이블(ktws)_정의서 1.xlsx" (컬럼 정의) +
+#       "KTWs 의미체계모델 관계설정 리스트 (1).xlsx" (FCT-DIM 관계, 36건)
+# 개별 테이블의 전체 컬럼 목록은 여기 없음 — schema/tables/<file>.yaml 에서 온디맨드로 읽는다.
+
+tables:
+  - { id: DIM_CALENDAR_KTWS, db: KPI_W, ko: 날짜 차원, syn: [날짜, 캘린더, 달력, 연월, 분기], file: DIM_CALENDAR_KTWS.yaml }
+  - { id: DIM_CRM_ACT_TYPE, db: KPI_W, ko: 활동유형 분류, syn: [활동유형, 디멘전, 관계형성, 기회창출], file: DIM_CRM_ACT_TYPE.yaml }
+  - { id: DIM_CRM_ACT_TYPE_ORDER, db: KPI_W, ko: 활동유형 정렬, syn: [활동유형 순서], file: DIM_CRM_ACT_TYPE_ORDER.yaml }
+  - { id: DIM_MNG_ACCESS_USER, db: KPI_W, ko: 권한관리 사용자, syn: [권한, 접근제어], file: DIM_MNG_ACCESS_USER.yaml }
+  - { id: DIM_MNG_DEALER, db: KPI_W, ko: 딜러 마스터, syn: [딜러, 대리점], file: DIM_MNG_DEALER.yaml }
+  - { id: DIM_MNG_USER, db: KPI_W, ko: SC 사용자 마스터, syn: [SC, 사용자, 직원, 영업사원], file: DIM_MNG_USER.yaml }
+  - { id: DIM_PMA_ORDER, db: KPI_W, ko: PMA in/out 순서, syn: [PMA], file: DIM_PMA_ORDER.yaml }
+  - { id: DIM_REPURC_SALES_TYPE, db: KPI_W, ko: 재구매/판매유형 분류, syn: [재구매, 판매유형], file: DIM_REPURC_SALES_TYPE.yaml }
+  - { id: DIM_VEHIC_SPEC, db: KPI_W, ko: 차량사양(SFX 단위), syn: [SFX, 트림, 차량사양], file: DIM_VEHIC_SPEC.yaml }
+  - { id: DIM_VEHIC_SPEC_MDL, db: KPI_W, ko: 차량사양(모델 단위), syn: [모델], file: DIM_VEHIC_SPEC_MDL.yaml }
+  - { id: DIM_VEHIC_SPEC_VAR, db: KPI_W, ko: 차량사양(차종 단위), syn: [차종, 바리에이션], file: DIM_VEHIC_SPEC_VAR.yaml }
+  - { id: FCT_ACTIVITY_v2, db: KPI_W, ko: 영업활동 실적, syn: [활동, 상담, 영업활동, 활동건수, 실적건수], file: FCT_ACTIVITY_v2.yaml }
+  - { id: FCT_AVAIL_STOCK, db: KPI_W, ko: 가용재고, syn: [재고, 차량재고, 가용재고], file: FCT_AVAIL_STOCK.yaml }
+  - { id: FCT_CONTRACT_KTWS, db: KPI_W, ko: 계약 실적, syn: [계약, 판매, 출고], file: FCT_CONTRACT_KTWS.yaml }
+  - { id: FCT_LEAD, db: KPI_W, ko: 영업기회(리드) 실적, syn: [영업기회, 리드, 퍼널, 잠재고객], file: FCT_LEAD.yaml }
+  - { id: FCT_CRM_TARGET_STS, db: KPI_W, ko: CRM 목표 마감상태, syn: [CRM목표, 마감], file: FCT_CRM_TARGET_STS.yaml }
+  - { id: FCT_CRM_TARGET_M, db: KPI_W, ko: CRM 월간 목표, syn: [CRM목표, 월목표], file: FCT_CRM_TARGET_M.yaml }
+  - { id: FCT_CRM_TARGET_D, db: KPI_W, ko: CRM 일간 목표, syn: [CRM목표, 일목표], file: FCT_CRM_TARGET_D.yaml }
+  - { id: FCT_HBOARD_MEETING, db: KPI_W, ko: 해피보드 미팅, syn: [해피보드, HOT, 핫보드], file: FCT_HBOARD_MEETING.yaml }
+  - { id: FCT_MNG_CUST_LIST, db: KPI_W, ko: 담당 고객 목록, syn: [담당고객], file: FCT_MNG_CUST_LIST.yaml }
+  - { id: FCT_NPS, db: KPI_W, ko: NPS 설문 실적, syn: [NPS, 고객만족도], file: FCT_NPS.yaml }
+  - { id: FCT_SALES_TARGET_DAILY, db: KPI_W, ko: 일별 계약/출고 목표, syn: [판매목표, 출고목표, 계약목표], file: FCT_SALES_TARGET_DAILY.yaml }
+
+topics:
+  - topic: 활동_실적
+    ko: "영업사원(SC)의 CRM 활동 건수/실적 건수 — 활동유형(연락/방문/소개 등)별, 딜러/지점별, 기간별"
+    keywords: [활동, 상담, 영업활동, 활동건수, 실적건수, 활동유형, 관계형성, 기회창출]
+    tables:
+      - { id: FCT_ACTIVITY_v2, db: KPI_W, file: FCT_ACTIVITY_v2.yaml, key_cols: [act_pk, sc_key, tp_key, act_dt_fr, cnt, actual_cnt], note: "활동 건수는 cnt, KPI 실적 건수는 actual_cnt를 SUM. del_dt IS NULL인 행만 유효." }
+      - { id: FCT_CRM_TARGET_D, db: KPI_W, file: FCT_CRM_TARGET_D.yaml, key_cols: [sc_key, type_cd, daily_dt, target_cnt], note: "활동 목표(당월목표) 건수 — actual_cnt(실적)와 짝을 이뤄 진행률/달성률 계산에 쓰인다" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name, active_yn, facade_sc_yn], note: "sc_key로 담당 SC/딜러/지점명 조회. 활동/실적 집계엔 재직(active_yn='재직')·비창구SC(facade_sc_yn!='창구SC') 필터가 관례적으로 붙는다" }
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_id, dealer_nm], note: "딜러 단위로 필터링할 때 DIM_MNG_USER.dealer_key와 조인(골드쿼리 기준 INNER JOIN)" }
+      - { id: DIM_CRM_ACT_TYPE, db: KPI_W, file: DIM_CRM_ACT_TYPE.yaml, key_cols: [tp_key, tp_nm, tp_grp_1, tp_grp_2], note: "활동유형을 업무 대분류(연락/방문/소개 등)로 묶을 때 필수 — CO_CODE 텍스트 매칭으로는 재현 불가" }
+      - { id: DIM_CRM_ACT_TYPE_ORDER, db: KPI_W, file: DIM_CRM_ACT_TYPE_ORDER.yaml, key_cols: [common_tp_nm, tp_grp_1, tp_grp_2], note: "활동유형 상위카테고리 표시 순서" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, MonthName], note: "act_dt_fr/daily_dt과 조인해 연/월/분기 단위로 그룹핑" }
+
+  - topic: 영업기회_퍼널
+    ko: "영업기회(리드)의 퍼널 단계 현황 — 건수(활동기준/전체기준)/목표/진행률, 활동→영업기회 전환율, 담당 SC별"
+    keywords: [영업기회, 리드, 퍼널, 잠재고객, 관심도, 시승, 재구매, 전환율, 기회목표, 기회진행률]
+    tables:
+      - { id: FCT_LEAD, db: KPI_W, file: FCT_LEAD.yaml, key_cols: [lead_key, cl_sc_key, tp_key, lead_reg_dt, close_dt, last_retail_sales_dt, potential], note: "영업기회(lead_key) 단위. GOLD 건수 정의는 cnt SUM이 아니라 COUNT(DISTINCT lead_key) — routing 문서의 '당월활동실적/당월전체실적' 정의 차이를 반드시 확인할 것" }
+      - { id: FCT_ACTIVITY_v2, db: KPI_W, file: FCT_ACTIVITY_v2.yaml, key_cols: [act_pk, lead_key, tp_key, act_result], note: "'당월활동실적 기준' 리드 건수/전환율은 이 테이블에 tp_grp_1 관계형성·기회창출 + act_result<>'부재중' 인 활동이 실제로 연결된 리드만 인정(EXISTS 서브쿼리)" }
+      - { id: FCT_CRM_TARGET_M, db: KPI_W, file: FCT_CRM_TARGET_M.yaml, key_cols: [sc_key, tp_key, monthly_dt, target_cnt], note: "영업기회 당월 목표. DIM_CRM_ACT_TYPE_ORDER.tp_grp_1 IN ('관계형성','기회창출') 필터 사용(CRM_목표 topic의 일간목표 FCT_CRM_TARGET_D와는 다른 테이블)" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name, dept_nm, facade_sc_yn, BRAND], note: "cl_sc_key로 담당 SC/딜러/지점명 조회. BRAND/group_name/dept_nm도 GOLD 쿼리의 선택 슬라이서로 쓰인다" }
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_nm], note: "딜러 단위 필터. GOLD 쿼리는 DIM_MNG_USER.dealer_key로 조인(목록형은 LEFT JOIN)" }
+      - { id: DIM_CRM_ACT_TYPE, db: KPI_W, file: DIM_CRM_ACT_TYPE.yaml, key_cols: [tp_key, tp_nm, tp_grp_1, common_tp_nm], note: "리드/활동을 만든 활동유형 상위카테고리 조회" }
+      - { id: DIM_CRM_ACT_TYPE_ORDER, db: KPI_W, file: DIM_CRM_ACT_TYPE_ORDER.yaml, key_cols: [common_tp_nm, tp_grp_1], note: "영업기회 목표(FCT_CRM_TARGET_M) GOLD 쿼리는 이 테이블 기준 tp_grp_1로 필터한다" }
+      - { id: DIM_VEHIC_SPEC_MDL, db: KPI_W, file: DIM_VEHIC_SPEC_MDL.yaml, key_cols: [mdl_key, model_nm], note: "int_vehic_key1로 관심 모델명 조회(GOLD 미검증 — 컬럼 스키마 기반)" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, Year, MonthNumber], note: "lead_reg_dt과 조인해 연/월/분기 단위로 그룹핑" }
+
+  - topic: 계약
+    ko: "차량 계약 실적 — 계약 건수(영업기회 자격 기준)/목표/딜러·모델·판매유형별, 영업기회→계약 전환율"
+    keywords: [계약, 판매, 출고, 계약건수, 취소, PMA, 재구매, 계약목표, 계약전환율]
+    tables:
+      - { id: FCT_CONTRACT_KTWS, db: KPI_W, file: FCT_CONTRACT_KTWS.yaml, key_cols: [contract_no, cn_sc_key, cn_vehic_key, contract_dt, lead_key, cnt], note: "계약(contract_no) 단위. 계약 건수는 cnt를 SUM. GOLD 쿼리는 lead_key로 '자격 리드(qualified_lead)' 목록과 조인해야 정답이 나온다" }
+      - { id: FCT_LEAD, db: KPI_W, file: FCT_LEAD.yaml, key_cols: [lead_key, close_dt, last_retail_sales_dt], note: "'자격 리드' 판정에 사용 — close_dt > 기준일 OR close_dt IS NULL OR last_retail_sales_dt IS NOT NULL 인 리드만 인정" }
+      - { id: FCT_ACTIVITY_v2, db: KPI_W, file: FCT_ACTIVITY_v2.yaml, key_cols: [lead_key, tp_key, act_result], note: "'자격 리드' 판정에 사용 — 해당 리드에 tp_grp_1 관계형성·기회창출 + act_result<>'부재중' 활동이 실제 연결돼 있어야 함(EXISTS)" }
+      - { id: FCT_CRM_TARGET_M, db: KPI_W, file: FCT_CRM_TARGET_M.yaml, key_cols: [sc_key, tp_key, monthly_dt, target_cnt], note: "계약 목표. DIM_CRM_ACT_TYPE.common_tp_nm = '계약' 필터(영업기회 목표와 같은 테이블, 다른 필터)" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name, dept_nm, facade_sc_yn, BRAND], note: "cn_sc_key로 담당 SC/딜러/지점명 조회" }
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_nm], note: "딜러 단위 필터" }
+      - { id: DIM_VEHIC_SPEC, db: KPI_W, file: DIM_VEHIC_SPEC.yaml, key_cols: [spec_key, model_nm, variant_nm, sfx_cd], note: "cn_vehic_key로 모델/차종/SFX 조회(GOLD 미검증 — 컬럼 스키마 기반)" }
+      - { id: DIM_VEHIC_SPEC_VAR, db: KPI_W, file: DIM_VEHIC_SPEC_VAR.yaml, key_cols: [var_key, model_nm, variant_nm], note: "DIM_VEHIC_SPEC.var_key로 연결되는 차종 단위 정보" }
+      - { id: DIM_VEHIC_SPEC_MDL, db: KPI_W, file: DIM_VEHIC_SPEC_MDL.yaml, key_cols: [mdl_key, model_nm], note: "모델명만 필요할 때" }
+      - { id: DIM_PMA_ORDER, db: KPI_W, file: DIM_PMA_ORDER.yaml, key_cols: [pma_cd, pma_type], note: "pma_yn 코드명 조회(GOLD 미검증)" }
+      - { id: DIM_REPURC_SALES_TYPE, db: KPI_W, file: DIM_REPURC_SALES_TYPE.yaml, key_cols: [sales_tp_key, sales_tp, repurc_grp1], note: "sales_tp_key로 재구매/판매유형명 조회(GOLD 미검증)" }
+      - { id: DIM_CRM_ACT_TYPE, db: KPI_W, file: DIM_CRM_ACT_TYPE.yaml, key_cols: [tp_key, tp_nm, tp_grp_1, common_tp_nm], note: "계약/활동/자격판정에 쓰이는 활동유형 상위카테고리 조회" }
+      - { id: DIM_CRM_ACT_TYPE_ORDER, db: KPI_W, file: DIM_CRM_ACT_TYPE_ORDER.yaml, key_cols: [common_tp_nm, tp_grp_1], note: "목록형 GOLD 쿼리가 common_tp_nm 표시 순서용으로 조인한다" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, Year, MonthNumber], note: "contract_dt과 조인해 연/월/분기 단위로 그룹핑" }
+
+  - topic: CRM_목표
+    ko: "SC별/활동유형별 CRM 목표(타겟) — 일간/월간 목표 건수, 목표율, 마감 상태, 실적 대비 진행률"
+    keywords: [목표, 타겟, CRM목표, 목표건수, 목표율, 마감, 진행률, 달성률]
+    tables:
+      - { id: FCT_CRM_TARGET_D, db: KPI_W, file: FCT_CRM_TARGET_D.yaml, key_cols: [day_seq, sc_key, type_cd, daily_dt, target_cnt], note: "일 단위 CRM 목표" }
+      - { id: FCT_CRM_TARGET_M, db: KPI_W, file: FCT_CRM_TARGET_M.yaml, key_cols: [mon_key, sc_key, tp_key, monthly_dt, target_cnt, target_rate], note: "월 단위 CRM 목표" }
+      - { id: FCT_CRM_TARGET_STS, db: KPI_W, file: FCT_CRM_TARGET_STS.yaml, key_cols: [target_seq, sc_key, ym, close_yn], note: "월 목표 저장/마감 여부" }
+      - { id: FCT_ACTIVITY_v2, db: KPI_W, file: FCT_ACTIVITY_v2.yaml, key_cols: [act_pk, sc_key, tp_key, act_dt_fr, actual_cnt], note: "'진행률/달성률'(목표 대비 실적)을 물으면 목표(target_cnt)와 이 테이블의 actual_cnt를 함께 SUM해서 나눠야 한다 — 목표 테이블만으로는 계산 불가" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name, active_yn, facade_sc_yn], note: "sc_key로 담당 SC/딜러/지점명 조회. 재직(active_yn='재직')·비창구SC(facade_sc_yn!='창구SC') 필터가 관례적으로 붙는다" }
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_id, dealer_nm], note: "딜러 단위로 필터링할 때 DIM_MNG_USER.dealer_key와 조인(골드쿼리 기준 INNER JOIN)" }
+      - { id: DIM_CRM_ACT_TYPE, db: KPI_W, file: DIM_CRM_ACT_TYPE.yaml, key_cols: [tp_key, tp_nm, tp_grp_1, target_grp_nm], note: "목표 활동유형의 카테고리 조회 — 활동/목표 집계 모두 tp_grp_1 IN ('관계형성','기회창출') 제한이 붙는다" }
+      - { id: DIM_CRM_ACT_TYPE_ORDER, db: KPI_W, file: DIM_CRM_ACT_TYPE_ORDER.yaml, key_cols: [common_tp_nm, tp_grp_1, tp_grp_2], note: "활동유형 상위카테고리 표시 순서 — 골드쿼리가 항상 이 테이블까지 조인한다" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, MonthName], note: "daily_dt/monthly_dt/ym/act_dt_fr과 조인" }
+
+  - topic: 해피보드_HOT고객
+    ko: "해피보드(HOT 유망고객) 미팅 현황 — 미팅별 고객, 계약확률, 상태"
+    keywords: [해피보드, HOT, 핫보드, 미팅, 계약확률, 유망고객]
+    tables:
+      - { id: FCT_HBOARD_MEETING, db: KPI_W, file: FCT_HBOARD_MEETING.yaml, key_cols: [meet_seq, lead_id, mng_sc_key, meet_dt, chip_status_nm, contract_ratio], note: "미팅+영업기회(lead_id) 단위" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name], note: "mng_sc_key로 담당 SC/딜러/지점명 조회" }
+      - { id: DIM_VEHIC_SPEC_VAR, db: KPI_W, file: DIM_VEHIC_SPEC_VAR.yaml, key_cols: [var_key, model_nm, variant_nm], note: "int_var_key로 관심 차종명 조회" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, MonthName], note: "meet_dt과 조인" }
+
+  - topic: 담당고객
+    ko: "SC별 담당 고객 목록"
+    keywords: [담당고객, 고객목록]
+    tables:
+      - { id: FCT_MNG_CUST_LIST, db: KPI_W, file: FCT_MNG_CUST_LIST.yaml, key_cols: [cust_seq, real_cust_seq, mng_sc_key], note: "고객(cust_seq) 단위 담당 SC 매핑" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name], note: "mng_sc_key로 담당 SC/딜러/지점명 조회" }
+
+  - topic: NPS_고객만족도
+    ko: "NPS(고객추천지수) 설문 응답 결과"
+    keywords: [NPS, 고객만족도, 설문, 추천지수]
+    tables:
+      - { id: FCT_NPS, db: KPI_W, file: FCT_NPS.yaml, key_cols: [nps_seq, sc_key, biz_area, promoter_score, reply_date], note: "설문 응답(nps_seq) 단위" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dealer_nm, group_name], note: "sc_key로 담당 SC/딜러/지점명 조회" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, MonthName], note: "reply_date와 조인" }
+
+  - topic: 판매목표_일별
+    ko: "딜러/모델별 일일 계약·출고 목표"
+    keywords: [판매목표, 출고목표, 계약목표, 일일목표]
+    tables:
+      - { id: FCT_SALES_TARGET_DAILY, db: KPI_W, file: FCT_SALES_TARGET_DAILY.yaml, key_cols: [dealer_key, model_key, dateby, ac_trgt, co_trgt], note: "ac_trgt=출고 목표, co_trgt=계약 목표 (이름과 반대 의미이니 주의)" }
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_nm], note: "dealer_key로 딜러명 조회" }
+      - { id: DIM_VEHIC_SPEC_MDL, db: KPI_W, file: DIM_VEHIC_SPEC_MDL.yaml, key_cols: [mdl_key, model_nm], note: "model_key로 모델명 조회" }
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, YearMonth, MonthName], note: "dateby와 조인" }
+
+  - topic: 차량재고
+    ko: "딜러별/차종별 가용 차량 재고, 입항/배정 진행 상태"
+    keywords: [재고, 차량재고, 가용재고, 입항, 배정]
+    tables:
+      - { id: FCT_AVAIL_STOCK, db: KPI_W, file: FCT_AVAIL_STOCK.yaml, key_cols: [vehic_magic, dealer_key, spec_key, progress, al_status], note: "차량(vehic_magic) 단위 재고 상태" }
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_nm], note: "dealer_key로 딜러명 조회(관계 목록에 미기재 — 값 검증 권장)" }
+      - { id: DIM_VEHIC_SPEC, db: KPI_W, file: DIM_VEHIC_SPEC.yaml, key_cols: [spec_key, model_nm, variant_nm, sfx_cd], note: "spec_key로 모델/차종/SFX 조회(관계 목록에 미기재 — 값 검증 권장)" }
+
+  - topic: 차량스펙_마스터
+    ko: "모델/차종/SFX(트림) 코드 매핑 및 상세 사양 — 팩트 없이 마스터 정보만 필요할 때"
+    keywords: [모델, 차종, SFX, 트림, 사양, 그레이드]
+    tables:
+      - { id: DIM_VEHIC_SPEC_MDL, db: KPI_W, file: DIM_VEHIC_SPEC_MDL.yaml, key_cols: [mdl_key, model_nm], note: "모델 단위(가장 상위)" }
+      - { id: DIM_VEHIC_SPEC_VAR, db: KPI_W, file: DIM_VEHIC_SPEC_VAR.yaml, key_cols: [var_key, model_nm, variant_nm], note: "모델+차종 단위" }
+      - { id: DIM_VEHIC_SPEC, db: KPI_W, file: DIM_VEHIC_SPEC.yaml, key_cols: [spec_key, model_nm, variant_nm, sfx_cd, grade, curr_sales_yn], note: "모델+차종+연식+SFX 단위(가장 상세)" }
+
+  - topic: 딜러_사용자_마스터
+    ko: "딜러/지점 조직 마스터, SC 사용자 마스터, 권한관리용 사용자-딜러 매핑"
+    keywords: [딜러, 대리점, SC, 사용자, 직원, 조직, 지점, 권한]
+    tables:
+      - { id: DIM_MNG_DEALER, db: KPI_W, file: DIM_MNG_DEALER.yaml, key_cols: [dealer_key, dealer_nm], note: "딜러 단위 마스터" }
+      - { id: DIM_MNG_USER, db: KPI_W, file: DIM_MNG_USER.yaml, key_cols: [sc_key, name, dept_nm, group_name, dealer_nm, active_yn], note: "SC(사용자) 단위 마스터, 소속 지점/딜러 포함" }
+      - { id: DIM_MNG_ACCESS_USER, db: KPI_W, file: DIM_MNG_ACCESS_USER.yaml, key_cols: [user_id, name, dealer_nm], note: "리포트 권한관리(행 수준 보안) 전용 매핑" }
+
+  - topic: 날짜_캘린더
+    ko: "날짜 차원 — 연/월/분기/주차 등 시간 단위 그룹핑에 사용"
+    keywords: [날짜, 캘린더, 달력, 연월, 분기, 주차, 공휴일]
+    tables:
+      - { id: DIM_CALENDAR_KTWS, db: KPI_W, file: DIM_CALENDAR_KTWS.yaml, key_cols: [Date, Year, MonthNumber, QuarterNumber, YearMonth, kr_holiday], note: "모든 FCT 테이블의 날짜 컬럼이 이 테이블의 Date를 참조한다" }

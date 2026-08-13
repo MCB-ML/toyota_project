@@ -1,0 +1,111 @@
+# [고객 관리 (칩) — 영업기회 단계별] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "5-1. 고객 관리 (칩)" NO=1의 최종 GOLD.
+
+report_id: customer_chip_funnel
+version: v1
+title: 고객 관리 (칩) — 영업기회 단계별
+description: >
+  고객(리드) 한 명이 한 행. 상담/시승/계약/출고 단계 도달 여부와 각 단계 일자를 담아 퍼널 차트와 칩(chip) UI를 그리는 데 쓴다.
+
+sql_file: sql/customer_chip_funnel.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 5-1. 고객 관리 (칩)
+  no: 1
+  gold_column: 최종 GOLD 쿼리
+  note: 원본 DECLARE에 특정 SC 이름('황승진')과 brand=LEXUS, potential=HOT 같은 테스트값이 박혀 있었다. 전부 파라미터로 분리했다.
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 8개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지. 제외 상수는 원문 유지.
+
+sql_sha256: fbf3c940b24874651283d33bb279a3115ce1facb02f2c43cdb1205f5dd2fb389
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - name: close_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['관리', '중지']
+    description: "관리 상태: '관리' / '중지'"
+  - name: potential
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['HOT', 'WARM', 'COLD']
+    description: "관심도: HOT / WARM / COLD"
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "DIM_MNG_USER[BRAND]"
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: "DIM_MNG_DEALER[dealer_nm]"
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "전시장(group_name)"
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "팀/부서(dept_nm)"
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: "재직여부"
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: sales_consultant
+    description: "SC명. 비우면 전체"
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: brand,             column: 브랜드 }
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: department,        column: 팀 }
+
+dimension_columns:
+  branch_a: &dims ['구간', '구간순서', 'SC명', '고객명', '관심도', '칩라벨', '정렬일자', '시승여부', '시승상세', '상담단계', '시승단계', '계약단계', '출고단계', '상담일', '시승일', '계약일', '출고일', '딜러', '전시장', '팀', '브랜드']
+  branch_b: *dims
+
+total_row: null
+
+# 단계 컬럼(상담단계/시승단계/계약단계/출고단계)은 도달 여부 표시값이다.
+# 숫자처럼 보여도 합산하면 안 되고, 단계별 인원은 행 수를 세어 구한다.
+column_semantics:
+  '상담단계': { type: stage_flag, direct_sum_forbidden: true }
+  '시승단계': { type: stage_flag, direct_sum_forbidden: true }
+  '계약단계': { type: stage_flag, direct_sum_forbidden: true }
+  '출고단계': { type: stage_flag, direct_sum_forbidden: true }
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

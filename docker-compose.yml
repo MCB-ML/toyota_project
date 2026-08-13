@@ -1,0 +1,328 @@
+name: toyota-dashboard
+
+x-postgres-env: &postgres-env
+  PG_HOST: postgres
+  PG_PORT: 5432
+  PG_USER: ${PG_USER:-dashboard}
+  PG_PASSWORD: ${PG_PASSWORD:-dashboard}
+  PG_DATABASE: ${PG_DATABASE:-toyota_dashboard}
+  PG_SSL: ${PG_SSL:-false}
+  PG_SEARCH_PATH: ${PG_SEARCH_PATH:-public}
+
+x-admin-db-env: &admin-db-env
+  DATABASE_PG_HOST: postgres
+  DATABASE_PG_PORT: 5432
+  DATABASE_PG_NAME: ${PG_DATABASE:-toyota_dashboard}
+  DATABASE_PG_USER: ${PG_USER:-dashboard}
+  DATABASE_PG_PASSWORD: ${PG_PASSWORD:-dashboard}
+  DATABASE_PG_SCHEMA: dbo
+  DATABASE_PG_SSLMODE: disable
+
+x-service-build: &service-build
+  context: .
+  dockerfile: docker/service.Dockerfile
+  target: runtime
+  args:
+    VITE_AZURE_AD_CLIENT_ID: ${VITE_AZURE_AD_CLIENT_ID:-}
+    VITE_AZURE_AD_TENANT_ID: ${VITE_AZURE_AD_TENANT_ID:-}
+    VITE_AI365_LOGIN_URL: ${SERVICE_AI365_LOGIN_URL:-http://localhost:8090/api/v1/auth/login/credentials}
+    VITE_ADMIN_FRONTEND_URL: ${PUBLIC_ADMIN_FRONTEND_URL:-http://localhost:8088}
+    VITE_POWERBI_REPORT_ID: ${VITE_POWERBI_REPORT_ID:-}
+    VITE_POWERBI_GROUP_ID: ${VITE_POWERBI_GROUP_ID:-}
+
+x-service-env: &service-env
+  <<: *postgres-env
+  NODE_ENV: production
+  PORT: 3000
+  REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+  CHROMA_URL: ${SERVICE_CHROMA_URL:-http://chroma:8000}
+  ADMIN_API_INTERNAL_URL: ${ADMIN_API_INTERNAL_URL:-http://admin-backend:8080}
+  # 어드민이 발급한 로그인 토큰을 서비스가 직접 검증한다. 어드민 컨테이너의 SECRET_KEY 와
+  # 같은 값이어야 하므로 둘 다 ADMIN_SECRET_KEY 하나에서 채운다.
+  JWT_SECRET: ${ADMIN_SECRET_KEY:?Set ADMIN_SECRET_KEY in the root .env file}
+  # Microsoft 로그인 경로의 토큰은 RS256 이라 공개키로 검증한다(없으면 그 경로는
+  # 어드민 /auth/check 폴백으로 넘어간다).
+  JWT_PUBLIC_KEY_PATH: /app/certs/public.pem
+  JWT_PUBLIC_KEY_BASE64: ${JWT_PUBLIC_KEY_BASE64:-}
+  SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-3600}
+  AUTH_ALLOW_BODY_IDENTITY: ${AUTH_ALLOW_BODY_IDENTITY:-}
+  DATA_SOURCE_WATERMARK_TTL_SECONDS: ${DATA_SOURCE_WATERMARK_TTL_SECONDS:-3600}
+  DATA_SOURCE_WATERMARK_LOCK_TTL_SECONDS: ${DATA_SOURCE_WATERMARK_LOCK_TTL_SECONDS:-30}
+  DASHBOARD_RESULT_CACHE_TTL_SECONDS: ${DASHBOARD_RESULT_CACHE_TTL_SECONDS:-3600}
+  DASHBOARD_RESULT_CACHE_STALE_GRACE_SECONDS: ${DASHBOARD_RESULT_CACHE_STALE_GRACE_SECONDS:-300}
+  DASHBOARD_CACHE_LOCK_TTL_SECONDS: ${DASHBOARD_CACHE_LOCK_TTL_SECONDS:-90}
+  DASHBOARD_PAGE_MAX_CONCURRENCY: ${DASHBOARD_PAGE_MAX_CONCURRENCY:-3}
+  DASHBOARD_GLOBAL_MAX_CONCURRENCY: ${DASHBOARD_GLOBAL_MAX_CONCURRENCY:-8}
+  DASHBOARD_GLOBAL_QUEUE_TIMEOUT_MS: ${DASHBOARD_GLOBAL_QUEUE_TIMEOUT_MS:-120000}
+  DASHBOARD_GLOBAL_PERMIT_TTL_SECONDS: ${DASHBOARD_GLOBAL_PERMIT_TTL_SECONDS:-90}
+  DASHBOARD_MEMORY_CACHE_MAX_ENTRIES: ${DASHBOARD_MEMORY_CACHE_MAX_ENTRIES:-500}
+  REDIS_RETRY_COOLDOWN_MS: ${REDIS_RETRY_COOLDOWN_MS:-5000}
+  REDIS_CONNECT_TIMEOUT_MS: ${REDIS_CONNECT_TIMEOUT_MS:-1500}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  AZURE_OPENAI_KEY: ${AZURE_OPENAI_KEY:-}
+  AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+  AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT:-}
+  AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:-}
+  AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2025-04-01-preview}
+  # 모델 선택기가 고를 수 있는 추가 모델. 비어 있으면 목록에 "설정 없음"으로만 뜬다.
+  LLM_LUNA_KEY: ${LLM_LUNA_KEY:-}
+  LLM_LUNA_ENDPOINT: ${LLM_LUNA_ENDPOINT:-}
+  LLM_LUNA_DEPLOYMENT: ${LLM_LUNA_DEPLOYMENT:-}
+  LLM_CLAUDE_KEY: ${LLM_CLAUDE_KEY:-}
+  LLM_CLAUDE_ENDPOINT: ${LLM_CLAUDE_ENDPOINT:-}
+  LLM_CLAUDE_DEPLOYMENT: ${LLM_CLAUDE_DEPLOYMENT:-}
+  Fabric_ID: ${Fabric_ID:-}
+  Fabric_PW: ${Fabric_PW:-}
+  FABRIC_SQL_CLIENT_ID: ${FABRIC_SQL_CLIENT_ID:-}
+  FABRIC_SQL_TENANT_ID: ${FABRIC_SQL_TENANT_ID:-}
+
+services:
+  service:
+    build: *service-build
+    image: toyota-dashboard-service:local
+    container_name: toyota-dashboard-service
+    restart: unless-stopped
+    environment: *service-env
+    volumes:
+      # 공개키만 읽는다 — 개인키(서명)는 어드민만 갖는다.
+      - ./admin/backend/certs:/app/certs:ro
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  admin-backend:
+    build:
+      context: .
+      dockerfile: docker/admin-backend.Dockerfile
+    image: toyota-dashboard-admin-backend:local
+    container_name: toyota-dashboard-admin-backend
+    restart: unless-stopped
+    environment:
+      <<: *admin-db-env
+      APP_ENV: docker
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      ALLOWED_ORIGINS: ${ADMIN_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:8088,http://127.0.0.1:8088}
+      SECRET_KEY: ${ADMIN_SECRET_KEY:?Set ADMIN_SECRET_KEY in the root .env file}
+      ALGORITHM: HS256
+      SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-3600}
+      SERVICE_API_KEY: ${SERVICE_API_KEY:-}
+      LOG_LEVEL: ${ADMIN_LOG_LEVEL:-INFO}
+      LOG_SHOW_CONSOLE: "true"
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-RS256}
+      JWT_PRIVATE_KEY_PATH: /app/certs/private.pem
+      JWT_PUBLIC_KEY_PATH: /app/certs/public.pem
+      JWT_PRIVATE_KEY_BASE64: ${JWT_PRIVATE_KEY_BASE64:-}
+      JWT_PUBLIC_KEY_BASE64: ${JWT_PUBLIC_KEY_BASE64:-}
+      AZURE_AD_TENANT_ID: ${AZURE_AD_TENANT_ID:-}
+      AZURE_AD_CLIENT_ID: ${AZURE_AD_CLIENT_ID:-}
+      AZURE_AD_CLIENT_SECRET: ${AZURE_AD_CLIENT_SECRET:-}
+    volumes:
+      - ./admin/backend/certs:/app/certs:ro
+    ports:
+      - "${ADMIN_API_PORT:-8090}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/ping', timeout=3)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  admin-frontend:
+    build:
+      context: .
+      dockerfile: docker/admin-frontend.Dockerfile
+    image: toyota-dashboard-admin-frontend:local
+    container_name: toyota-dashboard-admin-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 80
+      VITE_BASE_OS_API_URL: ${PUBLIC_ADMIN_API_URL:-http://localhost:8090}
+      VITE_BASE_AI_AGENT_API_URL: ${PUBLIC_SERVICE_URL:-http://localhost:3000}
+      VITE_LOG_API_URL: /api/logs
+      VITE_TOKEN: ${ADMIN_FRONTEND_TOKEN_KEY:-toyota_dashboard_admin_token}
+      VITE_TOKEN_EXPIRY_LIMIT: ${VITE_TOKEN_EXPIRY_LIMIT:-3600}
+      VITE_INACTIVITY_TIMEOUT: ${VITE_INACTIVITY_TIMEOUT:-3600}
+      VITE_DEMO_MODE: ${VITE_DEMO_MODE:-false}
+      VITE_AZURE_AD_TENANT_ID: ${VITE_AZURE_AD_TENANT_ID:-}
+      VITE_AZURE_AD_CLIENT_ID: ${VITE_AZURE_AD_CLIENT_ID:-}
+    ports:
+      - "${ADMIN_FRONTEND_PORT:-8088}:80"
+    depends_on:
+      admin-backend:
+        condition: service_healthy
+
+  admin-bootstrap:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: docker/admin-backend.Dockerfile
+    image: toyota-dashboard-admin-backend:local
+    environment:
+      <<: *admin-db-env
+      ADMIN_BOOTSTRAP_EMAIL: ${ADMIN_BOOTSTRAP_EMAIL:-}
+      ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:-}
+      ADMIN_BOOTSTRAP_NAME: ${ADMIN_BOOTSTRAP_NAME:-Toyota Admin}
+      ADMIN_BOOTSTRAP_SCOPE_KEY: ${ADMIN_BOOTSTRAP_SCOPE_KEY:-hq}
+      ADMIN_BOOTSTRAP_ROLE: ${ADMIN_BOOTSTRAP_ROLE:-admin}
+      ADMIN_BOOTSTRAP_ACCESS: ${ADMIN_BOOTSTRAP_ACCESS:-full access}
+      ADMIN_BOOTSTRAP_LANGUAGE: ${ADMIN_BOOTSTRAP_LANGUAGE:-kr}
+      ADMIN_BOOTSTRAP_UPDATE_EXISTING: ${ADMIN_BOOTSTRAP_UPDATE_EXISTING:-false}
+    command: ["python", "scripts/bootstrap_admin.py"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # 개발 계정(121212) 재적용. 새 볼륨이면 initdb 가 060 을 이미 돌리지만,
+  # 이미 쓰던 볼륨에는 initdb 가 다시 돌지 않으므로 이 서비스로 넣는다. 멱등하다.
+  dev-accounts:
+    profiles: ["tools"]
+    image: postgres:16-alpine
+    environment:
+      PGPASSWORD: ${PG_PASSWORD:-dashboard}
+      PGCLIENTENCODING: UTF8
+    volumes:
+      - ./db/admin/060_dev_accounts.sql:/sql/060_dev_accounts.sql:ro
+    command:
+      - psql
+      - -h
+      - postgres
+      - -U
+      - ${PG_USER:-dashboard}
+      - -d
+      - ${PG_DATABASE:-toyota_dashboard}
+      - -v
+      - ON_ERROR_STOP=1
+      - -f
+      - /sql/060_dev_accounts.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  db-seed:
+    profiles: ["tools"]
+    build: *service-build
+    image: toyota-dashboard-service:local
+    environment: *service-env
+    command: ["npm", "run", "db:seed"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  rag-seed:
+    profiles: ["tools"]
+    build: *service-build
+    image: toyota-dashboard-service:local
+    environment: *service-env
+    command: ["npm", "run", "rag:seed"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  rag-embeddings:
+    profiles: ["tools"]
+    build: *service-build
+    image: toyota-dashboard-service:local
+    environment: *service-env
+    command: ["npm", "run", "rag:embeddings"]
+    depends_on:
+      chroma:
+        condition: service_started
+    restart: "no"
+
+  rag-check:
+    profiles: ["tools"]
+    build: *service-build
+    image: toyota-dashboard-service:local
+    environment: *service-env
+    command: ["npm", "run", "rag:check"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+    restart: "no"
+
+  chroma-browser:
+    profiles: ["tools"]
+    build: *service-build
+    image: toyota-dashboard-service:local
+    container_name: toyota-dashboard-chroma-browser
+    environment:
+      <<: *service-env
+      CHROMA_BROWSER_PORT: 3002
+    command: ["npm", "run", "chroma:browser"]
+    ports:
+      - "${CHROMA_BROWSER_PORT:-3002}:3002"
+    depends_on:
+      chroma:
+        condition: service_started
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: toyota-dashboard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER:-dashboard}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-dashboard}
+      POSTGRES_DB: ${PG_DATABASE:-toyota_dashboard}
+    ports:
+      - "${PG_PORT:-5433}:5432"
+    volumes:
+      - dashboard_pg_data:/var/lib/postgresql/data
+      - ./db/service/001_app_schema.sql:/docker-entrypoint-initdb.d/001_service_app_schema.sql:ro
+      - ./db/service/002_rag_poc.sql:/docker-entrypoint-initdb.d/002_service_rag_poc.sql:ro
+      - ./db/service/005_dashboard_object_store.sql:/docker-entrypoint-initdb.d/005_service_dashboard_object_store.sql:ro
+      - ./db/service/006_table_column_visibility.sql:/docker-entrypoint-initdb.d/006_service_table_column_visibility.sql:ro
+      - ./db/service/007_dashboard_page_owner.sql:/docker-entrypoint-initdb.d/007_service_dashboard_page_owner.sql:ro
+      - ./db/admin/010_admin_schema.sql:/docker-entrypoint-initdb.d/010_admin_schema.sql:ro
+      - ./db/admin/050_admin_link.sql:/docker-entrypoint-initdb.d/050_admin_link.sql:ro
+      - ./db/admin/060_dev_accounts.sql:/docker-entrypoint-initdb.d/060_dev_accounts.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-dashboard} -d ${PG_DATABASE:-toyota_dashboard}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: toyota-dashboard-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  chroma:
+    image: chromadb/chroma:latest
+    container_name: toyota-dashboard-chroma
+    restart: unless-stopped
+    environment:
+      IS_PERSISTENT: "TRUE"
+      ANONYMIZED_TELEMETRY: "FALSE"
+    ports:
+      - "${CHROMA_PORT:-8000}:8000"
+    volumes:
+      - dashboard_chroma_data:/chroma/chroma
+
+volumes:
+  dashboard_pg_data:
+  dashboard_chroma_data:

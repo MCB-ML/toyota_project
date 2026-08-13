@@ -1,0 +1,330 @@
+table: "FCT_ACTIVITY_v2"
+description: "CRM 영업활동 팩트 테이블. '활동 건수/실적 건수'를 묻는 질문은 이 테이블이 정답이다 — actual_cnt 컬럼에 실적으로 인정되는지 여부가 이미 0/1로 계산되어 있어, CO_CODE를 직접 조인해 활동유형을 재분류할 필요가 없다."
+database: "KPI_W"
+schema: "ktws"
+grain: "활동번호(act_pk) 단위의 CRM 활동 실적."
+columns:
+  -
+    name: "cnt"
+    type: "int"
+    description: "활동카운트. 활동 건수를 집계할 때 SUM한다."
+  -
+    name: "act_pk"
+    type: "varchar(100)"
+    description: "활동번호. 이 테이블의 기준 키(원본 crm_act.act_seq)."
+  -
+    name: "lead_key"
+    type: "varchar(200)"
+    description: "영업기회키(원본 crm_act.lead_id). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "sc_key"
+    type: "varchar(200)"
+    description: "SC연결키. DIM_MNG_USER와 조인해 담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+  -
+    name: "td_key"
+    type: "varchar(200)"
+    description: "시승키(예약일자+시작시간+시승차번호 조합). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "act_tp"
+    type: "varchar(100)"
+    description: "활동유형 원본 코드값. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "prior_act_tp"
+    type: "varchar(100)"
+    description: "활동파생유형(P120 소개 유형에는 없음). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "cust_key"
+    type: "varchar(200)"
+    description: "고객키. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "actual_cnt"
+    type: "int"
+    description: "실적카운트 — 해당 활동이 KPI상 '실적'으로 인정되는지 이미 0/1로 계산되어 있다. '실적 건수'를 묻는 질문은 cnt가 아니라 이 컬럼을 SUM해야 한다."
+  -
+    name: "contact_tp"
+    type: "varchar(100)"
+    description: "활동방법(전화/방문 등). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "sr_var_key1"
+    type: "varchar(200)"
+    description: "상담차종키1. DIM_VEHIC_SPEC_VAR와 조인할 수 있다."
+  -
+    name: "sr_var_key2"
+    type: "varchar(200)"
+    description: "상담차종키2."
+  -
+    name: "other_comp_brand"
+    type: "varchar(200)"
+    description: "비교브랜드(타사). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "other_comp_model"
+    type: "varchar(200)"
+    description: "비교모델(타사). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "owned_car_brand"
+    type: "varchar(200)"
+    description: "소유차량브랜드. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "owned_car_model"
+    type: "varchar(200)"
+    description: "소유차량모델. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "sr_active_result"
+    type: "varchar(100)"
+    description: "상담결과. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "cust_reponse"
+    type: "varchar(200)"
+    description: "고객반응. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "tel_yn"
+    type: "varchar(100)"
+    description: "통화여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "dm_yn"
+    type: "varchar(100)"
+    description: "DM가능여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "plan_dt_fr"
+    type: "date"
+    description: "계획일자. 활동을 계획한 날짜 — 실적/건수 집계에는 이 컬럼이 아니라 act_dt_fr을 쓴다."
+  -
+    name: "plan_dt_to"
+    type: "date"
+    description: "계획종료일자."
+  -
+    name: "act_dt_fr"
+    type: "date"
+    description: "활동시작일자(실제 활동일). DIM_CALENDAR_KTWS.Date와 조인하며, '이번달 활동 건수' 같은 기간 필터는 이 컬럼 기준이다."
+  -
+    name: "act_dt_to"
+    type: "date"
+    description: "활동종료일자."
+  -
+    name: "del_dt"
+    type: "date"
+    description: "삭제일자. 유효한 활동만 보려면 이 컬럼이 NULL인 행만 사용한다."
+  -
+    name: "act_result"
+    type: "varchar(100)"
+    description: "활동결과. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "name"
+    type: "varchar(100)"
+    description: "고객명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "act_memo"
+    type: "varchar(max)"
+    description: "활동메모."
+  -
+    name: "sr_remark"
+    type: "varchar(max)"
+    description: "상담비고."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+  -
+    name: "tp_key"
+    type: "varchar(100)"
+    description: "활동유형키. DIM_CRM_ACT_TYPE과 조인해 활동유형의 상위카테고리(tp_grp_1/tp_grp_2)를 조회할 때 사용한다."
+semantics:
+  role:
+    - "ACTIVITY_FACT"
+    - "CRM_ACTIVITY"
+  keys:
+    primary:
+      - "act_pk"
+    foreign:
+      -
+        column: "sc_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_USER"
+          column: "sc_key"
+        description: "담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+      -
+        column: "tp_key"
+        references:
+          schema: "ktws"
+          table: "DIM_CRM_ACT_TYPE"
+          column: "tp_key"
+        description: "활동유형의 이름과 상위카테고리(연락/방문/소개 등)를 조회할 때 사용한다."
+      -
+        column: "act_dt_fr"
+        references:
+          schema: "ktws"
+          table: "DIM_CALENDAR_KTWS"
+          column: "Date"
+        description: "날짜 차원(연/월/분기/주차 등)으로 그룹핑할 때 사용한다."
+filters:
+  -
+    column: "tel_yn"
+    description: "통화여부"
+  -
+    column: "dm_yn"
+    description: "DM가능여부"
+dimensions:
+  - "act_pk"
+  - "lead_key"
+  - "sc_key"
+  - "td_key"
+  - "act_tp"
+  - "prior_act_tp"
+  - "cust_key"
+  - "contact_tp"
+  - "sr_var_key1"
+  - "sr_var_key2"
+  - "other_comp_brand"
+  - "other_comp_model"
+  - "owned_car_brand"
+  - "owned_car_model"
+  - "sr_active_result"
+  - "cust_reponse"
+  - "plan_dt_fr"
+  - "plan_dt_to"
+  - "act_dt_fr"
+  - "act_dt_to"
+  - "del_dt"
+  - "act_result"
+  - "name"
+  - "tp_key"
+features:
+  -
+    name: "cnt"
+    synonyms:
+      - "활동카운트"
+  -
+    name: "act_pk"
+    synonyms:
+      - "활동번호"
+  -
+    name: "lead_key"
+    synonyms:
+      - "영업기회키"
+  -
+    name: "sc_key"
+    synonyms:
+      - "SC연결키"
+  -
+    name: "td_key"
+    synonyms:
+      - "시승키"
+  -
+    name: "act_tp"
+    synonyms:
+      - "활동유형"
+  -
+    name: "prior_act_tp"
+    synonyms:
+      - "활동파생유형"
+  -
+    name: "cust_key"
+    synonyms:
+      - "고객키"
+  -
+    name: "actual_cnt"
+    synonyms:
+      - "실적카운트"
+  -
+    name: "contact_tp"
+    synonyms:
+      - "활동방법"
+  -
+    name: "sr_var_key1"
+    synonyms:
+      - "상담차종키1"
+  -
+    name: "sr_var_key2"
+    synonyms:
+      - "상담차종키2"
+  -
+    name: "other_comp_brand"
+    synonyms:
+      - "비교브랜드"
+  -
+    name: "other_comp_model"
+    synonyms:
+      - "비교모델"
+  -
+    name: "owned_car_brand"
+    synonyms:
+      - "소유차량브랜드"
+  -
+    name: "owned_car_model"
+    synonyms:
+      - "소유차량모델"
+  -
+    name: "sr_active_result"
+    synonyms:
+      - "상담결과"
+  -
+    name: "cust_reponse"
+    synonyms:
+      - "고객반응"
+  -
+    name: "tel_yn"
+    synonyms:
+      - "통화여부"
+  -
+    name: "dm_yn"
+    synonyms:
+      - "DM가능여부"
+  -
+    name: "plan_dt_fr"
+    synonyms:
+      - "계획일자"
+  -
+    name: "plan_dt_to"
+    synonyms:
+      - "계획종료일자"
+  -
+    name: "act_dt_fr"
+    synonyms:
+      - "활동시작일자"
+  -
+    name: "act_dt_to"
+    synonyms:
+      - "활동종료일자"
+  -
+    name: "del_dt"
+    synonyms:
+      - "삭제일자"
+  -
+    name: "act_result"
+    synonyms:
+      - "활동결과"
+  -
+    name: "name"
+    synonyms:
+      - "고객명"
+  -
+    name: "act_memo"
+    synonyms:
+      - "활동메모"
+  -
+    name: "sr_remark"
+    synonyms:
+      - "상담비고"
+  -
+    name: "tp_key"
+    synonyms:
+      - "활동유형키"
+measures:
+  -
+    name: "cnt"
+    aggregation: "sum"
+    description: "활동카운트"
+  -
+    name: "actual_cnt"
+    aggregation: "sum"
+    description: "실적카운트 — 실제 KPI 실적으로 인정되는 활동 건수"
+display:
+  default_columns:
+    - "act_pk"
+    - "sc_key"
+    - "tp_key"
+    - "act_dt_fr"
+    - "cust_key"
+    - "name"
+    - "act_result"

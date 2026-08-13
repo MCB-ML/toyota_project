@@ -1,0 +1,154 @@
+table: "FCT_SALES_TARGET_DAILY"
+description: "딜러/모델별 일일 계약·출고 타겟 팩트 테이블. ac_trgt=출고(딜리버리) 타겟, co_trgt=계약 타겟이다 — 이름만 보면 반대로 헷갈리기 쉬우니 주의."
+database: "KPI_W"
+schema: "ktws"
+grain: "딜러키+모델키+타겟할당일자 단위의 일별 계약/출고 타겟."
+columns:
+  -
+    name: "dealer_key"
+    type: "varchar(100)"
+    description: "딜러키. DIM_MNG_DEALER와 조인해 딜러명을 조회할 때 사용한다."
+  -
+    name: "brand_cd"
+    type: "varchar(10)"
+    description: "브랜드코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "model_key"
+    type: "varchar(100)"
+    description: "차량유형키(모델단위). DIM_VEHIC_SPEC_MDL과 조인해 모델명을 조회할 때 사용한다."
+  -
+    name: "mon_target_variant"
+    type: "varchar(100)"
+    description: "타겟차종명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "dateby"
+    type: "date"
+    description: "타겟할당일자. DIM_CALENDAR_KTWS.Date와 조인할 때 사용한다."
+  -
+    name: "ac_trgt"
+    type: "decimal(18,0)"
+    description: "출고타겟(월누적). '출고 목표'를 물으면 이 컬럼이다 — 계약 타겟이 아니다."
+  -
+    name: "co_trgt"
+    type: "decimal(18,0)"
+    description: "계약타겟(월누적). '계약 목표'를 물으면 이 컬럼이다 — 출고 타겟이 아니다."
+  -
+    name: "ac_trgt_daily"
+    type: "decimal(18,0)"
+    description: "출고타겟(일일)."
+  -
+    name: "co_trgt_daily"
+    type: "decimal(18,0)"
+    description: "계약타겟(일일)."
+  -
+    name: "BRAND"
+    type: "varchar(20)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "SALES_TARGET_FACT"
+    - "DAILY_TARGET"
+  keys:
+    primary:
+      - "dealer_key"
+      - "model_key"
+      - "dateby"
+    foreign:
+      -
+        column: "dealer_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_DEALER"
+          column: "dealer_key"
+        description: "딜러명을 조회할 때 사용한다."
+      -
+        column: "model_key"
+        references:
+          schema: "ktws"
+          table: "DIM_VEHIC_SPEC_MDL"
+          column: "mdl_key"
+        description: "모델명을 조회할 때 사용한다."
+      -
+        column: "dateby"
+        references:
+          schema: "ktws"
+          table: "DIM_CALENDAR_KTWS"
+          column: "Date"
+        description: "날짜 차원으로 그룹핑할 때 사용한다."
+dimensions:
+  - "dealer_key"
+  - "brand_cd"
+  - "model_key"
+  - "mon_target_variant"
+  - "dateby"
+  - "BRAND"
+features:
+  -
+    name: "dealer_key"
+    synonyms:
+      - "딜러키"
+  -
+    name: "brand_cd"
+    synonyms:
+      - "브랜드코드"
+  -
+    name: "model_key"
+    synonyms:
+      - "차량유형키"
+  -
+    name: "mon_target_variant"
+    synonyms:
+      - "타겟차종명"
+  -
+    name: "dateby"
+    synonyms:
+      - "타겟할당일자"
+  -
+    name: "ac_trgt"
+    synonyms:
+      - "출고타겟(월누적)"
+  -
+    name: "co_trgt"
+    synonyms:
+      - "계약타겟(월누적)"
+  -
+    name: "ac_trgt_daily"
+    synonyms:
+      - "출고타겟(일일)"
+  -
+    name: "co_trgt_daily"
+    synonyms:
+      - "계약타겟(일일)"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+measures:
+  -
+    name: "ac_trgt"
+    aggregation: "sum"
+    description: "출고타겟(월누적)"
+  -
+    name: "co_trgt"
+    aggregation: "sum"
+    description: "계약타겟(월누적)"
+  -
+    name: "ac_trgt_daily"
+    aggregation: "sum"
+    description: "출고타겟(일일)"
+  -
+    name: "co_trgt_daily"
+    aggregation: "sum"
+    description: "계약타겟(일일)"
+display:
+  default_columns:
+    - "dealer_key"
+    - "brand_cd"
+    - "model_key"
+    - "dateby"
+    - "ac_trgt"
+    - "co_trgt"

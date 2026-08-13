@@ -1,0 +1,51 @@
+# Semantic Model Index — 이 디렉터리의 파일들을 어떻게 조합해 읽는지에 대한 지도.
+# app/semantic/registry.py가 부팅 시 이 인덱스를 따라 전체 파일을 로드해 인메모리 레지스트리를 만든다.
+
+version: "0.1.0-draft"
+generated_from:
+  workbook: ktws_측정값_쿼리화.xlsx
+  inventory: agentic_bi_design/inventory/
+  sheets_covered: 13
+  gold_sql_analyzed: 67
+
+files:
+  ontology:
+    - ontology/ontology.yaml
+    - ontology/entities.yaml
+    - ontology/relationships.yaml
+    - ontology/business_vocabulary.yaml
+  metrics:
+    - semantic/metrics/activity_metrics.yaml
+    - semantic/metrics/lead_metrics.yaml
+    - semantic/metrics/testdrive_metrics.yaml
+    - semantic/metrics/contract_metrics.yaml
+    - semantic/metrics/delivery_metrics.yaml
+    - semantic/metrics/target_metrics.yaml
+  supporting:
+    - semantic/dimensions.yaml
+    - semantic/joins.yaml
+    - semantic/filters.yaml
+    - semantic/time_semantics.yaml
+    - semantic/security_policies.yaml
+
+metric_count_by_status:
+  # registry.js가 부팅 시 재계산해서 이 값과 어긋나면 경고 로그를 남기도록 설계할 것
+  total: 37  # registry.js loadRegistry() 실측치 (2026-07-23)
+  high_confidence: 25
+  medium_confidence: 6
+  low_confidence_or_unresolved: 6
+
+coverage_note: >
+  이 draft는 148개 원문 측정값 문자열(measure_inventory.json) 전부를 1:1로 옮긴 것이
+  아니라, 대표성 있는 원자(atomic) 지표 38개를 우선 구축한 것이다. 나머지는 대부분
+  이 원자 지표들의 재조합(coalesce/cond/버전 변형)이거나 컬럼 정의서가 없어 unresolved로
+  남겨야 하는 것들이다 — migration/migration_classification.json의 B/C 분류, 그리고
+  ontology/business_vocabulary.yaml의 unresolved 항목들이 "다음에 무엇을 더 채워야
+  하는지"의 목록 역할을 한다.
+
+extension_policy: >
+  새 Metric을 추가할 때: (1) 반드시 sql_metadata.json의 sql_id 또는 measure_inventory.json의
+  row_id를 source_evidence로 남긴다. (2) ratio/conversion/progress 타입은 numerator_metric/
+  denominator_metric을 반드시 별도 metric_id로 명시한다(값 자체를 expression에 인라인하지 않음).
+  (3) 하나의 거대 파일에 몰아넣지 않고 도메인별 파일(activity/lead/testdrive/contract/
+  delivery/target)에 분리해서 추가한다.

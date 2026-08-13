@@ -1,0 +1,298 @@
+# [퍼널 전체 구조] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx의 "1-1. KTWS 퍼널 월별 현황" 페이지 NO=24 '퍼널 전체 구조' —
+# 그 페이지의 23개 측정값을 한 쿼리로 계산하는 최종 통합 GOLD다.
+# activity_funnel_status(1-2 페이지, 11개 지표)와 달리 시승(test-drive) 9개 지표와
+# as-of 일자(@day) 개념이 들어 있다.
+
+report_id: funnel_full_structure
+version: v1
+title: 퍼널 전체 구조 (활동·기회·계약·시승)
+description: >
+  연×월(선택 시 특정 일자까지) 기준 활동→기회→시승→계약 퍼널 23개 지표를
+  브랜드/딜러/전시장/팀/SC×활동유형분류×활동유형 레벨로 집계하고 합계 행을 덧붙인 표.
+  Power BI [1-1. KTWS 퍼널 월별 현황] 화면의 전체 지표를 담는다.
+
+sql_file: sql/funnel_full_structure.sql
+
+# 원본 추적. 엑셀 셀은 32,767자 상한에 걸려 잘려 있어(G27) 사용자가 별도 제공한
+# 온전한 원문을 썼다. 등록 SQL은 여기서 파라미터 DECLARE만 제거한 것이다.
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 1-1. KTWS 퍼널 월별 현황
+  cell: G27
+  no: 24
+  value_name: 퍼널 전체 구조
+  untruncated_source: docs/퍼널 쿼리.txt
+  note: >
+    엑셀 셀에는 32,767자까지만 저장되어 JOIN 조건 중간에서 잘려 있다
+    (...LEFT JOIN contract_td_activity_count AS CTDAC ON FK.sc_key = CTDAC.sc_key AND).
+    따라서 워크북 셀이 아니라 docs/퍼널 쿼리.txt(37,239자)를 정본으로 삼는다.
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 10개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지. 페이지 고정 상수와 파생 변수는 원문 그대로 유지.
+
+# LF 기준 해시로 적는다. registry의 sqlSha256Matches는 실제 본문을 LF로 정규화해
+# 대조하므로 LF 해시는 CRLF 체크아웃에서도 통과하지만, CRLF 해시는 LF 체크아웃에서 깨진다
+# (core.autocrlf=true라 사람마다 체크아웃 줄바꿈이 다르다).
+sql_sha256: 5676d709ccaa4b32719dbeed87f22b0217d1ea436f01fde0f004ecf4eb20cddc
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: true
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+  note: >
+    이 쿼리는 STRING_SPLIT을 13회 쓴다. activity_funnel_status(v3)가 LIKE 패딩으로
+    우회했던 8623 오류가 여기서 재현되는지는 실행으로 확인해야 한다.
+
+# ── 파라미터 ────────────────────────────────────────────────────────────────
+# 전부 NULL 또는 빈 문자열이면 전체. v3와 달리 빈 문자열을 "전체"로 쓰기 때문에
+# Fabric의 NULL 연결 문제(N',' + NULL + N',' = ',,')를 구조적으로 회피한다.
+parameters:
+  - name: year
+    sql_type: int
+    nullable: true
+    description: "연도(예: 2026)."
+  - name: month
+    sql_type: int
+    nullable: true
+    min: 1
+    max: 12
+    description: 월 1~12.
+  - name: day
+    sql_type: int
+    nullable: true
+    min: 1
+    max: 31
+    description: >
+      NULL이면 해당 월 말일 기준 MTD, 값이 있으면 그 일자까지의 MTD.
+      v3에는 없던 as-of 개념이라 "N일 기준"을 물었을 때만 채운다.
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[BRAND]
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: DIM_MNG_DEALER[dealer_nm]
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[group_name] 전시장
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[dept_nm] 팀
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: DIM_MNG_USER[active_yn]
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: sales_consultant
+    description: >
+      'ALL' 또는 빈 값이면 전체 SC. 특정 이름을 주면 해당 SC만.
+      v3와 달리 SC 열은 항상 존재하므로 출력 스키마가 바뀌지는 않는다.
+  - name: common_tp_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: 활동유형(DIM_CRM_ACT_TYPE_ORDER[common_tp_nm])
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# ── 출력 컬럼 ───────────────────────────────────────────────────────────────
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: brand,             column: 브랜드 }
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: department,        column: 팀 }
+  - { id: sales_consultant,  column: SC }
+  - { id: activity_type,     column: 활동유형 }
+
+dimension_columns:
+  branch_a: ['집계구분', '브랜드', '딜러', '전시장', '팀', 'SC', '활동유형분류', '활동유형']
+  branch_b: ['집계구분', '브랜드', '딜러', '전시장', '팀', 'SC', '활동유형분류', '활동유형']
+
+total_row:
+  detect_by: { column: '집계구분', equals: '합계' }
+  note: >
+    이 쿼리는 grand_total CTE로 합계 행을 직접 만든다(집계구분='합계').
+    상세 행은 '상세'. 애플리케이션에서 다시 집계하지 말 것.
+
+# ── 컬럼 의미론 ─────────────────────────────────────────────────────────────
+# v3와 달리 계약목표도 상세 행 grain에서 계산되는지 아직 실측하지 않았다.
+# 확인 전까지 목표·비율 컬럼은 보수적으로 직접 집계를 금지한다.
+column_semantics:
+  '영업활동 건 수':                          { type: additive, grain: row, derived_metric: activity_actual }
+  '영업활동 당월 목표':                       { type: additive, grain: row, derived_metric: activity_target }
+  '영업기회 건 수(당월활동실적)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: lead_actual
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '영업기회 건 수(당월전체실적)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: lead_total_actual
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '영업기회 당월 목표':                       { type: additive, grain: row, derived_metric: lead_target }
+  '계약건수(당월활동실적)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: contract_actual
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '계약건수(당월전체실적)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: contract_total_actual
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '계약 당월 목표':
+    type: separate_total_cte
+    direct_sum_forbidden: true
+    derived_metric: contract_target
+    note: >
+      상세 행에서는 복구할 수 없다. GOLD가 상세용 CTE와 합계용 overall_* CTE를 따로
+      두고 자격 조건도 다르게 걸기 때문에, 더하든 중복 제거하든 합계가 나오지 않는다.
+      2026-04 실측(브랜드 TOYOTA+LEXUS): 상세합 25,288, 합계행 3,161.
+      다른 grain의 값이 필요하면 funnelDerived가 overall_* CTE를 그 grain으로 다시 돌린다.
+
+  '시승건수(당월활동실적/시승완료)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: testdrive_actual
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '시승건수(당월활동실적/시승취소건 제외)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: testdrive_no_cancel
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '시승건수(당월전체실적/lead_key 기준)':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: testdrive_total_lead
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '시승건수(당월전체실적/actual_cnt 기준)':
+    type: separate_total_cte
+    direct_sum_forbidden: true
+    derived_metric: testdrive_total_actual
+    note: >
+      상세 행에서는 복구할 수 없다. GOLD가 상세용 CTE와 합계용 overall_* CTE를 따로
+      두고 자격 조건도 다르게 걸기 때문에, 더하든 중복 제거하든 합계가 나오지 않는다.
+      2026-04 실측(브랜드 TOYOTA+LEXUS): 상세합 3,461, 합계행 3,475.
+      다른 grain의 값이 필요하면 funnelDerived가 overall_* CTE를 그 grain으로 다시 돌린다.
+
+  '시승 당월 목표':
+    type: separate_total_cte
+    direct_sum_forbidden: true
+    derived_metric: testdrive_target
+    note: >
+      상세 행에서는 복구할 수 없다. GOLD가 상세용 CTE와 합계용 overall_* CTE를 따로
+      두고 자격 조건도 다르게 걸기 때문에, 더하든 중복 제거하든 합계가 나오지 않는다.
+      2026-04 실측(브랜드 TOYOTA+LEXUS): 상세합 41,872, 합계행 5,234.
+      다른 grain의 값이 필요하면 funnelDerived가 overall_* CTE를 그 grain으로 다시 돌린다.
+
+  '시승에서 계약으로 당월활동실적':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: testdrive_to_contract_actual
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '시승에서 계약으로 당월전체실적':
+    type: distinct_count
+    direct_sum_forbidden: true
+    derived_metric: testdrive_to_contract_total
+    note: >
+      COUNT(DISTINCT lead_key) 기반이라 셀을 더해도 상위 합계가 나오지 않는다.
+      라이브 확인(2026-04 재직+브랜드): 상세 행 합은 기회 8,624 / 계약 1,525 인데
+      SQL 합계행은 8,692 / 1,532 이다 — 합계는 overall_* CTE가 따로 DISTINCT 계산한다.
+      다른 grain의 값이 필요하면 그 grain으로 리포트를 다시 조회할 것.
+  '영업활동 진행률': { type: ratio, numerator: '영업활동 건 수', denominator: '영업활동 당월 목표',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '영업활동에서 영업기회로의 전환율': { type: ratio, numerator: '영업기회 건 수(당월활동실적)', denominator: '영업활동 건 수',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+  '영업기회 진행률': { type: ratio, numerator: '영업기회 건 수(당월활동실적)', denominator: '영업기회 당월 목표',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '영업기회에서 계약으로 전환율': { type: ratio, numerator: '계약건수(당월활동실적)', denominator: '영업기회 건 수(당월활동실적)',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+  # 이 비율만 분자를 다시 만들 수 없다. GOLD는 표시되는 계약건수와 **다른 값**을 분자로 쓴다:
+  #   COALESCE(CAC.cnt, 0) AS [계약건수(당월활동실적)]   ← overall_contract_activity_count
+  #   CPC.cnt / CT.cnt     AS [계약 진행률]              ← overall_contract_progress_count
+  # 두 CTE는 lead pool 한 줄이 다르다(overall_lead_activity_pool vs
+  # overall_contract_progress_lead_pool). CPC는 리포트 컬럼으로 나오지 않아 재계산이 불가능하다.
+  #
+  # 2026-08-05 실측(2026-04 렉서스 강남): GOLD 35.49% = 208/586.
+  # 표시 계약건수로 재계산하면 264/586 = 45.05% 로 9.6%p 부풀려진다.
+  # 그래서 recompute_ratio를 걸지 않는다 — 롤업 시 틀린 값을 내느니 비운다.
+  # GOLD가 직접 낸 행에서는 그대로 정확한 값이 나온다.
+  '계약 진행률': { type: ratio, denominator: '계약 당월 목표',
+      direct_average_forbidden: true, direct_sum_forbidden: true, ratio_basis: target,
+      recompute_impossible: '분자(overall_contract_progress_count)가 출력 컬럼으로 나오지 않는다' }
+  '영업기회에서 시승으로 전환율': { type: ratio, numerator: '시승건수(당월활동실적/시승완료)', denominator: '영업기회 건 수(당월활동실적)',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+  # 분자는 "당월전체실적(actual_cnt)"이다. 시승완료 건수(2,058)로 잡으면 39%가 나오는데
+  # BI 1-1 시승 카드는 66%다 — 3,475/5,234. GOLD의 최종 SELECT도 TDTAS/TDT로 같다.
+  # 2026-08-04 BI 직접 조회로 확인(브랜드 TOYOTA+LEXUS).
+  '시승 진행률': { type: ratio, numerator: '시승건수(당월전체실적/actual_cnt 기준)', denominator: '시승 당월 목표',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '시승에서 계약으로 전환율': { type: ratio, numerator: '시승에서 계약으로 당월활동실적', denominator: '시승건수(당월활동실적/시승완료)',
+      direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+
+format:
+  percentage: ['영업활동 진행률', '영업활동에서 영업기회로의 전환율', '영업기회 진행률',
+               '영업기회에서 계약으로 전환율', '계약 진행률', '영업기회에서 시승으로 전환율',
+               '시승 진행률', '시승에서 계약으로 전환율']
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — activity_funnel_status와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

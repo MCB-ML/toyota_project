@@ -1,0 +1,288 @@
+table: "FCT_LEAD"
+description: "영업기회(리드) 팩트 테이블. 퍼널(funnel) 단계별 리드 현황, 시승/종료/재구매 여부 등을 담는다."
+database: "KPI_W"
+schema: "ktws"
+grain: "영업기회키(lead_key/lead_id) 단위의 리드 실적."
+columns:
+  -
+    name: "cnt"
+    type: "int"
+    description: "영업기회카운트. 리드 건수를 집계할 때 SUM한다."
+  -
+    name: "lead_key"
+    type: "varchar(200)"
+    description: "영업기회키(lead_id와 동일 값). 이 테이블의 기준 키."
+  -
+    name: "lead_id"
+    type: "int"
+    description: "영업기회 id. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "cl_sc_key"
+    type: "varchar(200)"
+    description: "영업기회SC키. DIM_MNG_USER와 조인해 담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+  -
+    name: "cl_act_tp"
+    type: "varchar(200)"
+    description: "활동유형코드(파생유형 포함). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "ca_act_tp"
+    type: "varchar(200)"
+    description: "활동유형코드. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "tp_key"
+    type: "varchar(100)"
+    description: "활동유형키. DIM_CRM_ACT_TYPE과 조인해 활동유형의 상위카테고리를 조회할 때 사용한다."
+  -
+    name: "cust_nm"
+    type: "varchar(200)"
+    description: "고객명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "potential"
+    type: "varchar(200)"
+    description: "관심도. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "hot_upd_dt"
+    type: "date"
+    description: "HOT변경일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "repurc_yn"
+    type: "varchar(200)"
+    description: "재구매여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "in_td_2mon"
+    type: "varchar(20)"
+    description: "영업기회 등록 후 두 달 이내 시승 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "int_vehic_key1"
+    type: "varchar(200)"
+    description: "관심모델키1. DIM_VEHIC_SPEC_MDL과 조인해 관심 모델명을 조회할 때 사용한다."
+  -
+    name: "int_vehic_key2"
+    type: "varchar(200)"
+    description: "관심모델키2. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "prime_act_seq"
+    type: "varchar(200)"
+    description: "최초활동 시퀀스. FCT_ACTIVITY_v2.act_pk와 연결할 때 사용한다."
+  -
+    name: "prime_act_fr_dt"
+    type: "date"
+    description: "최초활동 일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "lead_reg_dt"
+    type: "date"
+    description: "리드 등록일자. DIM_CALENDAR_KTWS.Date와 조인하며, 리드 발생 건수의 기간 필터 기준이다."
+  -
+    name: "td_yn"
+    type: "varchar(20)"
+    description: "시승 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "closed_in_mon"
+    type: "varchar(20)"
+    description: "today() 기준 30일 이내 종료 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "close_dt"
+    type: "date"
+    description: "종료일자. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "close_yn"
+    type: "varchar(20)"
+    description: "종료여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "contract_dt"
+    type: "date"
+    description: "계약일자(계약으로 이어진 경우). 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "last_retail_sales_dt"
+    type: "date"
+    description: "출고일자(출고까지 이어진 경우). 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "LEAD_FACT"
+    - "SALES_FUNNEL"
+  keys:
+    primary:
+      - "lead_key"
+    foreign:
+      -
+        column: "cl_sc_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_USER"
+          column: "sc_key"
+        description: "담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+      -
+        column: "int_vehic_key1"
+        references:
+          schema: "ktws"
+          table: "DIM_VEHIC_SPEC_MDL"
+          column: "mdl_key"
+        description: "관심 모델명을 조회할 때 사용한다."
+      -
+        column: "lead_reg_dt"
+        references:
+          schema: "ktws"
+          table: "DIM_CALENDAR_KTWS"
+          column: "Date"
+        description: "날짜 차원(연/월/분기/주차 등)으로 그룹핑할 때 사용한다."
+      -
+        column: "tp_key"
+        references:
+          schema: "ktws"
+          table: "DIM_CRM_ACT_TYPE"
+          column: "tp_key"
+        description: "활동유형의 상위카테고리를 조회할 때 사용한다."
+filters:
+  -
+    column: "repurc_yn"
+    description: "재구매여부"
+  -
+    column: "in_td_2mon"
+    description: "영업기회 등록 후 두 달 이내 시승 여부"
+  -
+    column: "td_yn"
+    description: "시승 여부"
+  -
+    column: "closed_in_mon"
+    description: "today() 기준 30일 이내 종료 여부"
+  -
+    column: "close_yn"
+    description: "종료여부"
+dimensions:
+  - "lead_key"
+  - "lead_id"
+  - "cl_sc_key"
+  - "cl_act_tp"
+  - "ca_act_tp"
+  - "tp_key"
+  - "cust_nm"
+  - "potential"
+  - "hot_upd_dt"
+  - "int_vehic_key1"
+  - "int_vehic_key2"
+  - "prime_act_seq"
+  - "prime_act_fr_dt"
+  - "lead_reg_dt"
+  - "close_dt"
+  - "contract_dt"
+  - "last_retail_sales_dt"
+  - "BRAND"
+features:
+  -
+    name: "cnt"
+    synonyms:
+      - "영업기회카운트"
+  -
+    name: "lead_key"
+    synonyms:
+      - "영업기회키"
+  -
+    name: "lead_id"
+    synonyms:
+      - "영업기회 id"
+  -
+    name: "cl_sc_key"
+    synonyms:
+      - "영업기회SC키"
+  -
+    name: "cl_act_tp"
+    synonyms:
+      - "활동유형코드(파생유형 포함)"
+  -
+    name: "ca_act_tp"
+    synonyms:
+      - "활동유형코드"
+  -
+    name: "tp_key"
+    synonyms:
+      - "활동유형키"
+  -
+    name: "cust_nm"
+    synonyms:
+      - "고객명"
+  -
+    name: "potential"
+    synonyms:
+      - "관심도"
+  -
+    name: "hot_upd_dt"
+    synonyms:
+      - "HOT변경일자"
+  -
+    name: "repurc_yn"
+    synonyms:
+      - "재구매여부"
+  -
+    name: "in_td_2mon"
+    synonyms:
+      - "두 달이내 시승 여부"
+  -
+    name: "int_vehic_key1"
+    synonyms:
+      - "관심모델키1"
+  -
+    name: "int_vehic_key2"
+    synonyms:
+      - "관심모델키2"
+  -
+    name: "prime_act_seq"
+    synonyms:
+      - "최초활동 시퀀스"
+  -
+    name: "prime_act_fr_dt"
+    synonyms:
+      - "최초활동 일자"
+  -
+    name: "lead_reg_dt"
+    synonyms:
+      - "등록일자"
+  -
+    name: "td_yn"
+    synonyms:
+      - "시승 여부"
+  -
+    name: "closed_in_mon"
+    synonyms:
+      - "30일 이내 종료 여부"
+  -
+    name: "close_dt"
+    synonyms:
+      - "종료일자"
+  -
+    name: "close_yn"
+    synonyms:
+      - "종료여부"
+  -
+    name: "contract_dt"
+    synonyms:
+      - "계약일자"
+  -
+    name: "last_retail_sales_dt"
+    synonyms:
+      - "출고일자"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+measures:
+  -
+    name: "cnt"
+    aggregation: "sum"
+    description: "영업기회카운트"
+display:
+  default_columns:
+    - "lead_id"
+    - "cust_nm"
+    - "cl_sc_key"
+    - "potential"
+    - "lead_reg_dt"
+    - "close_yn"
+    - "tp_key"

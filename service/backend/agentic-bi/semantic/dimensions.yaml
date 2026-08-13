@@ -1,0 +1,194 @@
+# Registered Dimensions — Semantic Query IR의 "dimensions"/"filters"에 쓸 수 있는 유일한 값 목록.
+# (기존 server/rag-poc/knowledgeBase/dimensions.js와 개념은 동일 — 이 파일은 SQL 전용이 아니라
+# Ontology entity를 경유해 정의하므로 향후 DAX/Python 실행기에도 재사용 가능하도록 분리했다.)
+
+dimensions:
+  - id: brand
+    filter_order: 10
+    label_ko: 브랜드
+    query_aliases: ["브랜드", "brand"]
+    entity: Brand
+    column: {table: DIM_MNG_USER, column: BRAND}
+    value_type: enum
+    known_values: [LEXUS, TOYOTA]
+    source_evidence: [gold_1_1_001]
+
+  - id: dealer
+    filter_order: 20
+    label_ko: 딜러
+    query_aliases: ["딜러", "dealer"]
+    entity: Dealer
+    column: {table: DIM_MNG_DEALER, column: dealer_nm}
+    value_type: string
+    known_values: unresolved
+    required_input: ["딜러명 마스터 목록(현재는 LLM이 자유 텍스트로 추출 — glossary.js g06 참고)"]
+    source_evidence: [gold_1_1_001]
+
+  - id: showroom
+    filter_order: 30
+    label_ko: 전시장
+    query_aliases: ["전시장", "쇼룸", "지점"]
+    entity: Showroom
+    column: {table: DIM_MNG_USER, column: group_name}
+    value_type: string
+    source_evidence: [gold_1_2_025]
+
+  - id: department
+    filter_order: 40
+    label_ko: 부서/팀
+    query_aliases: ["부서", "팀", "팀명", "영업팀"]
+    entity: Department
+    column: {table: DIM_MNG_USER, column: dept_nm}
+    value_type: string
+    source_evidence: [gold_1_2_025]
+
+  - id: sales_consultant
+    filter_order: 50
+    label_ko: SC명
+    query_aliases: ["SC", "SC명", "영업사원", "세일즈컨설턴트"]
+    entity: SalesConsultant
+    column: {table: DIM_MNG_USER, column: name}
+    value_type: string
+    source_evidence: [gold_1_2_025]
+
+  - id: active_status
+    filter_order: 55
+    label_ko: 재직 상태
+    query_aliases: ["재직여부", "재직 상태", "재직"]
+    entity: SalesConsultant
+    column: {table: DIM_MNG_USER, column: active_yn}
+    value_type: enum
+    known_values: ["재직", "퇴직"]
+    source_evidence: [gold_1_2_025]
+
+  - id: activity_type
+    filter_order: 70
+    label_ko: 활동유형(대분류)
+    query_aliases: ["활동유형", "활동 유형", "활동유형(대분류)", "대분류"]
+    entity: ActivityTypeTaxonomy
+    column: {table: DIM_CRM_ACT_TYPE_ORDER, column: common_tp_nm}
+    value_type: enum
+    # 2026-08-06 실측(DIM_CRM_ACT_TYPE_ORDER 전수). 예전에는 unresolved라 LLM이 이 값들을
+    # 활동유형으로 알아보지 못했다 — "자사출고에 대한 시승 목표"에서 자사출고를 PMA 관내
+    # (pma_status=Y)로 붙였고, GOLD 파생이 걸 수 없는 필터라 답이 실패했다(평가 No.22).
+    known_values: ["A등급", "B등급", "C등급", "Cold", "Warm", "Hot",
+                   "견적", "계약", "계약취소", "관계형성 소개", "내방상담", "내전상담",
+                   "생일 연락", "시승결과", "시승예약", "시승완료", "신차", "신차상담",
+                   "영업기회", "온라인 유입", "자사출고", "잠재고객", "재구매", "출고",
+                   "출고 기념일 연락", "타사출고", "판촉", "활동기준대수"]
+    source_evidence: [gold_1_1_001, {note: "2026-08-06 라이브 DISTINCT 조회"}]
+
+  - id: activity_group
+    filter_order: 60
+    label_ko: 활동그룹
+    query_aliases: ["활동그룹", "활동 그룹", "활동유형분류"]
+    entity: ActivityTypeTaxonomy
+    column: {table: DIM_CRM_ACT_TYPE, column: tp_grp_1}
+    value_type: enum
+    # 2026-08-06 실측(DIM_CRM_ACT_TYPE_ORDER 전수). 전에는 2개만 적혀 있어 나머지를
+    # 활동그룹으로 알아보지 못했다. '연락·판매목표 대수·활동기준 대수'는 일부 GOLD가
+    # 상수로 제외하지만(daily_activity_progress), 차원 자체에는 실재하는 값이다.
+    known_values: [관계형성, 기회진행, 기회창출, 연락, 판매목표 대수, 활동기준 대수]
+    source_evidence: [gold_1_1_001, {note: "2026-08-06 라이브 DISTINCT 조회"}]
+
+  - id: vehicle_model
+    filter_order: 110
+    label_ko: 모델
+    query_aliases: ["모델", "차종", "차량모델"]
+    entity: VehicleModel
+    column: {table: DIM_VEHIC_SPEC_MDL, column: model_nm}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+
+  - id: vehicle_variant
+    filter_order: 120
+    label_ko: VARIANT
+    query_aliases: ["variant", "트림", "차량 variant"]
+    entity: VehicleVariant
+    column: {table: DIM_VEHIC_SPEC_VAR, column: variant_nm}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+
+  - id: vehicle_year
+    filter_order: 125
+    label_ko: 연식
+    query_aliases: ["연식", "MY", "model year", "차량 연식"]
+    entity: Grade
+    column: {table: DIM_VEHIC_SPEC, column: my_cd}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+  - id: grade_sfx
+    filter_order: 130
+    label_ko: GRADE(SFX)
+    query_aliases: ["등급", "grade", "sfx", "grade(sfx)"]
+    entity: Grade
+    column: {table: DIM_VEHIC_SPEC, column: sfx_cd}
+    value_type: string
+    source_evidence: [gold_2_1_046]
+
+  - id: pma_status
+    filter_order: 140
+    label_ko: PMA 관내/관외
+    query_aliases: ["pma", "관내", "관외", "pma 관내", "pma 관외"]
+    entity: Delivery
+    column: {table: FCT_CONTRACT_KTWS, column: pma_yn}
+    value_type: enum
+    known_values: ["Y (IN)", "N (OUT)", "etc"]
+    note: "반드시 3-way로 취급 — br_pma_three_way 참고. 2-way(<>'N')로 컴파일하는 코드는 SQL Compiler에서 거부해야 함."
+    source_evidence: [{note: "이전 세션 DMV 조사"}]
+
+  - id: time_year
+    label_ko: 연도
+    entity: WorkingDay
+    column: {table: DIM_CALENDAR_KTWS, column: Year}
+    derive_grain: year
+    value_type: date_grain
+    grain: year
+    filter_order: 10
+    query_aliases: ["년", "연도", "연", "year"]
+    source_evidence: [gold_1_1_001]
+
+  - id: time_month
+    label_ko: 월(YearMonth)
+    entity: WorkingDay
+    # 2026-07-27: 원래 column이 "Year/MonthNumber"라는 문서용 표기였다 — compiler.js의
+    # compileSingleMetricQuery는 dimension을 항상 단일 "table.column" 문자열로 그대로
+    # SELECT/GROUP BY에 꽂아 넣으므로(app/semantic/compiler.js 참고), "Year/MonthNumber"를
+    # 그대로 쓰면 나눗셈 연산자로 파싱되는 잘못된 SQL이 나간다. DIM_CALENDAR_KTWS에 이미
+    # 있는 단일 컬럼 YearMonth(varchar, "YYYY-MM" 형식 — DIM_CALENDAR_KTWS.yaml 참고)로
+    # 교체해 실제 컴파일 가능하게 했다.
+    column: {table: DIM_CALENDAR_KTWS, column: YearMonth}
+    derive_grain: month
+    value_type: date_grain
+    grain: month
+    filter_order: 20
+    query_aliases: ["월", "월별", "yearmonth"]
+    source_evidence: [gold_1_1_001]
+
+  - id: time_day
+    label_ko: 일자
+    entity: WorkingDay
+    column: {table: DIM_CALENDAR_KTWS, column: Date}
+    derive_grain: day
+    value_type: date_grain
+    grain: day
+    filter_order: 30
+    query_aliases: ["일", "일자", "일별", "날짜", "date"]
+    source_evidence: [gold_1_1_001]
+
+  - id: activity_subgroup
+    filter_order: 80
+    label_ko: 활동 대분류(세부)
+    query_aliases: ["활동 세부유형", "활동 세부분류", "활동 대분류(세부)"]
+    entity: ActivityTypeTaxonomy
+    # 2026-07-27: activity_type(=common_tp_nm, 표시용 세부유형)과는 다른 축 — tp_grp_1(관계형성/
+    # 기회창출)보다 한 단계 더 세부적인 분류. eval 시트 행15 참조쿼리(활동유형별 목표/활동/달성률)가
+    # 분류1(tp_grp_1)/분류2(tp_grp_2)/활동유형(common_tp_nm) 3단으로 breakdown했다 — 그중 분류2를
+    # 별도 selectable dimension으로 등록. 이 컬럼으로 breakdown할 때는 "대시보드에서 실제 사용하는
+    # 활동유형"으로 범위를 좁히는 br_dashboard_activity_subgroup_scope 필터(filters.yaml)를
+    # 함께 적용해야 참조쿼리와 일치한다 — compiler.js의 dimension.implies_filter 처리 참고.
+    column: {table: DIM_CRM_ACT_TYPE, column: tp_grp_2}
+    value_type: enum
+    known_values: ["미출고 고객", "온라인", "전시장 상담", "출고 고객", "판촉활동"]
+    implies_filter: br_dashboard_activity_subgroup_scope
+    source_evidence: [{sql_id: "eval_row_15", note: "filtered_type CTE — t.tp_grp_2 IN (N'미출고 고객', N'온라인', N'전시장 상담', N'출고 고객', N'판촉활동')"}]

@@ -1,0 +1,203 @@
+# [과거 N개월 퍼널 실적 — 계층별] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "4. 목표 관리" 페이지 NO=2의 최종 GOLD.
+# 목표를 세울 때 참고하는 과거 평균 실적표다 — 최근 N개월(기본 3개월)의
+# 활동/영업기회/계약을 월별로 평균 내어 딜러>전시장>부서(>SC)×활동유형으로 보여준다.
+
+report_id: target_management_funnel_avg
+version: v9-cte
+title: 과거 N개월 퍼널 실적 (계층별 평균)
+description: >
+  최근 N개월(기본 3개월)의 활동→영업기회→계약 실적을 월 평균으로 계산해
+  딜러/전시장/부서(선택 시 SC)×활동유형 레벨로 보여주는 표. 월 목표를 정할 때
+  참고하는 과거 실적 기준선이며, 전환율(활동→영업기회, 영업기회→계약)도 함께 낸다.
+
+sql_file: sql/target_management_funnel_avg.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 4.  목표 관리
+  cell: G5
+  no: 2
+  value_name: 브랜드별 / 딜러별 / 전시장별 / 부서별 / SC별 / 영업유형별 과거 N개월(기본 3개월) 퍼널 실적
+  untruncated_source: docs/4.목표관리_과거3개월퍼널실적.sql
+  note: >
+    엑셀 셀 G5는 32,767자 상한에 걸려 CTE 계산식 중간에서 잘려 있다
+    (...CAST(SUM(v) AS FLOAT) / CAST(@lookback_months AS FLO).
+    따라서 워크북 셀이 아니라 별도 제공된 원문(38,847자)을 정본으로 삼는다.
+  original_dax:
+    활동: 1. act_mtd_(avg3m)_preOp
+    영업기회: 2. lead_funnel_(mtd_avg3m)
+    계약: 3. cntrct_funnel_(mtd_avg3m)
+    전환율: [8. cvr_lead/act, 8. cvr_cntrct/lead]
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 10개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지. 제외 상수와 파생 변수는 원문 유지.
+    - id: pad_null_guard
+      what: "NULL 가능한 pad 변수 9개에 CASE WHEN @X IS NULL THEN NULL ELSE ... END 추가"
+      why: >
+        Fabric에서 N',' + NULL + N',' 는 NULL이 아니라 ',,' 가 된다. 이 쿼리의 슬라이서는
+        전부 기본값이 NULL이라 가드가 없으면 "NULL=전체"가 "NULL=결과 없음"으로 뒤집힌다.
+        activity_funnel_status에서 라이브로 확인된 것과 같은 문제이며 여기도 동일 구조다.
+        상수에서 파생되는 @excl_*Pad 3개는 NULL이 될 수 없어 손대지 않았다.
+
+    - id: filter_trim_guard
+      what: "LIKE 패딩 필터의 컬럼 값을 LTRIM(RTRIM())으로 감쌈 (23곳)"
+      why: >
+        차원 이름에 끝 공백이 들어간 값이 있다(2026-08-03 실측: DIM_MNG_USER 기준
+        팀 7종/56명, SC 36종/36명, 전시장 1종/27명 — 총 44종 119명).
+        패턴이 N'%,토요타 동대문 ,%' 가 되어 사용자가 넘긴 ',토요타 동대문,' 과
+        매칭되지 않아 필터가 오류 없이 0건이 된다. NOT LIKE(제외 목록)도 같은 이유로
+        제외에 실패해 빠져야 할 행이 남는다.
+        숫자에서 만든 CAST(...) 표현식은 공백이 생길 수 없어 건드리지 않았다.
+        재현·정량화: notebook/05_차원이름_공백_진단.ipynb
+        주의: SQL Server의 = 비교는 끝 공백을 무시하므로 STRING_SPLIT 방식을 쓰는
+        funnel_full_structure는 애초에 영향이 없어 수정 대상이 아니다.
+      verified_on: 2026-08-03
+# LF 기준 해시로 적는다. registry의 sqlSha256Matches는 실제 본문을 LF로 정규화해
+# 대조하므로 LF 해시는 CRLF 체크아웃에서도 통과하지만, CRLF 해시는 LF 체크아웃에서 깨진다
+# (core.autocrlf=true라 사람마다 체크아웃 줄바꿈이 다르다).
+sql_sha256: d4d65f6dcb7a7d83a05e2a66688d0455d93a44bf2c966a10818cc46986e9167d
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: true
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+  note: >
+    원본 주석의 경고: 임시테이블을 CTE로 바꿔 플랜이 매우 커지므로 8623(플랜 생성 실패)이
+    재발할 수 있다. 발생 시 OPTION (RECOMPILE) 또는 @lookback_months 축소를 검토할 것.
+
+parameters:
+  - name: year
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "연도. 다중 가능(예: 2025,2026). 비우면 현재 연도."
+  - name: month
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "월. 다중 가능(예: 1,2,3). 비우면 현재 월."
+  - name: lookback_months
+    sql_type: int
+    nullable: true
+    min: 1
+    max: 24
+    default: 3   # 원본 DECLARE의 기본값. NULL이면 TOP(NULL)로 실행이 실패한다.
+    description: 평균을 낼 과거 개월 수. 기본 3.
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[BRAND]
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: DIM_MNG_DEALER[dealer_nm]
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[group_name] 전시장
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[dept_nm] 부서
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: DIM_MNG_USER[active_yn]
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true    # ★ 출력에 SC 열이 생기고 집계 레벨이 바뀐다
+    authorization_dimension: sales_consultant
+    description: >
+      NULL → SC 열 없음(딜러/전시장/부서 레벨). 'ALL' → SC 열 표시 + 전체 SC.
+      값 → SC 열 표시 + 해당 SC만. activity_funnel_status와 같은 3분기 구조다.
+  - name: common_tp
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: 활동유형(common_tp_nm)
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: sales_consultant,  column: SC }
+  - { id: activity_type,     column: 활동유형 }
+
+dimension_columns:
+  branch_a: ['연도', '월', '딜러', '전시장', '부서', '활동유형']
+  branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC', '활동유형']
+
+total_row:
+  detect_by: { column: '딜러', equals: '합계' }
+  note: >
+    합계 행은 SQL이 ord=1로 직접 만든다. 중요한 것은 합계의 영업기회·계약이
+    상세 행의 단순 합이 아니라 tot CTE(스코프 전체, 유형 조건 없음)에서 온다는 점이다
+    — 활동유형별로 나눈 상세 행을 더해도 합계와 일치하지 않는다.
+
+# ── 컬럼 의미론 ─────────────────────────────────────────────────────────────
+# 값은 "N개월 평균"이라 소수점이 나온다(DECIMAL(18,1)).
+column_semantics:
+  '활동':
+    type: additive
+    grain: row
+    note: N개월 평균값이라 정수가 아니다.
+  '영업기회':
+    type: repeated_higher_grain_value
+    direct_sum_forbidden: true
+    grain_branch_a: ['연도', '월', '딜러', '전시장', '부서']
+    grain_branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC']
+    correct_aggregation: >
+      합계 행의 영업기회는 tot CTE(유형 조건 없이 스코프 전체)에서 계산된다.
+      상세 행을 활동유형 축으로 더하면 같은 리드가 여러 유형에 걸쳐 중복될 수 있어
+      합계와 어긋난다. 롤업이 필요하면 SQL이 만든 합계 행을 쓸 것.
+  '계약':
+    type: repeated_higher_grain_value
+    direct_sum_forbidden: true
+    grain_branch_a: ['연도', '월', '딜러', '전시장', '부서']
+    grain_branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC']
+    correct_aggregation: 영업기회와 같은 이유로 SQL의 합계 행을 사용할 것.
+
+  '활동→영업기회':
+    ratio_basis: stage
+    type: ratio
+    numerator: '영업기회'
+    denominator: '활동'
+    direct_average_forbidden: true
+    recompute_ratio: true
+  '영업기회→계약':
+    ratio_basis: stage
+    type: ratio
+    numerator: '계약'
+    denominator: '영업기회'
+    direct_average_forbidden: true
+    recompute_ratio: true
+
+format:
+  percentage: ['활동→영업기회', '영업기회→계약']
+  decimal: ['활동', '영업기회', '계약']
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

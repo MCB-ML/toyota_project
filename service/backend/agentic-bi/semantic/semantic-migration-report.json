@@ -1,0 +1,1010 @@
+{
+  "total": 59,
+  "summary": {
+    "AUTO_SAFE": 46,
+    "AMBIGUOUS": 13
+  },
+  "metrics": [
+    {
+      "id": "activity_avg6m",
+      "name_ko": "평균 활동 추세 (최근 6개월)",
+      "class": "AMBIGUOUS",
+      "concept": "average",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←default_time_grain",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/activity_metrics.yaml"
+    },
+    {
+      "id": "activity_mtd_actual",
+      "name_ko": "당월 영업활동 실적",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(activity_mtd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/activity_metrics.yaml"
+    },
+    {
+      "id": "activity_mtd_target",
+      "name_ko": "당월 영업활동 목표",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(activity_mtd_target)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/activity_metrics.yaml"
+    },
+    {
+      "id": "activity_progress_rate_mtd",
+      "name_ko": "당월 활동 진척률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "day",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(activity_progress_rate_mtd)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/activity_metrics.yaml"
+    },
+    {
+      "id": "activity_to_lead_conversion_rate",
+      "name_ko": "기회전환률 (활동→기회)",
+      "class": "AMBIGUOUS",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/activity_metrics.yaml"
+    },
+    {
+      "id": "contract_cancellation_ratio_trailing6m",
+      "name_ko": "누적 취소율 (최근 6개월)",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "trailing",
+      "cumulative": false,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_cancellation_ratio_trailing6m)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_cancelled_trailing6m",
+      "name_ko": "계약 취소 건수 (최근 6개월, 지난달까지)",
+      "class": "AUTO_SAFE",
+      "concept": "cancelled",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "trailing",
+      "cumulative": false,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_cancelled_trailing6m)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_achievement_rate",
+      "name_ko": "당월 계약 달성률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_achievement_rate)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_activity_actual",
+      "name_ko": "계약건수 (당월활동실적, 퍼널 전환 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_activity_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_actual",
+      "name_ko": "당월 계약 실적 (전체실적, 취소 제외)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_cancelled",
+      "name_ko": "당월 계약 취소 건수",
+      "class": "AUTO_SAFE",
+      "concept": "cancelled",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_cancelled)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_progress_actual_funnel",
+      "name_ko": "당월 계약 진행률 분자 (퍼널 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_progress_actual_funnel)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_target",
+      "name_ko": "당월 계약 목표",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_target)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_target_funnel",
+      "name_ko": "당월 계약 목표 (퍼널 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_target_funnel)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_testdrive_actual",
+      "name_ko": "계약건수 (시승 리드 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_testdrive_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_testdrive_total_actual",
+      "name_ko": "시승에서 계약 (당월전체실적)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_testdrive_total_actual)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_total_actual_funnel",
+      "name_ko": "당월 계약 실적 (퍼널 전체실적)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_total_actual_funnel)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_mtd_total_including_cancelled",
+      "name_ko": "당월 계약 전체 건수 (취소 포함, 달성률 분자 전용)",
+      "class": "AUTO_SAFE",
+      "concept": "cancelled",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_mtd_total_including_cancelled)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_progress_rate_mtd",
+      "name_ko": "당월 계약 진행률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_progress_rate_mtd)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_progress_rate_mtd_funnel",
+      "name_ko": "당월 계약 진행률 (퍼널 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_progress_rate_mtd_funnel)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_total_trailing6m",
+      "name_ko": "전체 계약 건수 (최근 6개월, 지난달까지, 취소 포함)",
+      "class": "AMBIGUOUS",
+      "concept": "unknown",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "trailing",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←unknown",
+        "window←id(contract_total_trailing6m)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_ytd_achievement_rate",
+      "name_ko": "연누적 계약 달성률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_ytd_achievement_rate)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_ytd_actual",
+      "name_ko": "연누적 계약 실적",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_ytd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_ytd_cancelled",
+      "name_ko": "연누적 계약 취소 건수",
+      "class": "AUTO_SAFE",
+      "concept": "cancelled",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_ytd_cancelled)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_ytd_target",
+      "name_ko": "연누적 계약 목표",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_ytd_target)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "contract_ytd_total_including_cancelled",
+      "name_ko": "연누적 계약 전체 건수 (취소 포함, 달성률 분자 전용)",
+      "class": "AUTO_SAFE",
+      "concept": "cancelled",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(contract_ytd_total_including_cancelled)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "delivery_channel_segment",
+      "name_ko": "출고 채널 세그먼트 (farming/hunting/referral)",
+      "class": "AMBIGUOUS",
+      "concept": "unknown",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←unknown",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_monthly_avg_6m",
+      "name_ko": "월평균 출고 (최근 6개월)",
+      "class": "AMBIGUOUS",
+      "concept": "average",
+      "kind": "absolute",
+      "output_grain": null,
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "window←grain(null)추정"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_mtd_achievement_rate",
+      "name_ko": "당월 출고 달성률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_mtd_achievement_rate)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_mtd_actual",
+      "name_ko": "당월 출고 실적",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_mtd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_mtd_target",
+      "name_ko": "당월 출고 목표 (딜러 레벨)",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_mtd_target)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_mtd_target_sc",
+      "name_ko": "당월 출고 목표 (SC 레벨)",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_mtd_target_sc)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_achievement_rate",
+      "name_ko": "연누적 출고 달성률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_achievement_rate)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_actual",
+      "name_ko": "연누적 출고 실적",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_by_model",
+      "name_ko": "연누적 출고 (모델별)",
+      "class": "AUTO_SAFE",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_by_model)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_pma_in",
+      "name_ko": "연누적 출고 PMA IN",
+      "class": "AUTO_SAFE",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_pma_in)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_pma_out",
+      "name_ko": "연누적 출고 PMA OUT",
+      "class": "AUTO_SAFE",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_pma_out)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_target",
+      "name_ko": "연누적 출고 목표 (딜러 레벨)",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_target)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "delivery_ytd_target_sc",
+      "name_ko": "연누적 출고 목표 (SC 레벨)",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "year",
+      "calculation_window": "year_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(delivery_ytd_target_sc)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/delivery_metrics.yaml"
+    },
+    {
+      "id": "hot_board_meeting_count",
+      "name_ko": "핫보드 회의 관련 지표",
+      "class": "AMBIGUOUS",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": null,
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "window←grain(null)추정"
+      ],
+      "source_file": "metrics/target_metrics.yaml"
+    },
+    {
+      "id": "lead_hot_mtd",
+      "name_ko": "HOT 영업기회",
+      "class": "AUTO_SAFE",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(lead_hot_mtd)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "lead_mtd_actual",
+      "name_ko": "당월 기회 실적 (유효 리드 수)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(lead_mtd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "lead_mtd_coalesce",
+      "name_ko": "전체 영업기회 (SC 필터 인지형)",
+      "class": "AUTO_SAFE",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(lead_mtd_coalesce)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "lead_mtd_target",
+      "name_ko": "당월 기회 목표",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(lead_mtd_target)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "lead_mtd_total_actual",
+      "name_ko": "당월 기회 실적 (전체실적)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(lead_mtd_total_actual)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "lead_progress_rate_mtd",
+      "name_ko": "당월 기회 진척률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(lead_progress_rate_mtd)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "lead_to_contract_conversion_rate",
+      "name_ko": "계약전환률 (영업기회→계약)",
+      "class": "AMBIGUOUS",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/contract_metrics.yaml"
+    },
+    {
+      "id": "lead_to_testdrive_conversion_rate",
+      "name_ko": "시승전환률 (기회→시승)",
+      "class": "AMBIGUOUS",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/lead_metrics.yaml"
+    },
+    {
+      "id": "nps_avg_3m",
+      "name_ko": "NPS 3개월 평균",
+      "class": "AMBIGUOUS",
+      "concept": "average",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/target_metrics.yaml"
+    },
+    {
+      "id": "testdrive_mtd_actual",
+      "name_ko": "당월 시승 실적 (리드매칭 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(testdrive_mtd_actual)",
+        "grain←default_time_grain"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "testdrive_mtd_actual_form_basis",
+      "name_ko": "당월 시승 실적 (신청폼 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(testdrive_mtd_actual_form_basis)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "testdrive_mtd_target",
+      "name_ko": "당월 시승 목표",
+      "class": "AUTO_SAFE",
+      "concept": "target",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(testdrive_mtd_target)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "testdrive_mtd_total_actual",
+      "name_ko": "당월 시승 실적 (전체실적, 실적 건수 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(testdrive_mtd_total_actual)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "testdrive_mtd_total_lead_actual",
+      "name_ko": "당월 시승 실적 (전체실적, 리드 기준)",
+      "class": "AUTO_SAFE",
+      "concept": "actual",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(testdrive_mtd_total_lead_actual)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "testdrive_progress_rate_mtd",
+      "name_ko": "당월 시승 진척률",
+      "class": "AUTO_SAFE",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "month_to_date",
+      "cumulative": true,
+      "confidence": "high",
+      "evidence": [
+        "concept←id/name",
+        "window←id(testdrive_progress_rate_mtd)",
+        "grain←supported_time_grains"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "testdrive_to_contract_conversion_rate",
+      "name_ko": "계약전환률 (시승→계약)",
+      "class": "AMBIGUOUS",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/testdrive_metrics.yaml"
+    },
+    {
+      "id": "working_day_count_pass",
+      "name_ko": "경과 워킹데이 수",
+      "class": "AMBIGUOUS",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/target_metrics.yaml"
+    },
+    {
+      "id": "working_day_count_total",
+      "name_ko": "해당 월 전체 워킹데이 수",
+      "class": "AMBIGUOUS",
+      "concept": "count",
+      "kind": "absolute",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/target_metrics.yaml"
+    },
+    {
+      "id": "working_day_progress_ratio",
+      "name_ko": "워킹데이 진행률",
+      "class": "AMBIGUOUS",
+      "concept": "rate",
+      "kind": "ratio",
+      "output_grain": "month",
+      "calculation_window": "period",
+      "cumulative": false,
+      "confidence": "low",
+      "evidence": [
+        "concept←id/name",
+        "grain←supported_time_grains",
+        "window←grain(month)추정"
+      ],
+      "source_file": "metrics/target_metrics.yaml"
+    }
+  ]
+}

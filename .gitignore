@@ -1,0 +1,134 @@
+# Environment and secrets
+.env
+.env.*
+*.env
+*.env.*
+!**/.env.example
+!**/.env.*.example
+!**/*.env.example
+admin/backend/deployments/*.env
+certs/
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+*.jks
+
+# Node and frontend dependencies
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Build and test output
+dist/
+dist-ssr/
+build/
+.vite/
+.next/
+out/
+coverage/
+test-results/
+playwright-report/
+storybook-static/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python backend
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.tox/
+.nox/
+.pyre/
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Local runtime output
+logs/
+*.log
+*.pid
+*.rdb
+*.aof
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+.cache/
+tmp/
+temp/
+.tmp/
+
+# Docker and deployment local overrides
+docker-compose.override.yml
+docker-compose.*.override.yml
+docker-compose.local.yml
+docker-compose.*.local.yml
+.docker.local/
+.vercel/
+.netlify/
+
+# IDE and OS files
+.vscode/
+.idea/
+.vs/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+
+# Project-local large/private reference material
+# 토요타 원천 데이터/정의서 제외 (대용량, 사내정보)
+# 2026-08-05: 디렉토리 개편으로 main/ 이 사라지면서 루트로 옮겼다.
+# BI/ 에는 값 대조 기준인 .pbix 가 있고, docs/ 에는 인증 리포트 계약들이 출처로
+# 가리키는 ktws_측정값_쿼리화.xlsx 가 있다 — 둘 다 수백 MB라 저장소에 올리지 않는다.
+/data/
+/BI/
+/main/data/
+/main/docs/
+/main/BI/
+/pbix_analysis/
+
+# docs/ 는 프로젝트 문서 폴더다. 위 원천 자료가 같은 폴더에 섞여 있어서
+# 마크다운만 추적하고 나머지 파일(.xlsx/.pbix 등)은 전부 제외한다.
+/docs/**
+!/docs/**/
+!/docs/**/*.md
+
+# Tooling scratch
+.claude/
+.abstra/
+tempCodeRunnerFile.py
+.ipynb_checkpoints/
+
+# 검사용 스크립트. 평가표 전수 실행, 특정 프롬프트 진단, 값 대조 같은 것들을 둔다.
+# 저장소에 올리지 않는다 — 실행에 .env와 Fabric 접속이 필요하고, 평가표·결과 파일이
+# 사내 데이터라 공유 대상이 아니다. 제품 코드가 아니므로 배포에도 들어가면 안 된다.
+/eval/
+
+# Dynamic Semantic Query Planner — 웨어하우스에서 수집한 파생 캐시.
+# 스키마 메타데이터(표본값 포함)와 런타임 검증 기록은 코드가 아니라 데이터다.
+# `npm run dynamic:harvest`로 다시 만든다(읽기 전용 조회).
+service/backend/dynamic/cache/

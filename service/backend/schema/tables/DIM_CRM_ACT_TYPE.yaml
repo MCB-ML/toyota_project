@@ -1,0 +1,153 @@
+table: "DIM_CRM_ACT_TYPE"
+description: "CRM 활동유형(co_code CRM201 등)을 상위 업무 카테고리(연락/방문/소개 등)로 분류하는 디멘전 테이블. 활동유형 코드를 KPI 집계용 그룹으로 묶을 때 반드시 이 테이블을 거쳐야 한다 — CO_CODE.code_nm 텍스트만으로는 이 분류를 재현할 수 없다."
+database: "KPI_W"
+schema: "ktws"
+grain: "활동유형(tp_key) 단위의 CRM 활동유형 분류/파생관계 정보."
+columns:
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "category"
+    type: "varchar(100)"
+    description: "목표/실적 구분. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "tp_cd"
+    type: "varchar(100)"
+    description: "유형코드(원본 co_code.code). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "tp_nm"
+    type: "varchar(100)"
+    description: "유형명(원본 co_code.code_nm). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "tp_order"
+    type: "int"
+    description: "유형순서. 정렬에 사용한다."
+  -
+    name: "ref_tp_cd"
+    type: "varchar(100)"
+    description: "파생유형코드. 해당 활동을 파생시킨 활동 유형 — '소개' 외 다른 활동타입은 모두 자기 자신의 활동유형 값을 가진다."
+  -
+    name: "ref_tp_nm"
+    type: "varchar(100)"
+    description: "파생유형명."
+  -
+    name: "ref_tp_order"
+    type: "varchar(100)"
+    description: "파생유형 순서."
+  -
+    name: "tp_key"
+    type: "varchar(100)"
+    description: "활동유형키. 이 테이블의 기준 키이며, FCT_ACTIVITY_v2/FCT_CONTRACT_KTWS/FCT_LEAD/FCT_CRM_TARGET_* 등 대부분의 팩트 테이블이 tp_key로 이 테이블과 조인한다."
+  -
+    name: "tp_grp_1"
+    type: "varchar(100)"
+    description: "상위카테고리1 — 활동유형을 묶는 업무 대분류(예: 관계형성/기회창출 등)."
+  -
+    name: "tp_grp_2"
+    type: "varchar(100)"
+    description: "상위카테고리2 — tp_grp_1보다 더 세부적인 업무 분류."
+  -
+    name: "target_grp_nm"
+    type: "varchar(101)"
+    description: "타겟 활동 유형 카테고리 — CRM 목표(FCT_CRM_TARGET_*) 집계 시 사용하는 그룹명."
+  -
+    name: "common_tp_nm"
+    type: "varchar(102)"
+    description: "dms 사용 유형 명 — DIM_CRM_ACT_TYPE_ORDER와 조인해 표시 순서를 정할 때 쓰는 키."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "ACT_TYPE_DIMENSION"
+    - "CRM_CLASSIFICATION"
+  keys:
+    primary:
+      - "tp_key"
+    foreign:
+      -
+        column: "common_tp_nm"
+        references:
+          schema: "ktws"
+          table: "DIM_CRM_ACT_TYPE_ORDER"
+          column: "common_tp_nm"
+        description: "활동유형 상위카테고리의 표시 순서를 조회할 때 사용한다."
+dimensions:
+  - "BRAND"
+  - "category"
+  - "tp_cd"
+  - "tp_nm"
+  - "tp_order"
+  - "ref_tp_cd"
+  - "ref_tp_nm"
+  - "ref_tp_order"
+  - "tp_key"
+  - "tp_grp_1"
+  - "tp_grp_2"
+  - "target_grp_nm"
+  - "common_tp_nm"
+features:
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+  -
+    name: "category"
+    synonyms:
+      - "목표/실적 구분"
+  -
+    name: "tp_cd"
+    synonyms:
+      - "유형코드"
+  -
+    name: "tp_nm"
+    synonyms:
+      - "유형명"
+  -
+    name: "tp_order"
+    synonyms:
+      - "유형순서"
+  -
+    name: "ref_tp_cd"
+    synonyms:
+      - "파생유형코드"
+  -
+    name: "ref_tp_nm"
+    synonyms:
+      - "파생유형명"
+  -
+    name: "ref_tp_order"
+    synonyms:
+      - "파생유형 순서"
+  -
+    name: "tp_key"
+    synonyms:
+      - "활동유형키"
+  -
+    name: "tp_grp_1"
+    synonyms:
+      - "상위카테고리1"
+  -
+    name: "tp_grp_2"
+    synonyms:
+      - "상위카테고리2"
+  -
+    name: "target_grp_nm"
+    synonyms:
+      - "타겟 활동 유형 카테고리"
+  -
+    name: "common_tp_nm"
+    synonyms:
+      - "dms 사용 유형 명"
+display:
+  default_columns:
+    - "tp_key"
+    - "tp_cd"
+    - "tp_nm"
+    - "tp_grp_1"
+    - "tp_grp_2"
+    - "common_tp_nm"
+    - "category"

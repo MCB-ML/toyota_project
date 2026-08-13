@@ -1,0 +1,31 @@
+/* react-grid-layout ships a solid red drag/resize placeholder by default —
+   override it to a subtle brand-blue tint that matches the dashboard's cards. */
+.react-grid-item.react-grid-placeholder {
+  background: #3B82F6;
+  opacity: 0.12;
+  border-radius: 0.75rem;
+}
+
+.widget-edit-drag-handle {
+  cursor: grab;
+}
+
+.widget-edit-drag-handle:active {
+  cursor: grabbing;
+}
+
+.widget-edit-toolbar {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 2px 2px;
+  padding: 0 3px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.dashboard-canvas.view-mode .react-resizable-handle {
+  display: none !important;
+}

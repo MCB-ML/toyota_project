@@ -1,0 +1,200 @@
+# 2026-08-04 leo: source_dependencies는 SQL 파싱 대신 base_table별 watermark source를 선언한다.
+# TestDrive (시승) Metrics
+# 근거: sheet 1-1 gold_1_1_014/015/016(td_funnel 계열), 1-3 gold_1_3_032~038
+
+source_dependencies:
+  FCT_ACTIVITY_v2: {source_id: activity, table: FCT_ACTIVITY_v2, watermark_column: ETL_TIMESTAMP}
+  FCT_CRM_TARGET_D: {source_id: testdrive_target_daily, table: FCT_CRM_TARGET_D, watermark_column: ETL_TIMESTAMP}
+
+metrics:
+  - id: testdrive_mtd_actual
+    name_ko: 당월 시승 실적 (리드매칭 기준)
+    certified_source:
+      report: funnel_full_structure
+      column: 시승건수(당월활동실적/시승완료)
+      status: verified_match
+      evidence: >
+        2026-04 기준 전용 컴파일러(compileTestdriveMtdActual) = 2,058 이고
+        1-1 리포트의 같은 컬럼도 2,058 로 정확히 일치한다(2026-07-31 대조, 브랜드 필터 기준).
+      note: >
+        코드 구조는 1-1 GOLD와 다르다 — 검증된 쿼리는 td_lead_pool에 SC 상관과 활동유형
+        상관을 걸지만 이 컴파일러는 lead_key 멤버십(IN)만 쓴다. 그런데도 값이 같다:
+        시승완료(P113) 활동은 리드당 한 SC가 수행하고 lead_pool이 이미 당월 등록·오픈으로
+        좁혀져 있어 상관 조건이 더 걸러낼 여지가 없기 때문으로 보인다.
+        계약건수는 같은 상황에서 −53건 차이가 났으므로, 구조가 다르다고 값이 다른 것도
+        같은 것도 아니다 — 반드시 실측으로 확인할 것.
+    description: >
+      "시승완료"(act_tp='P113', act_result='시승완료') 활동의 DISTINCT lead_key 건수 —
+      단 그 리드가 3단계 퍼널(관계형성/기회창출 자격 활동이 있고 부재중·MSG가 아닌 리드 ->
+      당월 등록되고 유효 상태인 리드 -> 그 리드에 연결된 시승완료 활동)을 통과해야 한다.
+      sheet 1-1 주석에 명시된 함정: "신청폼 기준"(td_funnel_(mtd_preOp)_form)과
+      "리드매칭 기준"(td_funnel_(mtd_preOp)_leadMatch)의 숫자가 다르다 — metric_id로
+      명확히 분리했다.
+    metric_type: base_metric
+    fact_entity: TestDrive
+    base_table: FCT_ACTIVITY_v2
+    expression: unresolved  # controlled_analysis 경로가 대신 처리
+    not_directly_compilable: true
+    not_directly_compilable_reason: >
+      lead_mtd_actual/contract_mtd_activity_actual과 같은 이유 — 3단계 퍼널(자격 활동 ->
+      유효 리드 -> 최종 시승완료 활동)이 각 단계 상관 서브쿼리로만 정확히 표현되고
+      compileSingleMetricQuery(flat JOIN 전용)로는 낼 수 없다.
+    controlled_analysis: true
+    legacy_controlled_analysis_note: >
+      2026-07 평가표에서 "시승 활동 실적"을 activity_mtd_actual(관계형성/기회창출 활동
+      단순 합산 — 시승과 무관)로 잘못 답하던 문제를 발견해 전용 컴파일러
+      (agenticBiPipeline.js의 compileTestdriveMtdActual)로 추가했다. 사용자 제시 참조
+      쿼리의 filtered_users는 facade_sc_yn/name을 순수 NOT IN으로 걸러 NULL 행이 조용히
+      빠지는 버그가 있었다 — lead_mtd_actual과 동일하게 등록된 filter fragment(IS NULL
+      OR <> 패턴)로 대체해 이 버그를 피했다.
+    # 2026-08-03 leo: 기존에는 시승 실적이 별도 제어 컴파일러만 사용해 퍼널 표와 자연어 결과의 모집단이 달라질 수 있었다. 인증 GOLD CTE를 우선 사용하고 표현 불가 요청에서만 기존 컴파일러로 폴백한다.
+    controlled_analysis_note: >
+      인증 퍼널 GOLD의 overall_td_completed_lead_match CTE를 우선 파생해 실행한다.
+      GOLD로 표현할 수 없는 시간/차원 요청에만 compileTestdriveMtdActual의 기존 제어
+      컴파일러로 폴백한다. 이 분리는 퍼널 표와 자연어 결과의 정의가 갈리는 것을 막는다.
+    aggregation: count_distinct
+    distinct_key: lead_key
+    grain: [sales_consultant, month]
+    time_dimension: FCT_ACTIVITY_v2.act_dt_fr
+    default_time_grain: month
+    supported_time_grains: [month]
+    required_filters: [br_tp_grp_scope, br_act_result_exclusion]
+    exclusion_rules: [sc_scope_default]
+    null_handling: "0건이면 0"
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    # 2026-08-03 leo: 기존에는 시승 KPI 요청에서 실적 하나만 선택되면 목표와 진척률이 누락됐다. 선언형 묶음을 통해 모든 업무 지표가 같은 확장 로직을 재사용한다.
+    kpi_bundle:
+      actual: testdrive_mtd_actual
+      target: testdrive_mtd_target
+      rate: testdrive_progress_rate_mtd
+    additive_behavior: {across_time: non_additive_distinct, across_organization: non_additive_distinct}
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_014, note: "td_funnel_(mtd_preOp)_leadMatch"}, {note: "사용자 제시 참조 쿼리(2026-07) — act_grp/lead_grp 3단계 퍼널 구조, NULL 처리는 온톨로지 규칙에 맞게 보정"}]
+    confidence: medium
+    status: needs_business_owner_review
+
+  # 2026-08-03 leo: 기존에는 시승 신청폼 기준 실적이 미해결 지표여서 퍼널 표의 원자값을 자연어로 만들 수 없었다. 인증 GOLD CTE 전용 지표로 등록해 정의를 보존한다.
+  - id: testdrive_mtd_actual_form_basis
+    name_ko: 당월 시승 실적 (신청폼 기준)
+    certified_source:
+      report: funnel_full_structure
+      column: 시승건수(당월활동실적/시승취소건 제외)
+      status: verified_source
+      note: 인증 퍼널 GOLD의 overall_td_form_without_cancel CTE를 그대로 파생해 실행한다.
+    description: "리드매칭 여부와 무관하게 시승 신청폼 제출 건수 기준 — testdrive_mtd_actual과 분모/분자가 다른 별개 지표"
+    metric_type: base_metric
+    fact_entity: TestDrive
+    base_table: FCT_ACTIVITY_v2
+    expression: unresolved  # 인증 퍼널 CTE 파생 경로가 대신 처리
+    not_directly_compilable: true
+    not_directly_compilable_reason: "리드 자격 풀을 거친 시승 신청폼 합계라 flat JOIN 컴파일러로는 원본 정의를 보존할 수 없음."
+    controlled_analysis: true
+    aggregation: count
+    grain: [sales_consultant, month]
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_015, note: "td_funnel_(mtd_preOp)_form"}]
+    confidence: medium
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    supported_time_grains: [month]
+    status: verified_source
+
+  # 2026-08-03 leo: 기존에는 시승 목표가 일별 target 테이블을 직접 합산해 퍼널 GOLD와 다른 필터를 사용할 수 있었다. 인증 CTE를 사용해 시승 유형과 사용자 스코프를 원본 정의대로 재실행한다.
+  - id: testdrive_mtd_target
+    name_ko: 당월 시승 목표
+    certified_source:
+      report: funnel_full_structure
+      column: 시승 당월 목표
+      status: verified_source
+      note: 인증 퍼널 GOLD의 overall_td_target CTE를 그대로 파생해 실행한다.
+    metric_type: target_metric
+    fact_entity: TestDrive
+    base_table: FCT_CRM_TARGET_D
+    expression: unresolved  # 인증 퍼널 CTE 파생 경로가 대신 처리
+    not_directly_compilable: true
+    not_directly_compilable_reason: "P113 시승 목표는 일별 목표를 시승 유형으로 한정해 합산해야 하므로 인증 퍼널 정의를 사용함."
+    controlled_analysis: true
+    aggregation: sum
+    grain: [sales_consultant, month]
+    supported_time_grains: [month]
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    dependencies: []
+    source_evidence: [{sql_id: gold_1_1_017, note: "2-1. td_funnel_(mtd_target)"}]
+    confidence: medium
+
+  # 2026-08-03 leo: 기존에는 시승 진행률이 리드매칭 실적을 분자로 써 퍼널 표의 전체실적 기준과 달랐다. 진행률 전용 분자와 목표를 각각 인증 CTE에 연결한다.
+  - id: testdrive_progress_rate_mtd
+    name_ko: 당월 시승 진척률
+    metric_type: progress_metric
+    numerator_metric: testdrive_mtd_total_actual
+    denominator_metric: testdrive_mtd_target
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, month]
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    dependencies: [testdrive_mtd_total_actual, testdrive_mtd_target]
+    source_evidence: [{sql_id: gold_1_1_013, note: "2-1. progress_td_mtd"}]
+    confidence: high
+
+  # 2026-08-03 leo: 기존에는 시승 전체실적의 리드 기준과 actual_cnt 기준을 구분할 수 없어 같은 지표가 서로 다른 의미로 쓰였다. 퍼널 원자값별 메트릭을 분리해 요청 의도에 맞게 선택할 수 있게 한다.
+  - id: testdrive_mtd_total_lead_actual
+    name_ko: 당월 시승 실적 (전체실적, 리드 기준)
+    description: "퍼널 표의 '시승건수(당월전체실적/lead_key 기준)' - 시승완료 리드의 DISTINCT 건수"
+    certified_source:
+      report: funnel_full_structure
+      column: 시승건수(당월전체실적/lead_key 기준)
+      status: verified_source
+    metric_type: base_metric
+    fact_entity: TestDrive
+    base_table: FCT_ACTIVITY_v2
+    expression: unresolved
+    not_directly_compilable: true
+    not_directly_compilable_reason: "시승완료 활동과 전체 기간 리드 풀의 상관 조건을 포함한 인증 퍼널 지표."
+    controlled_analysis: true
+    aggregation: count_distinct
+    distinct_key: lead_key
+    grain: [sales_consultant, month]
+    supported_time_grains: [month]
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    dependencies: []
+    confidence: high
+
+  - id: testdrive_mtd_total_actual
+    name_ko: 당월 시승 실적 (전체실적, 실적 건수 기준)
+    description: "퍼널 표의 '시승건수(당월전체실적/actual_cnt 기준)' - 시승 진행률의 분자"
+    certified_source:
+      report: funnel_full_structure
+      column: 시승건수(당월전체실적/actual_cnt 기준)
+      status: verified_source
+    metric_type: base_metric
+    fact_entity: TestDrive
+    base_table: FCT_ACTIVITY_v2
+    expression: unresolved
+    not_directly_compilable: true
+    not_directly_compilable_reason: "시승완료 활동과 전체 기간 리드 풀의 상관 조건을 포함한 인증 퍼널 지표."
+    controlled_analysis: true
+    aggregation: sum
+    grain: [sales_consultant, month]
+    supported_time_grains: [month]
+    dimensions: [brand, dealer, showroom, department, sales_consultant]
+    dependencies: []
+    confidence: high
+
+  - id: testdrive_to_contract_conversion_rate
+    name_ko: 계약전환률 (시승→계약)
+    description: >
+      시승 실적(testdrive_mtd_actual) 대비, 그 시승 신청 리드에서 발생한 계약
+      (contract_mtd_testdrive_actual) 비율. 분자를 contract_mtd_actual(계약 전체실적,
+      시승 여부 무관)로 잘못 쓰면 서로 다른 모집단을 나누는 것이 되어 전환율이 아니라
+      의미 없는 숫자가 나온다 — 2026-07 평가표에서 발견되어 분자를
+      contract_mtd_testdrive_actual로 교체했다.
+    metric_type: conversion_metric
+    numerator_metric: contract_mtd_testdrive_actual
+    denominator_metric: testdrive_mtd_actual
+    expression: "safe_divide(numerator, denominator, zero_denominator=null)"
+    zero_denominator_result: null
+    format: percentage
+    grain: [sales_consultant, month]
+    dependencies: [contract_mtd_testdrive_actual, testdrive_mtd_actual]
+    source_evidence: [{measure: "8. cvr_cntrct"}, {note: "2026-07 평가표 — 분자를 contract_mtd_actual에서 contract_mtd_testdrive_actual로 교체"}]
+    confidence: medium

@@ -1,0 +1,129 @@
+# [당월 목표 저장 현황] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "4.  목표 관리" NO=3의 최종 GOLD.
+
+report_id: target_saved_status
+version: v1
+title: 당월 목표 저장 현황
+description: >
+  딜러/전시장/부서(선택 시 SC)별로 당월 목표를 입력·저장했는지 여부. 목표 미입력 조직을 찾는 데 쓴다.
+
+sql_file: sql/target_saved_status.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 4.  목표 관리
+  no: 3
+  gold_column: 최종 GOLD 쿼리
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 8개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지. 제외 상수는 원문 유지.
+    - id: pad_null_guard
+      what: "콤마 패딩 변수 8개에 CASE NULL 가드 추가(@sc_filterPad 포함)"
+      why: >
+        Fabric에서 ',' + NULL + ',' 는 ',,' 가 되어 "비우면 전체"가 "결과 없음"으로 뒤집힌다.
+
+    - id: filter_trim_guard
+      what: "LIKE 패딩 필터의 컬럼 값을 LTRIM(RTRIM())으로 감쌈 (16곳)"
+      why: >
+        차원 이름에 끝 공백이 들어간 값이 있다(2026-08-03 실측: DIM_MNG_USER 기준
+        팀 7종/56명, SC 36종/36명, 전시장 1종/27명 — 총 44종 119명).
+        패턴이 N'%,토요타 동대문 ,%' 가 되어 사용자가 넘긴 ',토요타 동대문,' 과
+        매칭되지 않아 필터가 오류 없이 0건이 된다. NOT LIKE(제외 목록)도 같은 이유로
+        제외에 실패해 빠져야 할 행이 남는다.
+        숫자에서 만든 CAST(...) 표현식은 공백이 생길 수 없어 건드리지 않았다.
+        재현·정량화: notebook/05_차원이름_공백_진단.ipynb
+        주의: SQL Server의 = 비교는 끝 공백을 무시하므로 STRING_SPLIT 방식을 쓰는
+        funnel_full_structure는 애초에 영향이 없어 수정 대상이 아니다.
+      verified_on: 2026-08-03
+sql_sha256: c3b5446288a8dba90c873390a8c8489a91f0d654dc673a81bdb69b93e18e8e41
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - name: year
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "연도. 다중 가능. 비우면 전체"
+  - name: month
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "월. 다중 가능. 비우면 전체"
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "DIM_MNG_USER[BRAND]"
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: "DIM_MNG_DEALER[dealer_nm]"
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "전시장(group_name)"
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "팀/부서(dept_nm)"
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: "재직여부"
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true
+    authorization_dimension: sales_consultant
+    description: "NULL → SC 열 없음 / 'ALL' → 전체 SC / 값 → 해당 SC만"
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: sales_consultant,  column: SC }
+
+dimension_columns:
+  branch_a: ['연도', '월', '딜러', '전시장', '부서']
+  branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC']
+
+total_row: null
+
+# 이 리포트의 존재 이유가 "저장했나 안 했나"라 이 축을 접으면 답이 사라진다.
+# 2026-08-10 실측(평가 No.44): LLM이 group_by=["딜러"]를 보내는 실행이 섞였고,
+# 그때는 Y/N이 합쳐져 값이 빈 1행이 나갔다(다른 실행은 25행에 Y/N이 다 나왔다).
+# 오류가 아니라 표가 짧아질 뿐이라 사람 눈으로는 안 걸린다.
+never_collapse: ['목표저장여부']
+
+# 저장 여부 표시값이다. 저장플래그는 0/1이라 숫자로 보이지만 "몇 개 조직이 저장했나"는
+# 합계가 아니라 플래그=1인 행 수로 세야 한다(조직마다 1행이므로 합계와 우연히 같을 수 있다).
+column_semantics:
+  '목표저장여부': { type: flag_label, direct_sum_forbidden: true }
+  '저장플래그':   { type: flag, direct_sum_forbidden: true, note: "0/1 플래그. 합산 대신 행 수를 셀 것." }
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

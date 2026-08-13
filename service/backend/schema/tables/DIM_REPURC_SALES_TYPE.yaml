@@ -1,0 +1,79 @@
+table: "DIM_REPURC_SALES_TYPE"
+description: "판매유형(신규/재구매 등) 코드를 재구매 상위 카테고리로 분류하는 디멘전 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "판매유형키(sales_tp_key) 단위의 재구매/판매유형 분류 정보."
+columns:
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "code"
+    type: "varchar(500)"
+    description: "판매유형코드(원본 co_code.code). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "repurc_grp1"
+    type: "varchar(500)"
+    description: "재구매상위유형1. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "repurc_grp2"
+    type: "varchar(500)"
+    description: "재구매상위유형2. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "sales_tp"
+    type: "varchar(500)"
+    description: "판매유형명(원본 co_code.code_nm). 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "sales_tp_key"
+    type: "varchar(500)"
+    description: "판매유형키. 이 테이블의 기준 키이며, FCT_CONTRACT_KTWS.sales_tp_key와 조인한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "SALES_TYPE_DIMENSION"
+    - "REPURCHASE_CLASSIFICATION"
+  keys:
+    primary:
+      - "sales_tp_key"
+dimensions:
+  - "BRAND"
+  - "code"
+  - "repurc_grp1"
+  - "repurc_grp2"
+  - "sales_tp"
+  - "sales_tp_key"
+features:
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+  -
+    name: "code"
+    synonyms:
+      - "판매유형코드"
+  -
+    name: "repurc_grp1"
+    synonyms:
+      - "재구매상위유형1"
+  -
+    name: "repurc_grp2"
+    synonyms:
+      - "재구매상위유형2"
+  -
+    name: "sales_tp"
+    synonyms:
+      - "판매유형"
+  -
+    name: "sales_tp_key"
+    synonyms:
+      - "판매유형키"
+display:
+  default_columns:
+    - "sales_tp_key"
+    - "sales_tp"
+    - "repurc_grp1"
+    - "repurc_grp2"

@@ -1,0 +1,46 @@
+table: "DIM_PMA_ORDER"
+description: "PMA(등록주소 관내/관외 등 in/out 구분) 값의 표시 순서를 관리하는 소형 참조 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "pma_cd 단위의 PMA in/out 분류 순서."
+columns:
+  -
+    name: "pma_type"
+    type: "varchar(20)"
+    description: "PMA in/out 여부. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "pma_cd"
+    type: "varchar(20)"
+    description: "PMA 코드. 이 테이블의 기준 키이며, FCT_CONTRACT_KTWS.pma_yn과 조인한다."
+  -
+    name: "pma_order"
+    type: "int"
+    description: "PMA 분류 표시 순서."
+semantics:
+  role:
+    - "PMA_ORDER"
+  keys:
+    primary:
+      - "pma_cd"
+dimensions:
+  - "pma_type"
+  - "pma_cd"
+  - "pma_order"
+features:
+  -
+    name: "pma_type"
+    synonyms:
+      - "pma in/out 여부"
+  -
+    name: "pma_cd"
+    synonyms:
+      - "pma cd"
+  -
+    name: "pma_order"
+    synonyms:
+      - "pma 분류 순서"
+display:
+  default_columns:
+    - "pma_cd"
+    - "pma_type"
+    - "pma_order"

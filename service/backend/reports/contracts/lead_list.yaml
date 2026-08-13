@@ -1,0 +1,300 @@
+# [영업기회 목록 (리드 단위 명세)] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "5-2. 영업기회 목록" NO=1의 최종 GOLD.
+
+report_id: lead_list
+version: v1
+title: 영업기회 목록 (리드 단위 명세)
+description: >
+  리드 한 건이 한 행인 영업기회 목록. 등록일·관심도·시승요청일·시승일·계약일·출고일과 최근 활동일자를 담는다. 집계표가 아니라 명세 목록이라 합계 개념이 없다.
+
+sql_file: sql/lead_list.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 5-2. 영업기회 목록
+  no: 1
+  gold_column: 최종 GOLD 쿼리
+  note: 원본 DECLARE에 테스트용 고정값(등록일 2026-02, brand=LEXUS, active_yn=재직, contract_yn=Y)이 들어 있었다. 파라미터로 분리해 호출자가 정하도록 했다.
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 12개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지. 제외 상수는 원문 유지.
+
+sql_sha256: 7ef7bb3db83a8d60c2c149fec59be2f1881dd171721ba78e9f903e1177f3e583
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - { name: reg_from, sql_type: date, nullable: true, description: "등록일(lead_reg_dt) 시작" }
+  - { name: reg_to,   sql_type: date, nullable: true, description: "등록일 종료" }
+  - name: close_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['관리', '중지']
+    description: "관리 상태: '관리' / '중지'. 비우면 전체"
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "DIM_MNG_USER[BRAND]"
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: "DIM_MNG_DEALER[dealer_nm]"
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "전시장(group_name)"
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "팀/부서(dept_nm)"
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: "재직여부"
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: sales_consultant
+    description: "SC명. 비우면 전체"
+  - name: potential
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['HOT', 'WARM', 'COLD']
+    description: "관심도: HOT / WARM / COLD"
+  - name: contract_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['Y', 'N']
+    description: "계약 여부: 'Y'(계약) / 'N'(미계약). 비우면 전체"
+  - name: retail_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['Y', 'N']
+    description: "출고 여부: 'Y'(출고) / 'N'(미출고). 비우면 전체"
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+dimension_columns:
+  branch_a: &dims ['순서', 'SC명', '고객명', '등록일', '관심도', '시승요청일', '시승일', '계약일', '출고일', '최근 활동일자', '관심 차종', '접수 유형']
+  branch_b: *dims
+
+total_row: null
+
+# 이 리포트는 명세 목록이라 측정값이 없다 — 모든 컬럼이 리드 한 건의 속성이다.
+# 건수를 세고 싶으면 행 수를 세면 되고, 그 외 집계 규칙은 존재하지 않는다.
+column_semantics: {}
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']
+
+# ── Report-local Semantics ────────────────────────────────────────────────────
+# 이 리포트가 이미 알고 있는 업무 의미. 글로벌 Dimension으로 올리지 않는 이유는
+# 여기 적힌 정의가 **이 리포트 안에서만 성립**하기 때문이다(아래 접수 유형 참고).
+#
+# 이 블록은 SQL을 바꾸지 않는다 — sql_sha256은 sql/lead_list.sql만 해시하므로 영향이 없다.
+# 여기에 적는 것은 전부 SQL 원문에서 확인한 사실이거나 라이브 실측이고, 근거를 evidence에
+# 남긴다. 근거 없이 적으면 "오류 없이 틀린 숫자"가 이 파일에서 시작된다.
+report_semantics:
+  composable: true
+  declared_by: human
+  declared_at: '2026-08-12'
+
+  row_grain:
+    entity: Lead
+    unique_key: lead_key
+    key_in_output: false
+    counting:
+      operation: count_rows
+      note: >
+        출력 컬럼에 lead_key가 없어 DISTINCT를 걸 열 자체가 없다. 아래 유일성 실측이
+        "행 수 = 리드 수"의 근거다 — 근거 없이 COUNT(*)를 쓴 것이 아니다.
+    evidence: >
+      sql/lead_list.sql은 ktws.FCT_LEAD(l)를 FROM으로 삼고 DIM_MNG_USER(u)만
+      LEFT JOIN한다(u.sc_key = l.cl_sc_key — 리드당 담당 SC 1명). 나머지 컬럼은 전부
+      스칼라 서브쿼리라 행을 늘리지 않는다.
+      2026-08-12 라이브 실측(dealer_nm='렉서스 강남', 제외 규칙 동일):
+      COUNT(*) 12394 = COUNT(DISTINCT l.lead_key) 12394.
+
+  # 질문의 개념 → 이 리포트의 출력 컬럼. 필터는 출력 컬럼 라벨 기준으로 건다
+  # (등록 SQL을 고쳐 조건을 밀어 넣지 않는다).
+  columns:
+    - concept: sales_consultant
+      label: SC명
+      role: dimension
+      filterable: true
+      aliases: ['SC', 'SC명', '영업사원', '세일즈컨설턴트', '담당자']
+      global_dimension: sales_consultant
+      pushdown_parameter: sc_name
+      physical: {table: ktws.DIM_MNG_USER, column: name}
+      evidence: "sql/lead_list.sql — u.name AS [SC명]"
+
+    - concept: customer_name
+      label: 고객명
+      role: attribute
+      filterable: false
+      aliases: ['고객명', '고객 이름']
+      physical: {table: ktws.FCT_LEAD, column: cust_nm}
+      note: 개인정보. 필터·그룹 축으로 열지 않는다.
+      evidence: "sql/lead_list.sql — l.cust_nm AS [고객명]"
+
+    - concept: registration_date
+      label: 등록일
+      role: date
+      date_role: lead_registration_date
+      filterable: true
+      aliases: ['등록일', '등록일자', '리드 등록일', '접수일']
+      pushdown_parameter: {from: reg_from, to: reg_to}
+      physical: {table: ktws.FCT_LEAD, column: lead_reg_dt}
+      evidence: "sql/lead_list.sql — l.lead_reg_dt AS [등록일], 파라미터 @reg_from/@reg_to"
+
+    - concept: potential
+      label: 관심도
+      role: categorical_attribute
+      filterable: true
+      aliases: ['관심도', '등급']
+      known_values: ['HOT', 'WARM', 'COLD']
+      known_values_source: "계약 parameters.potential.allowed_values"
+      pushdown_parameter: potential
+      physical: {table: ktws.FCT_LEAD, column: potential}
+      evidence: "sql/lead_list.sql — l.potential AS [관심도]"
+
+    - concept: testdrive_request_date
+      label: 시승요청일
+      role: date
+      date_role: testdrive_request_date
+      filterable: true
+      aliases: ['시승요청일', '시승 요청일']
+      derived: true
+      physical:
+        expression: "(SELECT MAX(a.act_dt_fr) FROM ktws.FCT_ACTIVITY_v2 a WHERE a.lead_key = l.lead_key AND a.act_tp = 'P117')"
+      evidence: "sql/lead_list.sql — 활동유형 P117의 최대 활동일"
+
+    - concept: testdrive_date
+      label: 시승일
+      role: date
+      date_role: testdrive_date
+      filterable: true
+      aliases: ['시승일', '시승 완료일']
+      derived: true
+      physical:
+        expression: "(SELECT MAX(a.act_dt_fr) FROM ktws.FCT_ACTIVITY_v2 a WHERE a.lead_key = l.lead_key AND a.act_tp = 'P113')"
+      evidence: "sql/lead_list.sql — 활동유형 P113의 최대 활동일"
+
+    - concept: contract_date
+      label: 계약일
+      role: date
+      date_role: contract_date
+      filterable: true
+      aliases: ['계약일', '계약일자', '계약된', '계약한']
+      physical: {table: ktws.FCT_LEAD, column: contract_dt}
+      evidence: "sql/lead_list.sql — l.contract_dt AS [계약일]"
+
+    - concept: delivery_date
+      label: 출고일
+      role: date
+      date_role: delivery_date
+      filterable: true
+      aliases: ['출고일', '출고일자', '출고된', '출고한', '출고']
+      pushdown_parameter_partial: {name: retail_yn, value: 'Y', means: 출고 여부만 — 기간은 못 내린다}
+      physical: {table: ktws.FCT_LEAD, column: last_retail_sales_dt}
+      evidence: "sql/lead_list.sql — l.last_retail_sales_dt AS [출고일]"
+      note: >
+        ⚠ 인증 지표 delivery_mtd_actual의 출고일은 FCT_CONTRACT_KTWS.last_retail_sales_dt다.
+        이름이 같고 테이블이 다르다 — 리포트 경로(리드 단위)와 지표 경로(계약 단위)를 섞으면
+        같은 질문에 다른 숫자가 나온다.
+        이 리포트에는 출고일 **기간** 파라미터가 없다(날짜 파라미터는 등록일뿐). 따라서
+        기간 조건은 실행 후 행에서 걸어야 하며, 이것이 REPORT_COMPOSED가 필요한 이유다.
+
+    - concept: last_activity_date
+      label: 최근 활동일자
+      role: date
+      date_role: last_activity_date
+      filterable: true
+      aliases: ['최근 활동일자', '최근 활동일', '마지막 활동일']
+      derived: true
+      physical:
+        expression: "(SELECT MAX(a.act_dt_fr) FROM ktws.FCT_ACTIVITY_v2 a WHERE a.lead_key = l.lead_key AND a.contact_tp IN (N'MSG', N'CALL', N'VISIT'))"
+      evidence: "sql/lead_list.sql — 연락 유형 MSG/CALL/VISIT의 최대 활동일"
+
+    - concept: vehicle_variant
+      label: 관심 차종
+      role: categorical_attribute
+      filterable: true
+      aliases: ['관심 차종', '차종', '관심차종', '관심 모델']
+      global_dimension: vehicle_variant
+      derived: true
+      physical:
+        expression: "(SELECT MAX(vv.variant_nm) FROM ktws.DIM_VEHIC_SPEC_VAR vv WHERE vv.var_key = l.int_vehic_variant_key1)"
+      note: 계약 차종이 아니라 **관심** 차종이다(int_vehic_variant_key1). 출고 차종과 다르다.
+      evidence: "sql/lead_list.sql — DIM_VEHIC_SPEC_VAR.variant_nm"
+
+    - concept: reception_type
+      label: 접수 유형
+      role: categorical_attribute
+      filterable: true
+      aliases: ['접수 유형', '접수유형', '접수 방식', '접수경로', '접수 경로']
+      derived: true
+      known_values: ['QR 접수', '수기 접수']
+      known_values_source: >
+        2026-08-12 라이브 실측 — ktws.FCT_ACTIVITY_v2에서 act_tp IN ('P107','P108')인 행의
+        visit_type 전수: 수기 접수 31027 / QR 접수 2331 (그 밖의 값 없음).
+      physical:
+        expression: "(SELECT MAX(a.visit_type) FROM ktws.FCT_ACTIVITY_v2 a WHERE a.lead_key = l.lead_key AND a.act_tp IN ('P107','P108'))"
+      evidence: "sql/lead_list.sql — visit_type을 참조하는 유일한 파일"
+      note: >
+        ⚠ 이 개념을 글로벌 Dimension으로 올리면 안 된다. "접수 유형"의 정의는
+        FCT_ACTIVITY_v2.visit_type **컬럼 하나가 아니라**
+        (a) act_tp IN ('P107','P108') 한정 + (b) 리드당 MAX 축약
+        까지를 포함한다. 2026-08-12 실측으로 visit_type이 둘인 리드가 실제로 1건 있어
+        (b)가 값을 바꾸는 규칙임이 확인됐다 — 컬럼만 올리면 이 규칙이 떨어져 나간다.
+
+  # 이 리포트가 파라미터로 받아줄 수 있는 조건. 받을 수 있는 것만 내려보내고
+  # 나머지는 실행 후 행에서 건다 — 어느 쪽인지 코드가 헷갈리지 않도록 명시한다.
+  pushdown:
+    dealer:
+      parameter: dealer_nm
+      global_dimension: dealer
+      physical: {table: ktws.DIM_MNG_USER, column: dealer_nm}
+      match: exact_trimmed
+      note: >
+        ⚠ 글로벌 dimension 'dealer'는 DIM_MNG_DEALER.dealer_nm인데 이 리포트는
+        DIM_MNG_USER.dealer_nm과 대조한다. 의미는 같고 물리 위치가 다르다.
+        STRING_SPLIT + LTRIM(RTRIM()) 정확 일치라 "강남"으로는 오류 없이 0행이 된다 —
+        dimensionValues.canonicalizeValues를 반드시 통과시킬 것.
+      evidence: "sql/lead_list.sql — @dealer_nm vs u.dealer_nm"
+    brand:      {parameter: brand,      global_dimension: brand,      physical: {table: ktws.DIM_MNG_USER, column: BRAND}}
+    showroom:   {parameter: group_name, global_dimension: showroom,   physical: {table: ktws.DIM_MNG_USER, column: group_name}}
+    department: {parameter: dept_nm,    global_dimension: department, physical: {table: ktws.DIM_MNG_USER, column: dept_nm}}
+    active_status: {parameter: active_yn, global_dimension: active_status, physical: {table: ktws.DIM_MNG_USER, column: active_yn}}
+
+  # 실행 후 행 연산으로만 걸 수 있는 조건에 대한 비용 한도.
+  # 넘으면 조용히 자르지 않고 UNSUPPORTED로 되묻는다.
+  composition_limits:
+    max_rows_fetched: 20000
+    note: >
+      2026-08-12 실측: 무필터 전체 88,144행 / dealer_nm='렉서스 강남' 12,394행 /
+      거기에 retail_yn='Y'까지 내리면 3,081행.

@@ -1,0 +1,127 @@
+# [출고 현황 · 월별 FINAL3] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "2-3. 출고 현황" NO=5 (J8 셀)의 최종 GOLD v1.
+# 이 행에는 v2(K열)가 없다 — v1이 최신본이다. NO=1~4는 v2가 있어 그쪽으로 등록돼 있다.
+#
+# 이 리포트가 없을 때 평가표 No.30~33("월누적 출고 현황과 관계형성/소개/기회창출별 값")이
+# 전부 다른 리포트로 흘러 값이 맞지 않았다(2026-08-05 정답 쿼리 대조 4건 모두 0% 일치).
+
+report_id: delivery_status_monthly
+version: v1-final3
+title: 출고 현황 — 월별 (MTD·YTD·전월, 구분별)
+description: >
+  연×월 기준 출고 건수를 MTD/YTD/전월(LM)로, 그리고 구분(출고현황·기회창출·관계형성·소개)
+  별로 나눠 보여준다. "월누적 출고", "관계형성인 월누적", "소개인 연누적"처럼 DMS 사용
+  유형별 출고를 묻는 질문이 여기다.
+
+sql_file: sql/delivery_status_monthly.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 2-3. 출고 현황
+  no: 5
+  gold_column: 최종 GOLD 쿼리 v1
+  # 원문이 이미 LIKE 패딩 값을 LTRIM(RTRIM())으로 감싸고 있다(FINAL3에서 "모든 차원
+  # 속성을 정규화 → 행 쪼개짐 방지"라고 헤더에 적혀 있다). 우리가 바꾼 게 아니다.
+  trim_guard: original
+  deviations:
+    - id: print_removed
+      what: "선두의 실행 버전 확인용 PRINT 문 제거"
+      why: >
+        드라이버는 결과셋만 받는다. SELECT/WITH로 시작하지 않는 본문이 되어 실행 가드에 걸린다.
+    - id: parameters_bound
+      what: "파라미터 DECLARE 8개 제거 (@year·@month·@brand·@dealer_nm·@group_name·@dept_nm·@active_yn·@sc_name)"
+      why: >
+        드라이버 바인딩으로 대체 — 문자열 치환 금지. 제외 상수(@exclude_*)와 파생 pad 변수는
+        원문 그대로 둔다.
+    - id: pad_null_guard
+      what: "NULL 가능한 pad 변수 6개에 CASE WHEN @X IS NULL THEN NULL ELSE ... END 추가"
+      why: >
+        Fabric에서 N',' + NULL + N',' 는 ',,' 가 되어 "비우면 전체"가 "결과 없음"으로 뒤집힌다.
+      verified_on: 2026-08-05
+
+sql_sha256: e232866bb6ce9b37ebe68645c42374024292ea2ee061ecd39b71a1a41f9d0cba
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false      # 합계 행이 없다
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  # @year·@month는 INT 스칼라 비교다 — 콤마 다중을 넘기면 안 된다(sc_card_monthly와 동일).
+  - { name: year,  sql_type: int, nullable: true, multi_value: false, description: "연도(예: 2026). 비우면 데이터가 있는 모든 연도." }
+  - { name: month, sql_type: int, nullable: true, multi_value: false, description: "월 1~12. 비우면 모든 월." }
+  - { name: brand,      sql_type: nvarchar, nullable: true, multi_value: true, description: "DIM_MNG_USER[BRAND]" }
+  - { name: dealer_nm,  sql_type: nvarchar, nullable: true, multi_value: true, authorization_dimension: dealer, description: 딜러 }
+  - { name: group_name, sql_type: nvarchar, nullable: true, multi_value: true, description: 전시장 }
+  - { name: dept_nm,    sql_type: nvarchar, nullable: true, multi_value: true, description: 팀 }
+  - { name: active_yn,  sql_type: nvarchar, nullable: true, multi_value: true, allowed_values: ['재직','퇴직'], description: 재직여부 }
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true
+    authorization_dimension: sales_consultant
+    description: "NULL이면 SC 열 없이 딜러×팀 단위, 'ALL'이면 전체 SC, 값을 주면 해당 SC만"
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: brand,             column: 브랜드 }
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: department,        column: 팀 }
+  - { id: sales_consultant,  column: SC }
+
+dimension_columns:
+  # 분기 A는 행 단위를 딜러×팀으로 단순화했고 전시장·브랜드는 대표값을 표시한다
+  # (헤더: "팀 YTD가 한 행에 온전히 나옴").
+  branch_a: ['연도', '월', '브랜드', '딜러', '전시장', '팀', '구분']
+  branch_b: ['연도', '월', '브랜드', '딜러', '전시장', '팀', 'SC', '구분']
+
+# '구분'은 접으면 안 되는 축이다. 출고현황이 전체이고 기회창출·관계형성·소개는 그 안의
+# 부분집합이라, 접어서 더하면 같은 건을 두 번 센다.
+# 2026-08-05 실측: LLM이 group_by에서 구분을 빼 연누적이 55가 아니라 125(=55+48+7+15)가
+# 나왔다. 주석만으로는 막히지 않아 롤업이 항상 남기도록 선언한다.
+never_collapse: ['구분']
+
+total_row: null
+
+column_semantics:
+  # 셋 다 행 단위 건수라 조직 축으로는 그대로 더한다.
+  # 다만 '구분'을 접어 더하면 안 된다 — 출고현황은 전체이고 기회창출·관계형성·소개는
+  # 그 안의 부분집합이라 더하면 이중 계산이 된다.
+  '출고MTD': { type: additive, grain: row, note: "그 달 출고. 구분 축을 접어 더하면 이중 계산된다." }
+  '출고YTD':
+    type: additive
+    grain: row
+    note: >
+      연누적. 구분이 '출고현황'인 행은 ytd_tot CTE가 따로 계산한 값이다
+      (제외 규칙 미적용·유형 무관 전건) — 나머지 구분의 YTD와 계산 기준이 다르다.
+  '출고LM':  { type: additive, grain: row, note: "전월(last month) 출고." }
+
+# 질문에 쓰이는 말 → 컬럼. LLM이 selected_columns를 비워 보내면 이걸로 좁힌다.
+#
+# 2026-08-10 실측(평가 No.33): "전월 출고 현황"을 물었는데 실행마다 출고LM만 나올 때와
+# MTD·YTD까지 다 나올 때가 갈렸다. 세 컬럼이 다 나오면 묻지 않은 기간이 답에 섞인다.
+# 기간을 가리키는 말은 사용자가 명시한 것이라 서버가 결정적으로 좁힐 수 있다.
+column_aliases:
+  '출고MTD': ['월누적', '당월', '이번 달']
+  '출고YTD': ['연누적', '올해', '연간 누적']
+  '출고LM': ['전월', '지난달', '지난 달']
+
+format:
+  integer: ['출고MTD', '출고YTD', '출고LM']
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

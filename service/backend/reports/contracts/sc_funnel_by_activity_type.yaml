@@ -1,0 +1,103 @@
+# [활동유형 기준 퍼널 표] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "1-3. KTWS 퍼널 월별 SC 현황" NO=14의 최종 GOLD.
+# funnel_full_structure(1-1)와 지표는 거의 같지만 조직 차원이 전혀 없고
+# 활동유형분류 x 활동유형 두 축으로만 집계한다 — "유형별로 어디가 막히나"를 보는 표다.
+# 1-1에 없는 [계약 진행 실적] 컬럼이 있어 계약 진행률의 분자가 다르다.
+
+report_id: sc_funnel_by_activity_type
+version: v1
+title: 활동유형 기준 퍼널 표
+description: >
+  연×월 기준 활동→기회→시승→계약 퍼널 24개 지표를 활동유형분류×활동유형 축으로만
+  집계한 표. 조직(딜러/전시장/팀/SC) 구분 없이 유형별 병목을 보는 용도다.
+
+sql_file: sql/sc_funnel_by_activity_type.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 1-3. KTWS 퍼널 월별 SC 현황
+  no: 14
+  value_name: 활동유형 기준 퍼널 표
+  gold_column: GOLD 쿼리
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 4개 제거
+      why: >
+        드라이버 바인딩으로 대체 — 문자열 치환 금지. 이 쿼리는 STRING_SPLIT을 쓰고
+        콤마 패딩 변수가 없어 pad NULL 가드가 필요 없다.
+
+sql_sha256: e554409d189a26bb3be906b9057825f5eeeef915ae33ba59b7a59771c05a40d5
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: false
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - { name: year,  sql_type: int, nullable: true, description: "연도" }
+  - { name: month, sql_type: int, nullable: true, min: 1, max: 12, description: "월 1~12" }
+  - name: common_tp_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "활동유형. 비우면 전체."
+  - name: tp_grp_1
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    default: ['관계형성', '기회창출']   # 리스트로 둔다 — 콤마 포함 문자열은 검증기가 거부한다
+    description: >
+      활동유형분류. 원본 기본값이 '관계형성,기회창출'이라 그대로 둔다 —
+      비우면 퍼널 정의에 없는 유형까지 섞여 화면과 숫자가 달라진다.
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: activity_type,     column: 활동유형 }
+  - { id: activity_group,    column: 활동유형분류 }
+
+dimension_columns:
+  branch_a: &dims ['활동유형분류', '활동유형']
+  branch_b: *dims
+
+total_row: null
+
+column_semantics:
+  '영업활동 건 수':                       { type: additive, grain: row }
+  '영업활동 당월 목표':                    { type: additive, grain: row }
+  '영업기회 건 수(당월활동실적)':            { type: additive, grain: row }
+  '영업기회 건 수(당월전체실적)':            { type: additive, grain: row }
+  '영업기회 당월 목표':                    { type: additive, grain: row }
+  '계약건수(당월활동실적)':                 { type: additive, grain: row }
+  '계약건수(당월전체실적)':                 { type: additive, grain: row }
+  '계약 당월 목표':                       { type: additive, grain: row }
+  '계약 진행 실적':                       { type: additive, grain: row }
+  '시승건수(당월활동실적/시승완료)':          { type: additive, grain: row }
+  '시승건수(당월활동실적/시승취소건 제외)':    { type: additive, grain: row }
+  '시승건수(당월전체실적/lead_key 기준)':    { type: additive, grain: row }
+  '시승건수(당월전체실적/actual_cnt 기준)':  { type: additive, grain: row }
+  '시승 당월 목표':                       { type: additive, grain: row }
+  '시승에서 계약으로 당월활동실적':           { type: additive, grain: row }
+  '시승에서 계약으로 당월전체실적':           { type: additive, grain: row }
+  '영업활동 진행률': { type: ratio, numerator: '영업활동 건 수', denominator: '영업활동 당월 목표', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '영업활동에서 영업기회로의 전환율': { type: ratio, numerator: '영업기회 건 수(당월활동실적)', denominator: '영업활동 건 수', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+  '영업기회 진행률': { type: ratio, numerator: '영업기회 건 수(당월활동실적)', denominator: '영업기회 당월 목표', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '영업기회에서 계약으로 전환율': { type: ratio, numerator: '계약건수(당월활동실적)', denominator: '영업기회 건 수(당월활동실적)', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+  '계약 진행률': { type: ratio, numerator: '계약 진행 실적', denominator: '계약 당월 목표', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '영업기회에서 시승으로 전환율': { type: ratio, numerator: '시승건수(당월활동실적/시승완료)', denominator: '영업기회 건 수(당월활동실적)', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+  '시승 진행률': { type: ratio, numerator: '시승건수(당월활동실적/시승완료)', denominator: '시승 당월 목표', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: target }
+  '시승에서 계약으로 전환율': { type: ratio, numerator: '시승에서 계약으로 당월활동실적', denominator: '시승건수(당월활동실적/시승완료)', direct_average_forbidden: true, recompute_ratio: true, ratio_basis: stage }
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현. 이 리포트는 조직 차원 자체가 없어 범위 제한도 불가능하다.
+  intersect_dimensions: []

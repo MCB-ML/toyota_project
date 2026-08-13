@@ -1,0 +1,232 @@
+{
+  "data": [
+    {
+      "companyId": "00000000-0000-0000-0000-000000000100",
+      "companyName": "한국 건설 주식회사",
+      "branches": [
+        {
+          "branchId": "00000000-0000-0000-0000-000000000101",
+          "branchName": "한국 건설 주식회사",
+          "workspaces": [
+            {
+              "workspaceId": "00000000-0000-0000-0000-000000000102",
+              "workspaceName": "Sales AI Automation (KMS)",
+              "aiAgents": [
+                {
+                  "agentId": "019C9DB4-8EAC-7332-9F2A-6F5F86890DF5",
+                  "agentName": "1",
+                  "description": "1",
+                  "category": "OCR",
+                  "externalUrl": "",
+                  "isActive": false,
+                  "workspaceId": "15DC2EB4-B5D4-402B-9B9A-207102B7790D",
+                  "createdAt": "2026-02-27 06:06:44",
+                  "updatedAt": null,
+                  "seq": 11
+                },
+                {
+                  "agentId": "019C7A46-4D3B-7029-9623-367514D7EA0D",
+                  "agentName": "Email Automation GPT(V02)",
+                  "description": "KSM - Email classification",
+                  "category": "Others",
+                  "externalUrl": "https://ksm-email-dev-brc0f0bdftbsb5af.koreasouth-01.azurewebsites.net/email-monitoring",
+                  "isActive": true,
+                  "workspaceId": "15DC2EB4-B5D4-402B-9B9A-207102B7790D",
+                  "createdAt": "2026-02-20 08:59:43",
+                  "updatedAt": null,
+                  "seq": 22
+                },
+                {
+                  "agentId": "019BC0AD-B6DB-729F-950D-41F263ED1DF5",
+                  "agentName": "Email Automation GPT(old)",
+                  "description": "",
+                  "category": "Others",
+                  "externalUrl": "https://habit-glory-56204475.figma.site",
+                  "isActive": false,
+                  "workspaceId": "15DC2EB4-B5D4-402B-9B9A-207102B7790D",
+                  "createdAt": "2026-01-15 08:03:58",
+                  "updatedAt": null,
+                  "seq": 22
+                }
+              ]
+            },
+            {
+              "workspaceId": "00000000-0000-0000-0000-000000000103",
+              "workspaceName": "Management Agent (Motrex)",
+              "aiAgents": [
+                {
+                  "agentId": "019BC0AF-E2A4-77A8-BD33-50E9353DA0B8",
+                  "agentName": "Report Management",
+                  "description": "",
+                  "category": "Others",
+                  "externalUrl": "https://chroma-poker-66824051.figma.site",
+                  "isActive": true,
+                  "workspaceId": "1DF9AB9A-50FB-43E5-AC2C-4A775EB13FAF",
+                  "createdAt": "2026-01-15 08:06:02",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019C4130-D509-74EA-951A-9D7FA8CCC7DC",
+                  "agentName": "M365 Home",
+                  "description": "",
+                  "category": "Others",
+                  "externalUrl": "",
+                  "isActive": false,
+                  "workspaceId": "1DF9AB9A-50FB-43E5-AC2C-4A775EB13FAF",
+                  "createdAt": "2026-02-09 06:57:38",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019BC0AE-DD0A-74D8-82FA-B762B5787B29",
+                  "agentName": "Instruction Management",
+                  "description": "",
+                  "category": "Others",
+                  "externalUrl": "https://motrex-tms-frontend-staging.azurewebsites.net/taskManagement",
+                  "isActive": true,
+                  "workspaceId": "1DF9AB9A-50FB-43E5-AC2C-4A775EB13FAF",
+                  "createdAt": "2026-01-15 08:05:00",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019C7A56-C3DB-722F-A96F-FD5684370E47",
+                  "agentName": "Department & User setup",
+                  "description": "Department & User setup for Report & Instruction Management",
+                  "category": "Others",
+                  "externalUrl": "https://motrex-tms-frontend-staging.azurewebsites.net/departmentSetup/",
+                  "isActive": true,
+                  "workspaceId": "1DF9AB9A-50FB-43E5-AC2C-4A775EB13FAF",
+                  "createdAt": "2026-02-20 09:17:24",
+                  "updatedAt": null,
+                  "seq": null
+                }
+              ]
+            },
+            {
+              "workspaceId": "00000000-0000-0000-0000-000000000104",
+              "workspaceName": "건설 통합 분석 워크스페이스",
+              "aiAgents": []
+            },
+            {
+              "workspaceId": "00000000-0000-0000-0000-000000000105",
+              "workspaceName": "OCR Workspace",
+              "aiAgents": [
+                {
+                  "agentId": "3FA85F64-5717-4562-B3FC-2C963F66AFA1",
+                  "agentName": "OCR Expense Agent",
+                  "description": "Agent OCR Expense",
+                  "category": "OCR",
+                  "externalUrl": null,
+                  "isActive": true,
+                  "workspaceId": "00000000-0000-0000-0000-000000000105",
+                  "createdAt": "2026-01-10 00:16:01",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019BD52A-A03A-7717-B567-48C4CA0A0D39",
+                  "agentName": "Korean Tax Invoice",
+                  "description": "Korean Tax Invoice OCR",
+                  "category": "OCR",
+                  "externalUrl": "",
+                  "isActive": true,
+                  "workspaceId": "3AB254DC-A172-4F28-AD67-EC56E30E07AA",
+                  "createdAt": "2026-01-19 07:32:30",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019BD579-75E0-77AA-8355-5191CAE47B5F",
+                  "agentName": "Information Report",
+                  "description": "Information Report OCR",
+                  "category": "OCR",
+                  "externalUrl": "",
+                  "isActive": true,
+                  "workspaceId": "3AB254DC-A172-4F28-AD67-EC56E30E07AA",
+                  "createdAt": "2026-01-19 08:59:57",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019BD517-1B7C-74A9-A00D-D2971738A17B",
+                  "agentName": "Bank Statement",
+                  "description": "Bank Statetemnt OCR",
+                  "category": "OCR",
+                  "externalUrl": "",
+                  "isActive": true,
+                  "workspaceId": "3AB254DC-A172-4F28-AD67-EC56E30E07AA",
+                  "createdAt": "2026-01-19 07:17:59",
+                  "updatedAt": null,
+                  "seq": null
+                },
+                {
+                  "agentId": "019BD514-38C6-76AE-969A-D8123E6A74DA",
+                  "agentName": "Document AI",
+                  "description": "Document AI OCR",
+                  "category": "OCR",
+                  "externalUrl": "",
+                  "isActive": false,
+                  "workspaceId": "3AB254DC-A172-4F28-AD67-EC56E30E07AA",
+                  "createdAt": "2026-01-19 07:08:41",
+                  "updatedAt": null,
+                  "seq": null
+                }
+              ]
+            },
+            {
+              "workspaceId": "00000000-0000-0000-0000-000000000106",
+              "workspaceName": "Vertex Workspace",
+              "aiAgents": [
+                {
+                  "agentId": "019C08FA-C1DF-700F-83F9-7B1DC3A36F02",
+                  "agentName": "Part Recognation Agent",
+                  "description": "",
+                  "category": "Vertex",
+                  "externalUrl": "",
+                  "isActive": true,
+                  "workspaceId": "64C2E104-A08B-424B-BC5F-CA7BBE61EFBD",
+                  "createdAt": "2026-01-29 08:59:43",
+                  "updatedAt": null,
+                  "seq": null
+                }
+              ]
+            },
+            {
+              "workspaceId": "00000000-0000-0000-0000-000000000107",
+              "workspaceName": "경동 AI Agent ChatBot",
+              "aiAgents": [
+                {
+                  "agentId": "019C9CF3-D0F6-746F-823B-4FC4B5C49816",
+                  "agentName": "설정",
+                  "description": "-",
+                  "category": "Others",
+                  "externalUrl": "",
+                  "isActive": true,
+                  "workspaceId": "933283D1-A631-4BF5-AC5E-A7DA45694FA0",
+                  "createdAt": "2026-02-27 02:36:04",
+                  "updatedAt": null,
+                  "seq": 2
+                },
+                {
+                  "agentId": "019C9CED-50B5-7457-B3D4-A9C6D79E5D08",
+                  "agentName": "에이전트 시스템",
+                  "description": "-",
+                  "category": "Others",
+                  "externalUrl": "https://serve-glove-31606712.figma.site",
+                  "isActive": true,
+                  "workspaceId": "933283D1-A631-4BF5-AC5E-A7DA45694FA0",
+                  "createdAt": "2026-02-27 02:29:08",
+                  "updatedAt": null,
+                  "seq": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total": 6
+}

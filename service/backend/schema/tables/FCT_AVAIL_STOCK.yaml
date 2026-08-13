@@ -1,0 +1,127 @@
+table: "FCT_AVAIL_STOCK"
+description: "차량 재고 팩트 테이블. 딜러별/차종별 가용 재고 및 입항/배정 진행 상태를 담는다."
+database: "KPI_W"
+schema: "ktws"
+grain: "차량번호(vehic_magic) 단위의 재고 정보."
+columns:
+  -
+    name: "cnt"
+    type: "int"
+    description: "재고카운트. 재고 대수를 집계할 때 SUM한다."
+  -
+    name: "vehic_magic"
+    type: "varchar(200)"
+    description: "차량번호. 이 테이블의 기준 키."
+  -
+    name: "dealer_key"
+    type: "varchar(200)"
+    description: "딜러키. DIM_MNG_DEALER와 조인해 딜러명을 조회할 때 사용한다."
+  -
+    name: "spec_key"
+    type: "varchar(200)"
+    description: "차량유형키. DIM_VEHIC_SPEC과 조인해 모델/차종/SFX 정보를 조회할 때 사용한다."
+  -
+    name: "progress"
+    type: "varchar(200)"
+    description: "차량 진행 단계. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "port_in_adt"
+    type: "date"
+    description: "입항일(실제). 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "port_in_pdt"
+    type: "date"
+    description: "입항예정일. 기간 조건, 정렬, 최근 데이터 조회에 사용한다."
+  -
+    name: "al_status"
+    type: "varchar(200)"
+    description: "배정상태. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "BRAND"
+    type: "varchar(200)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "INVENTORY_FACT"
+    - "VEHICLE_STOCK"
+  keys:
+    primary:
+      - "vehic_magic"
+    foreign:
+      -
+        column: "dealer_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_DEALER"
+          column: "dealer_key"
+        description: "딜러명을 조회할 때 사용한다. (관계설정 리스트에 명시되지 않았으나 컬럼명 규칙상 유추한 조인 — 실 사용 전 값 검증 권장)"
+      -
+        column: "spec_key"
+        references:
+          schema: "ktws"
+          table: "DIM_VEHIC_SPEC"
+          column: "spec_key"
+        description: "모델/차종/SFX 정보를 조회할 때 사용한다. (컬럼명 규칙상 유추한 조인 — 실 사용 전 값 검증 권장)"
+dimensions:
+  - "vehic_magic"
+  - "dealer_key"
+  - "spec_key"
+  - "progress"
+  - "port_in_adt"
+  - "port_in_pdt"
+  - "al_status"
+  - "BRAND"
+features:
+  -
+    name: "cnt"
+    synonyms:
+      - "재고카운트"
+  -
+    name: "vehic_magic"
+    synonyms:
+      - "차량번호"
+  -
+    name: "dealer_key"
+    synonyms:
+      - "딜러키"
+  -
+    name: "spec_key"
+    synonyms:
+      - "차량유형키"
+  -
+    name: "progress"
+    synonyms:
+      - "단계"
+  -
+    name: "port_in_adt"
+    synonyms:
+      - "입항일"
+  -
+    name: "port_in_pdt"
+    synonyms:
+      - "입항예정일"
+  -
+    name: "al_status"
+    synonyms:
+      - "배정상태"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+measures:
+  -
+    name: "cnt"
+    aggregation: "sum"
+    description: "재고카운트"
+display:
+  default_columns:
+    - "vehic_magic"
+    - "dealer_key"
+    - "spec_key"
+    - "progress"
+    - "al_status"
+    - "port_in_pdt"

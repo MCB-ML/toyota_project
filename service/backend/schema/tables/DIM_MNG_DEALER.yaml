@@ -1,0 +1,68 @@
+table: "DIM_MNG_DEALER"
+description: "딜러 차원 테이블. 다른 팩트/디멘전 테이블의 dealer_key가 이 테이블을 가리킨다."
+database: "KPI_W"
+schema: "ktws"
+grain: "딜러키(dealer_key) 단위의 딜러 정보."
+columns:
+  -
+    name: "dealer_key"
+    type: "varchar(200)"
+    description: "딜러키. 이 테이블의 기준 키이며, DIM_MNG_USER/FCT_SALES_TARGET_DAILY 등이 이 값으로 조인한다."
+  -
+    name: "dealer_id"
+    type: "varchar(100)"
+    description: "딜러ID(dealer_key와 동일 값). 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "dealer_nm"
+    type: "varchar(100)"
+    description: "딜러명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "dealer_nm_indx"
+    type: "varchar(100)"
+    description: "딜러명 정렬 순서."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "DEALER_DIMENSION"
+  keys:
+    primary:
+      - "dealer_key"
+dimensions:
+  - "dealer_key"
+  - "dealer_id"
+  - "dealer_nm"
+  - "dealer_nm_indx"
+  - "BRAND"
+features:
+  -
+    name: "dealer_key"
+    synonyms:
+      - "딜러키"
+  -
+    name: "dealer_id"
+    synonyms:
+      - "딜러ID"
+  -
+    name: "dealer_nm"
+    synonyms:
+      - "딜러명"
+  -
+    name: "dealer_nm_indx"
+    synonyms:
+      - "딜러명 순서"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "dealer_key"
+    - "dealer_nm"
+    - "BRAND"

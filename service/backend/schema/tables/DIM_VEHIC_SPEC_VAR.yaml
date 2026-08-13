@@ -1,0 +1,95 @@
+table: "DIM_VEHIC_SPEC_VAR"
+description: "차종(Variant) 단위의 차량 유형 차원 테이블 — 모델보다 한 단계 더 세분화된 레벨."
+database: "KPI_W"
+schema: "ktws"
+grain: "차종키(var_key) 단위의 모델+차종 정보."
+columns:
+  -
+    name: "model_cd"
+    type: "varchar(100)"
+    description: "모델코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "model_nm"
+    type: "varchar(200)"
+    description: "모델명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "variant_cd"
+    type: "varchar(200)"
+    description: "차종코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "variant_nm"
+    type: "varchar(200)"
+    description: "차종명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "model_key"
+    type: "varchar(200)"
+    description: "모델키. DIM_VEHIC_SPEC_MDL과 조인할 때 사용한다."
+  -
+    name: "var_key"
+    type: "varchar(200)"
+    description: "차종키(variant_cd와 동일 값). 이 테이블의 기준 키이며, DIM_VEHIC_SPEC.var_key/FCT_HBOARD_MEETING.int_var_key와 조인한다."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "VARIANT_DIMENSION"
+  keys:
+    primary:
+      - "var_key"
+    foreign:
+      -
+        column: "model_key"
+        references:
+          schema: "ktws"
+          table: "DIM_VEHIC_SPEC_MDL"
+          column: "mdl_key"
+        description: "모델 단위 정보를 조회할 때 사용한다."
+dimensions:
+  - "model_cd"
+  - "model_nm"
+  - "variant_cd"
+  - "variant_nm"
+  - "model_key"
+  - "var_key"
+  - "BRAND"
+features:
+  -
+    name: "model_cd"
+    synonyms:
+      - "모델코드"
+  -
+    name: "model_nm"
+    synonyms:
+      - "모델명"
+  -
+    name: "variant_cd"
+    synonyms:
+      - "차종코드"
+  -
+    name: "variant_nm"
+    synonyms:
+      - "차종명"
+  -
+    name: "model_key"
+    synonyms:
+      - "모델키"
+  -
+    name: "var_key"
+    synonyms:
+      - "차종키"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "var_key"
+    - "model_nm"
+    - "variant_nm"
+    - "BRAND"

@@ -1,0 +1,187 @@
+table: "DIM_CALENDAR_KTWS"
+description: "KTWS DW 전체 팩트 테이블이 공통으로 참조하는 날짜 차원 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "날짜(Date) 단위의 달력 차원 정보."
+columns:
+  -
+    name: "Date"
+    type: "date"
+    description: "날짜. 이 테이블의 기준 키이며, 다른 모든 FCT 테이블의 날짜 컬럼과 조인할 때 사용한다."
+  -
+    name: "Year"
+    type: "int"
+    description: "연도. 연도 단위 그룹핑/필터에 사용한다."
+  -
+    name: "YearName"
+    type: "varchar(max)"
+    description: "연도 + '년' 형태의 표시용 텍스트."
+  -
+    name: "QuarterNumber"
+    type: "int"
+    description: "분기 숫자(1~4). 분기 단위 그룹핑에 사용한다."
+  -
+    name: "MonthNumber"
+    type: "int"
+    description: "월 숫자(1~12). 월 단위 그룹핑에 사용한다."
+  -
+    name: "Day"
+    type: "int"
+    description: "일 숫자."
+  -
+    name: "DayName"
+    type: "varchar(500)"
+    description: "일자의 한글 표시."
+  -
+    name: "WeekNumber"
+    type: "int"
+    description: "연중 주차."
+  -
+    name: "WeekNumber_Monthly"
+    type: "varchar(100)"
+    description: "월 내 주차."
+  -
+    name: "WeekNumber_Monthly_txt"
+    type: "varchar(max)"
+    description: "월별 주차 + '주차' 형태의 표시용 텍스트."
+  -
+    name: "QuarterText"
+    type: "varchar(500)"
+    description: "분기의 텍스트 표시(예: 1분기)."
+  -
+    name: "MonthName"
+    type: "varchar(500)"
+    description: "월 이름(예: 1월)."
+  -
+    name: "MonthAbbr"
+    type: "varchar(500)"
+    description: "월 이름 약어."
+  -
+    name: "WeekdayName"
+    type: "varchar(500)"
+    description: "요일 이름(한글)."
+  -
+    name: "WeekdayAbbr"
+    type: "varchar(500)"
+    description: "요일 이름 약어."
+  -
+    name: "YearMonth"
+    type: "varchar(500)"
+    description: "연월(YYYY-MM 등). 월별 그룹핑/필터에 자주 사용한다."
+  -
+    name: "WeekdayNumber"
+    type: "int"
+    description: "요일 숫자(1~7)."
+  -
+    name: "kr_holiday"
+    type: "varchar(10)"
+    description: "공휴일 여부(1=공휴일). 영업일 계산 필터에 사용한다."
+semantics:
+  role:
+    - "CALENDAR"
+    - "DATE_DIMENSION"
+  keys:
+    primary:
+      - "Date"
+filters:
+  -
+    column: "kr_holiday"
+    description: "공휴일 여부(1=공휴일)"
+dimensions:
+  - "Date"
+  - "Year"
+  - "YearName"
+  - "QuarterNumber"
+  - "MonthNumber"
+  - "Day"
+  - "DayName"
+  - "WeekNumber"
+  - "WeekNumber_Monthly"
+  - "WeekNumber_Monthly_txt"
+  - "QuarterText"
+  - "MonthName"
+  - "MonthAbbr"
+  - "WeekdayName"
+  - "WeekdayAbbr"
+  - "YearMonth"
+  - "WeekdayNumber"
+features:
+  -
+    name: "Date"
+    synonyms:
+      - "날짜"
+  -
+    name: "Year"
+    synonyms:
+      - "연도"
+  -
+    name: "YearName"
+    synonyms:
+      - "연도명"
+  -
+    name: "QuarterNumber"
+    synonyms:
+      - "분기숫자"
+  -
+    name: "MonthNumber"
+    synonyms:
+      - "월숫자"
+  -
+    name: "Day"
+    synonyms:
+      - "일 숫자"
+  -
+    name: "DayName"
+    synonyms:
+      - "일 한글"
+  -
+    name: "WeekNumber"
+    synonyms:
+      - "주차"
+  -
+    name: "WeekNumber_Monthly"
+    synonyms:
+      - "월별 주차"
+  -
+    name: "WeekNumber_Monthly_txt"
+    synonyms:
+      - "월별 주차 텍스트"
+  -
+    name: "QuarterText"
+    synonyms:
+      - "텍스트 분기"
+  -
+    name: "MonthName"
+    synonyms:
+      - "월이름"
+  -
+    name: "MonthAbbr"
+    synonyms:
+      - "월이름 약어"
+  -
+    name: "WeekdayName"
+    synonyms:
+      - "요일이름"
+  -
+    name: "WeekdayAbbr"
+    synonyms:
+      - "요일이름 약어"
+  -
+    name: "YearMonth"
+    synonyms:
+      - "연월"
+  -
+    name: "WeekdayNumber"
+    synonyms:
+      - "요일 숫자"
+  -
+    name: "kr_holiday"
+    synonyms:
+      - "공휴일 여부"
+display:
+  default_columns:
+    - "Date"
+    - "YearMonth"
+    - "MonthName"
+    - "WeekdayName"
+    - "kr_holiday"

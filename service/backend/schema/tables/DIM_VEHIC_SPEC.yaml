@@ -1,0 +1,190 @@
+table: "DIM_VEHIC_SPEC"
+description: "SFX(트림) 단위의 차량 유형 차원 테이블. 모델/차종/연식/SFX 전체 계층 정보를 담는다."
+database: "KPI_W"
+schema: "ktws"
+grain: "차량유형키(spec_key = model_cd+variant_cd+my_cd+sfx_cd) 단위의 차량 사양 정보."
+columns:
+  -
+    name: "model_cd"
+    type: "varchar(100)"
+    description: "모델코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "model_nm"
+    type: "varchar(200)"
+    description: "모델명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "variant_cd"
+    type: "varchar(200)"
+    description: "차종코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "variant_nm"
+    type: "varchar(200)"
+    description: "차종명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "my_cd"
+    type: "varchar(200)"
+    description: "연식코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "sfx_cd"
+    type: "varchar(200)"
+    description: "SFX 코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "grade"
+    type: "varchar(200)"
+    description: "그레이드 명칭. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "brand_nm"
+    type: "varchar(200)"
+    description: "브랜드명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "daily_report_yn"
+    type: "varchar(10)"
+    description: "일일 보고서 사용 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "curr_sales_yn"
+    type: "varchar(10)"
+    description: "현재 판매 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "sales_yn"
+    type: "varchar(10)"
+    description: "판매 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "order_yn"
+    type: "varchar(10)"
+    description: "주문 가능 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "concern_mdl_yn"
+    type: "varchar(10)"
+    description: "관심 모델 가능 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "var_key"
+    type: "varchar(200)"
+    description: "차종키. DIM_VEHIC_SPEC_VAR와 조인할 때 사용한다."
+  -
+    name: "spec_key"
+    type: "varchar(200)"
+    description: "차량유형키. 이 테이블의 기준 키이며, FCT_CONTRACT_KTWS.cn_vehic_key 등과 조인한다."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "VEHICLE_SPEC_DIMENSION"
+    - "SFX_MASTER"
+  keys:
+    primary:
+      - "spec_key"
+    foreign:
+      -
+        column: "var_key"
+        references:
+          schema: "ktws"
+          table: "DIM_VEHIC_SPEC_VAR"
+          column: "var_key"
+        description: "차종(Variant) 단위 정보를 조회할 때 사용한다."
+filters:
+  -
+    column: "daily_report_yn"
+    description: "일일 보고서 사용 여부"
+  -
+    column: "curr_sales_yn"
+    description: "현재 판매 여부"
+  -
+    column: "sales_yn"
+    description: "판매 여부"
+  -
+    column: "order_yn"
+    description: "주문 가능 여부"
+  -
+    column: "concern_mdl_yn"
+    description: "관심 모델 가능 여부"
+dimensions:
+  - "model_cd"
+  - "model_nm"
+  - "variant_cd"
+  - "variant_nm"
+  - "my_cd"
+  - "sfx_cd"
+  - "grade"
+  - "brand_nm"
+  - "var_key"
+  - "spec_key"
+  - "BRAND"
+features:
+  -
+    name: "model_cd"
+    synonyms:
+      - "모델코드"
+  -
+    name: "model_nm"
+    synonyms:
+      - "모델명"
+  -
+    name: "variant_cd"
+    synonyms:
+      - "차종코드"
+  -
+    name: "variant_nm"
+    synonyms:
+      - "차종명"
+  -
+    name: "my_cd"
+    synonyms:
+      - "연식코드"
+  -
+    name: "sfx_cd"
+    synonyms:
+      - "SFX 코드"
+  -
+    name: "grade"
+    synonyms:
+      - "그레이드 명칭"
+  -
+    name: "brand_nm"
+    synonyms:
+      - "브랜드명"
+  -
+    name: "daily_report_yn"
+    synonyms:
+      - "보고서 사용 여부"
+  -
+    name: "curr_sales_yn"
+    synonyms:
+      - "현재 판매 여부"
+  -
+    name: "sales_yn"
+    synonyms:
+      - "판매 여부"
+  -
+    name: "order_yn"
+    synonyms:
+      - "주문 가능 여부"
+  -
+    name: "concern_mdl_yn"
+    synonyms:
+      - "관심 모델 가능 여부"
+  -
+    name: "var_key"
+    synonyms:
+      - "차종키"
+  -
+    name: "spec_key"
+    synonyms:
+      - "차량유형키"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "spec_key"
+    - "model_nm"
+    - "variant_nm"
+    - "sfx_cd"
+    - "grade"
+    - "curr_sales_yn"

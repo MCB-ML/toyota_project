@@ -1,0 +1,75 @@
+table: "DIM_CRM_ACT_TYPE_ORDER"
+description: "활동유형 상위카테고리(tp_grp_1/tp_grp_2)와 dms 사용 유형명(common_tp_nm)의 화면 표시 순서를 관리하는 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "common_tp_nm 단위의 활동유형 상위카테고리 정렬 정보."
+columns:
+  -
+    name: "tp_grp_1"
+    type: "varchar(100)"
+    description: "상위카테고리1. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "tp_grp_1_order"
+    type: "int"
+    description: "상위카테고리1 정렬 순서."
+  -
+    name: "tp_grp_2"
+    type: "varchar(100)"
+    description: "상위카테고리2. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "tp_grp_2_order"
+    type: "int"
+    description: "상위카테고리2 정렬 순서."
+  -
+    name: "common_tp_nm"
+    type: "varchar(100)"
+    description: "dms 사용 유형 명. 이 테이블의 기준 키이며, DIM_CRM_ACT_TYPE.common_tp_nm과 조인한다."
+  -
+    name: "tp_order"
+    type: "int"
+    description: "활동 유형 순서."
+semantics:
+  role:
+    - "ACT_TYPE_ORDER"
+    - "DISPLAY_ORDER"
+  keys:
+    primary:
+      - "common_tp_nm"
+dimensions:
+  - "tp_grp_1"
+  - "tp_grp_1_order"
+  - "tp_grp_2"
+  - "tp_grp_2_order"
+  - "common_tp_nm"
+  - "tp_order"
+features:
+  -
+    name: "tp_grp_1"
+    synonyms:
+      - "상위카테고리1"
+  -
+    name: "tp_grp_1_order"
+    synonyms:
+      - "상위카테고리1 순서"
+  -
+    name: "tp_grp_2"
+    synonyms:
+      - "상위카테고리2"
+  -
+    name: "tp_grp_2_order"
+    synonyms:
+      - "상위카테고리2 순서"
+  -
+    name: "common_tp_nm"
+    synonyms:
+      - "dms 사용 유형 명"
+  -
+    name: "tp_order"
+    synonyms:
+      - "활동 유형 순서"
+display:
+  default_columns:
+    - "common_tp_nm"
+    - "tp_grp_1"
+    - "tp_grp_2"
+    - "tp_order"

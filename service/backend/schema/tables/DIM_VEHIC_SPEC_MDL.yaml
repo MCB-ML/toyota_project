@@ -1,0 +1,59 @@
+table: "DIM_VEHIC_SPEC_MDL"
+description: "모델 단위의 차량 유형 차원 테이블(가장 상위 레벨 — 모델명만 필요할 때 사용)."
+database: "KPI_W"
+schema: "ktws"
+grain: "모델키(mdl_key) 단위의 모델 정보."
+columns:
+  -
+    name: "model_cd"
+    type: "varchar(100)"
+    description: "모델코드. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "model_nm"
+    type: "varchar(200)"
+    description: "모델명. 조회 결과의 속성, 그룹핑, 필터 조건으로 사용할 수 있다."
+  -
+    name: "mdl_key"
+    type: "varchar(200)"
+    description: "모델키(model_cd와 동일 값). 이 테이블의 기준 키이며, DIM_VEHIC_SPEC_VAR.model_key/FCT_SALES_TARGET_DAILY.model_key/FCT_LEAD.int_vehic_key1 등과 조인한다."
+  -
+    name: "BRAND"
+    type: "varchar(100)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "MODEL_DIMENSION"
+  keys:
+    primary:
+      - "mdl_key"
+dimensions:
+  - "model_cd"
+  - "model_nm"
+  - "mdl_key"
+  - "BRAND"
+features:
+  -
+    name: "model_cd"
+    synonyms:
+      - "모델코드"
+  -
+    name: "model_nm"
+    synonyms:
+      - "모델명"
+  -
+    name: "mdl_key"
+    synonyms:
+      - "모델키"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "mdl_key"
+    - "model_nm"
+    - "BRAND"

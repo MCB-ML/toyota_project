@@ -1,0 +1,131 @@
+table: "FCT_CRM_TARGET_M"
+description: "월 단위 CRM 목표(타겟) 팩트 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "월구분키(mon_key) 단위의 SC별/활동유형별 월간 CRM 목표."
+columns:
+  -
+    name: "mon_key"
+    type: "varchar(100)"
+    description: "월구분키. 이 테이블의 기준 키."
+  -
+    name: "sc_key"
+    type: "varchar(100)"
+    description: "SC키. DIM_MNG_USER와 조인해 담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+  -
+    name: "monthly_dt"
+    type: "date"
+    description: "타겟할당월. DIM_CALENDAR_KTWS.Date와 조인할 때 사용한다."
+  -
+    name: "target_cnt"
+    type: "int"
+    description: "목표 건수. 집계, 합계, 평균, 비교 계산에 사용할 수 있다."
+  -
+    name: "target_rate"
+    type: "decimal(18,0)"
+    description: "목표 건 비율. 집계, 합계, 평균, 비교 계산에 사용할 수 있다."
+  -
+    name: "target_multi"
+    type: "decimal(18,1)"
+    description: "활동배수. 집계, 합계, 평균, 비교 계산에 사용할 수 있다."
+  -
+    name: "tp_key"
+    type: "varchar(100)"
+    description: "활동유형키. DIM_CRM_ACT_TYPE과 조인해 목표 활동유형의 상위카테고리를 조회할 때 사용한다."
+  -
+    name: "BRAND"
+    type: "varchar(20)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "CRM_TARGET_FACT"
+    - "MONTHLY_TARGET"
+  keys:
+    primary:
+      - "mon_key"
+    foreign:
+      -
+        column: "sc_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_USER"
+          column: "sc_key"
+        description: "담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+      -
+        column: "monthly_dt"
+        references:
+          schema: "ktws"
+          table: "DIM_CALENDAR_KTWS"
+          column: "Date"
+        description: "날짜 차원으로 그룹핑할 때 사용한다."
+      -
+        column: "tp_key"
+        references:
+          schema: "ktws"
+          table: "DIM_CRM_ACT_TYPE"
+          column: "tp_key"
+        description: "목표 활동유형의 상위카테고리를 조회할 때 사용한다."
+dimensions:
+  - "mon_key"
+  - "sc_key"
+  - "monthly_dt"
+  - "tp_key"
+  - "BRAND"
+features:
+  -
+    name: "mon_key"
+    synonyms:
+      - "월구분키"
+  -
+    name: "sc_key"
+    synonyms:
+      - "SC키"
+  -
+    name: "monthly_dt"
+    synonyms:
+      - "타겟할당월"
+  -
+    name: "target_cnt"
+    synonyms:
+      - "목표 건수"
+  -
+    name: "target_rate"
+    synonyms:
+      - "목표 건 비율"
+  -
+    name: "target_multi"
+    synonyms:
+      - "활동배수"
+  -
+    name: "tp_key"
+    synonyms:
+      - "활동유형키"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+measures:
+  -
+    name: "target_cnt"
+    aggregation: "sum"
+    description: "목표 건수"
+  -
+    name: "target_rate"
+    aggregation: "avg"
+    description: "목표 건 비율"
+  -
+    name: "target_multi"
+    aggregation: "avg"
+    description: "활동배수"
+display:
+  default_columns:
+    - "mon_key"
+    - "sc_key"
+    - "monthly_dt"
+    - "tp_key"
+    - "target_cnt"
+    - "target_rate"

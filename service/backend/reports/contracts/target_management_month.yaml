@@ -1,0 +1,183 @@
+# [월 목표 관리] Certified Report 계약
+#
+# ktws_측정값_쿼리화.xlsx "4. 목표 관리" 페이지 NO=1의 최종 GOLD.
+# 이미 등록된 target_management_funnel_avg(NO=2, 과거 N개월 실적)와 짝을 이룬다 —
+# 이쪽은 "이번 달 목표가 얼마로 잡혀 있나", 저쪽은 "과거 실적이 어땠나"다.
+
+report_id: target_management_month
+version: v1
+title: 월 목표 관리 (계층별)
+description: >
+  연×월 기준 판매목표대수·활동기준대수·계약목표·영업기회목표·활동배수·활동목표를
+  딜러/전시장/부서(선택 시 SC)×활동유형 레벨로 보여주는 목표 설정 현황표.
+  활동입력여부로 목표가 실제로 입력됐는지도 함께 확인한다.
+
+sql_file: sql/target_management_month.sql
+
+source:
+  workbook: docs/ktws_측정값_쿼리화.xlsx
+  sheet: 4.  목표 관리
+  no: 1
+  value_name: 브랜드별 / 딜러별 / 전시장별 / 부서별 / SC별 / 영업유형별 월 목표 관리
+  gold_column: 최종 GOLD 쿼리
+  original_length: 22314
+  deviations:
+    - id: parameters_bound
+      what: 파라미터 DECLARE 9개 제거
+      why: 드라이버 바인딩으로 대체 — 문자열 치환 금지.
+    - id: pad_null_guard
+      what: "NULL 가능한 pad 변수 9개에 CASE WHEN @X IS NULL THEN NULL ELSE ... END 추가"
+      why: >
+        Fabric에서 N',' + NULL + N',' 는 ',,' 가 되어 "NULL=전체"가 뒤집힌다.
+        activity_funnel_status에서 라이브로 확인된 것과 같은 구조다.
+        상수 파생인 @excl_deptPad/@excl_usersPad는 NULL이 될 수 없어 손대지 않았다.
+
+    - id: filter_trim_guard
+      what: "LIKE 패딩 필터의 컬럼 값을 LTRIM(RTRIM())으로 감쌈 (19곳)"
+      why: >
+        차원 이름에 끝 공백이 들어간 값이 있다(2026-08-03 실측: DIM_MNG_USER 기준
+        팀 7종/56명, SC 36종/36명, 전시장 1종/27명 — 총 44종 119명).
+        패턴이 N'%,토요타 동대문 ,%' 가 되어 사용자가 넘긴 ',토요타 동대문,' 과
+        매칭되지 않아 필터가 오류 없이 0건이 된다. NOT LIKE(제외 목록)도 같은 이유로
+        제외에 실패해 빠져야 할 행이 남는다.
+        숫자에서 만든 CAST(...) 표현식은 공백이 생길 수 없어 건드리지 않았다.
+        재현·정량화: notebook/05_차원이름_공백_진단.ipynb
+        주의: SQL Server의 = 비교는 끝 공백을 무시하므로 STRING_SPLIT 방식을 쓰는
+        funnel_full_structure는 애초에 영향이 없어 수정 대상이 아니다.
+      verified_on: 2026-08-03
+sql_sha256: 8096953960f3d37f35b513840198c6a69c78ed26b0716af65e98c62efdbf5525
+execution:
+  mode: single_query
+  allow_llm_sql_rewrite: false
+  parameter_binding: driver_bind
+  preserve_total_row: true
+  preserve_output_order: true
+  preserve_column_order: true
+  database: KPI_W
+
+parameters:
+  - name: Year
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "연도. 다중 가능(예: 2025,2026). 비우면 전체 연도."
+  - name: Month
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: "월. 다중 가능(예: 1,2,3). 비우면 전체 월."
+  - name: brand
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[BRAND]
+  - name: dealer_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    authorization_dimension: dealer
+    description: DIM_MNG_DEALER[dealer_nm]
+  - name: group_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[group_name] 전시장
+  - name: dept_nm
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: DIM_MNG_USER[dept_nm] 부서
+  - name: active_yn
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    allowed_values: ['재직', '퇴직']
+    description: DIM_MNG_USER[active_yn]
+  - name: sc_name
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    schema_switching: true
+    authorization_dimension: sales_consultant
+    description: >
+      NULL → SC 열 없음(부서 레벨). 'ALL' → SC 열 표시 + 전체 SC.
+      값 → SC 열 표시 + 해당 SC만.
+  - name: common_tp
+    sql_type: nvarchar
+    nullable: true
+    multi_value: true
+    description: 활동유형(common_tp_nm)
+
+column_selection:
+  applies_at: projection
+  sql_parameter: false
+
+# 브라우저 객체 필터로 내보낼 축. GOLD의 DECLARE 슬라이서 블록이 곧 BI 페이지의
+# 슬라이서라, 기간(연·월·일)만 빼고 그대로 옮겼다. 결과에 그 컬럼이 실제로 있는
+# 것만 넣는다 — 없는 컬럼을 내걸면 걸 대상이 없다.
+filterable_dimensions:
+  - { id: dealer,            column: 딜러 }
+  - { id: showroom,          column: 전시장 }
+  - { id: sales_consultant,  column: SC }
+  - { id: activity_type,     column: 활동유형 }
+
+dimension_columns:
+  branch_a: ['연도', '월', '딜러', '전시장', '부서', '활동유형']
+  branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC', '활동유형']
+
+total_row:
+  detect_by: { column: '딜러', equals: '합계' }
+  note: >
+    합계 행은 SQL이 만든다. 원본이 sc_first(ROW_NUMBER)로 상위 grain 값을 한 번만
+    집계하므로 애플리케이션에서 다시 더하지 말 것.
+
+# ── 컬럼 의미론 ─────────────────────────────────────────────────────────────
+# 목표류는 상위 grain(부서 또는 SC) 값이 활동유형 행마다 반복될 수 있다.
+# 원본이 sc_first로 중복 제거하는 것이 그 증거라, 보수적으로 직접 합산을 금지한다.
+column_semantics:
+  '판매목표대수':
+    type: repeated_higher_grain_value
+    direct_sum_forbidden: true
+    grain_branch_a: ['연도', '월', '딜러', '전시장', '부서']
+    grain_branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC']
+    correct_aggregation: SQL이 만든 합계 행을 사용할 것(sc_first 중복 제거와 동일 규칙).
+  '활동기준대수':
+    type: repeated_higher_grain_value
+    direct_sum_forbidden: true
+    grain_branch_a: ['연도', '월', '딜러', '전시장', '부서']
+    grain_branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC']
+    correct_aggregation: 판매목표대수와 동일.
+  '계약목표':
+    type: repeated_higher_grain_value
+    direct_sum_forbidden: true
+    grain_branch_a: ['연도', '월', '딜러', '전시장', '부서']
+    grain_branch_b: ['연도', '월', '딜러', '전시장', '부서', 'SC']
+    correct_aggregation: 판매목표대수와 동일.
+  '영업기회목표': { type: additive, grain: row }
+  '활동목표':     { type: additive, grain: row }
+  # 분모는 영업기회목표다. GOLD의 합계 계산이 그렇게 쓴다:
+  #   CAST(SUM(d.활동목표) AS FLOAT) / NULLIF(SUM(d.영업기회목표),0) AS [활동배수]
+  # 상세 행도 같다(2026-08-05 실측 김승진 자사출고: 활동목표 99 ÷ 영업기회목표 2 = 49.5).
+  # 예전에 분모를 활동기준대수로 적어 뒀는데, 그 컬럼은 SC당 한 행에만 값이 있어
+  # (sc_first=1) 롤업하면 0이 되고 활동배수가 통째로 null이 됐다.
+  # SC 단위 검산: 김승진 활동목표 105 ÷ 영업기회목표 15 = 7 — 평가표 정답과 같다.
+  '활동배수':
+    ratio_basis: stage
+    type: ratio
+    numerator: '활동목표'
+    denominator: '영업기회목표'
+    direct_average_forbidden: true
+    recompute_ratio: true
+    note: 활동기준대수 대비 활동목표의 배수. 행 평균이 아니라 재계산해야 한다.
+  '활동입력여부':
+    type: flag
+    direct_sum_forbidden: true
+    note: 목표가 입력됐는지를 나타내는 표시값이다. 숫자로 집계하지 말 것.
+
+format:
+  integer: ['판매목표대수', '활동기준대수', '계약목표', '영업기회목표', '활동목표']
+
+authorization:
+  enforced: false
+  reason: 서버측 인증/세션 미구현 — 다른 인증 리포트와 동일
+  intersect_dimensions: ['dealer_nm', 'sc_name']

@@ -1,0 +1,110 @@
+table: "FCT_CRM_TARGET_STS"
+description: "SC별 CRM 월 타겟의 저장/마감 여부 상태 테이블."
+database: "KPI_W"
+schema: "ktws"
+grain: "타겟시퀀스(target_seq) 단위의 SC CRM 월타겟 상태."
+columns:
+  -
+    name: "target_seq"
+    type: "varchar(100)"
+    description: "타겟 시퀀스. 이 테이블의 기준 키."
+  -
+    name: "sc_key"
+    type: "varchar(100)"
+    description: "SC키. DIM_MNG_USER와 조인해 담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+  -
+    name: "ym"
+    type: "date"
+    description: "관련 일자(월). DIM_CALENDAR_KTWS.Date와 조인할 때 사용한다."
+  -
+    name: "close_yn"
+    type: "varchar(100)"
+    description: "마감 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "save_yn"
+    type: "varchar(100)"
+    description: "저장 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "use_yn"
+    type: "varchar(100)"
+    description: "사용 여부. 여부 조건으로 필터링할 때 사용한다."
+  -
+    name: "BRAND"
+    type: "varchar(20)"
+    description: "브랜드DB구분. 식별자 또는 코드 조건으로 사용한다."
+  -
+    name: "ETL_TIMESTAMP"
+    type: "datetime2(6)"
+    description: "ETL 타임스탬프. 업무일자가 아니라 데이터 적재 시각을 확인할 때만 사용한다."
+semantics:
+  role:
+    - "CRM_TARGET_STATUS"
+  keys:
+    primary:
+      - "target_seq"
+    foreign:
+      -
+        column: "sc_key"
+        references:
+          schema: "ktws"
+          table: "DIM_MNG_USER"
+          column: "sc_key"
+        description: "담당 SC/딜러/지점 정보를 조회할 때 사용한다."
+      -
+        column: "ym"
+        references:
+          schema: "ktws"
+          table: "DIM_CALENDAR_KTWS"
+          column: "Date"
+        description: "날짜 차원으로 그룹핑할 때 사용한다."
+filters:
+  -
+    column: "close_yn"
+    description: "마감 여부"
+  -
+    column: "save_yn"
+    description: "저장 여부"
+  -
+    column: "use_yn"
+    description: "사용 여부"
+dimensions:
+  - "target_seq"
+  - "sc_key"
+  - "ym"
+  - "BRAND"
+features:
+  -
+    name: "target_seq"
+    synonyms:
+      - "타겟 시퀀스"
+  -
+    name: "sc_key"
+    synonyms:
+      - "SC키"
+  -
+    name: "ym"
+    synonyms:
+      - "관련 일자"
+  -
+    name: "close_yn"
+    synonyms:
+      - "마감 여부"
+  -
+    name: "save_yn"
+    synonyms:
+      - "저장 여부"
+  -
+    name: "use_yn"
+    synonyms:
+      - "사용 여부"
+  -
+    name: "BRAND"
+    synonyms:
+      - "브랜드DB구분"
+display:
+  default_columns:
+    - "target_seq"
+    - "sc_key"
+    - "ym"
+    - "close_yn"
+    - "use_yn"
